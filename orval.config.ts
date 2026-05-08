@@ -5,8 +5,8 @@ export default defineConfig({
     input: './openapi.yaml',
     output: {
       mode: 'tags-split',
-      target: 'src/api/generated/index.ts',
-      schemas: 'src/api/generated/model',
+      target: 'src/api/generated',
+      schemas: 'src/api/generated/models',
       client: 'react-query',
       clean: true,
       override: {
