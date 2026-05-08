@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Resource } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
-import { discoverResources, type ResourceDefinition } from '../core/discovery';
+import type { ResourceDefinition } from '../core/discovery';
 import { AutoList } from './AutoList';
 import { AutoCreate, AutoEdit } from './AutoForm';
 import { setResourceDefinitions } from '../providers/openApiDataProvider';
 
 export const ResourceFactory = () => {
-  const { spec, uiManifest, isLoading, error } = useSpec();
+  const { resources: discoveredResources, uiManifest, isLoading, error } = useSpec();
   const [resources, setResources] = useState<ResourceDefinition[]>([]);
 
   useEffect(() => {
     let active = true;
-    if (spec && !isLoading && !error) {
-      const discovered = discoverResources(spec);
-      const discoveredByName = new Map(discovered.map((resourceDefinition) => [resourceDefinition.name, resourceDefinition]));
+    if (discoveredResources.length > 0 && !isLoading && !error) {
+      const discoveredByName = new Map(discoveredResources.map((r) => [r.name, r]));
       const manifestResources = uiManifest?.resources && typeof uiManifest.resources === 'object'
         ? Object.entries(uiManifest.resources)
         : [];
@@ -36,7 +35,7 @@ export const ResourceFactory = () => {
 
       const resourcesForAdmin = fromManifest.length > 0
         ? fromManifest
-        : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
+        : discoveredResources.filter((r) => r.hasList);
 
       setResourceDefinitions(resourcesForAdmin); // Sync with data provider
       if (active) {
@@ -44,7 +43,7 @@ export const ResourceFactory = () => {
       }
     }
     return () => { active = false; };
-  }, [spec, uiManifest, isLoading, error]);
+  }, [discoveredResources, uiManifest, isLoading, error]);
 
   if (isLoading) {
     return null; // Return null so React-Admin doesn't render until ready (handled higher up ideally)

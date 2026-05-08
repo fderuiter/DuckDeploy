@@ -2,11 +2,9 @@
 import { List, Datagrid, TextField } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { mapSchemaToField, renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
-import { discoverResources } from '../core/discovery';
 
 export const AutoList = (props: any) => {
-  const { spec, uiManifest } = useSpec();
-  const resources = discoverResources(spec);
+  const { resources, uiManifest } = useSpec();
   const resourceDef = resources.find(r => r.name === props.resource);
 
   if (!resourceDef || !resourceDef.listResponseSchema) {

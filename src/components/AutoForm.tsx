@@ -2,7 +2,6 @@
 import { Create, Edit, SimpleForm, TextInput } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { mapSchemaToInput, renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
-import { discoverResources } from '../core/discovery';
 
 const AutoFormContent = ({ resourceDef, isCreate }: { resourceDef: any; isCreate: boolean }) => {
   const { uiManifest } = useSpec();
@@ -38,8 +37,7 @@ const AutoFormContent = ({ resourceDef, isCreate }: { resourceDef: any; isCreate
 };
 
 export const AutoCreate = (props: any) => {
-  const { spec } = useSpec();
-  const resources = discoverResources(spec);
+  const { resources } = useSpec();
   const resourceDef = resources.find(r => r.name === props.resource);
 
   return (
@@ -52,8 +50,7 @@ export const AutoCreate = (props: any) => {
 };
 
 export const AutoEdit = (props: any) => {
-  const { spec } = useSpec();
-  const resources = discoverResources(spec);
+  const { resources } = useSpec();
   const resourceDef = resources.find(r => r.name === props.resource);
 
   return (

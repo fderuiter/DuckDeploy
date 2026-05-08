@@ -1,12 +1,15 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { ManifestWorkerResponse } from '../workers/manifest.worker';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { SchemaParserResponse } from '../workers/schemaParser.worker';
 // Vite processes the `?worker` suffix at build time and bundles the worker
 // as a separate chunk — must be a static import at the top level.
-import ManifestWorkerConstructor from '../workers/manifest.worker?worker';
+import SchemaParserWorkerConstructor from '../workers/schemaParser.worker?worker';
+import type { ResourceDefinition } from './discovery';
 
 export interface SpecContextType {
   spec: any | null;
   uiManifest: any | null;
+  /** Pre-computed resource routing tree built by the schema parser worker. */
+  resources: ResourceDefinition[];
   isLoading: boolean;
   error: Error | null;
 }
@@ -16,104 +19,75 @@ const SpecContext = createContext<SpecContextType | undefined>(undefined);
 export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [spec, setSpec] = useState<any | null>(null);
   const [uiManifest, setUiManifest] = useState<any | null>(null);
+  const [resources, setResources] = useState<ResourceDefinition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  // Track cancellation without triggering re-renders.
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
+    cancelledRef.current = false;
 
-    const loadSpec = async () => {
-      try {
-        const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
-        const manifestUrl = `${import.meta.env.BASE_URL}ui-manifest.json`;
-        const expectedHash = import.meta.env.VITE_MANIFEST_HASH as string;
+    // The schemaParser worker fetches both schema.json and ui-manifest.json
+    // concurrently, validates the manifest SHA-256 hash, parses both JSONs,
+    // and builds the resource routing tree — all off the main thread.
+    // The main thread renders only a lightweight loading indicator until the
+    // worker posts its result.
+    const worker = new SchemaParserWorkerConstructor();
 
-        // ── Start both requests concurrently ─────────────────────────────────
-        // The worker begins fetching + hashing ui-manifest.json in parallel
-        // while the main thread fetches and parses schema.json.
-        const manifestPromise = new Promise<void>((resolve, reject) => {
-          const worker = new ManifestWorkerConstructor();
+    worker.onmessage = (event: MessageEvent<SchemaParserResponse>) => {
+      worker.terminate();
 
-          worker.onmessage = (event: MessageEvent<ManifestWorkerResponse>) => {
-            worker.terminate();
+      if (cancelledRef.current) return;
 
-            if (event.data.type === 'error') {
-              reject(new Error(event.data.error));
-              return;
-            }
-
-            // Decode the transferred ArrayBuffer on the main thread.
-            // The buffer was moved (not copied) from the worker — zero-copy.
-            try {
-              const text = new TextDecoder().decode(event.data.buffer);
-              const parsedManifest = JSON.parse(text);
-              if (parsedManifest && typeof parsedManifest === 'object' && !cancelled) {
-                setUiManifest(parsedManifest);
-              }
-              resolve();
-            } catch (parseErr) {
-              reject(parseErr instanceof Error ? parseErr : new Error(String(parseErr)));
-            }
-          };
-
-          worker.onerror = (err) => {
-            worker.terminate();
-            const parts: string[] = [];
-            if (err.message) parts.push(err.message);
-            if (err.filename) {
-              parts.push(err.lineno != null ? `(${err.filename}:${err.lineno})` : `(${err.filename})`);
-            }
-            reject(
-              new Error(
-                parts.length > 0
-                  ? parts.join(' ')
-                  : 'Manifest worker encountered an unexpected error',
-              ),
-            );
-          };
-
-          worker.postMessage({ url: manifestUrl, expectedHash });
-        });
-
-        // ── 1. Schema fetch (main thread) ─────────────────────────────────────
-        const schemaResponse = await fetch(schemaUrl, {
-          headers: { Accept: 'application/json' },
-        });
-
-        if (!schemaResponse.ok) {
-          throw new Error(
-            `Failed to load compiled schema: ${schemaResponse.status} ${schemaResponse.statusText}`,
-          );
-        }
-
-        const parsedJson = await schemaResponse.json();
-        if (!parsedJson || typeof parsedJson !== 'object') {
-          throw new Error('Failed to parse compiled OpenAPI schema');
-        }
-
-        if (!cancelled) setSpec(parsedJson);
-
-        // ── 2. Await the manifest worker (likely already done by now) ─────────
-        await manifestPromise;
-      } catch (err) {
-        if (!cancelled) {
-          console.error('Error loading compiled OpenAPI schema:', err);
-          setError(err instanceof Error ? err : new Error(String(err)));
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
+      if (event.data.type === 'error') {
+        setError(new Error(event.data.error));
+        setIsLoading(false);
+        return;
       }
+
+      const { manifest, spec: parsedSpec, resources: discoveredResources } = event.data;
+
+      if (parsedSpec && typeof parsedSpec === 'object') setSpec(parsedSpec);
+      if (manifest && typeof manifest === 'object') setUiManifest(manifest);
+      setResources(discoveredResources);
+      setIsLoading(false);
     };
 
-    loadSpec();
+    worker.onerror = (err) => {
+      worker.terminate();
+
+      if (cancelledRef.current) return;
+
+      const parts: string[] = [];
+      if (err.message) parts.push(err.message);
+      if (err.filename) {
+        parts.push(err.lineno != null ? `(${err.filename}:${err.lineno})` : `(${err.filename})`);
+      }
+      setError(
+        new Error(
+          parts.length > 0
+            ? parts.join(' ')
+            : 'Schema parser worker encountered an unexpected error',
+        ),
+      );
+      setIsLoading(false);
+    };
+
+    const manifestUrl = `${import.meta.env.BASE_URL}ui-manifest.json`;
+    const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
+    const expectedHash = import.meta.env.VITE_MANIFEST_HASH as string;
+
+    worker.postMessage({ manifestUrl, schemaUrl, expectedHash });
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
+      worker.terminate();
     };
   }, []);
 
   return (
-    <SpecContext.Provider value={{ spec, uiManifest, isLoading, error }}>
+    <SpecContext.Provider value={{ spec, uiManifest, resources, isLoading, error }}>
       {children}
     </SpecContext.Provider>
   );
