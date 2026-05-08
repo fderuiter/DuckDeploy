@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 interface AuthViolation {
   method?: string;
@@ -38,13 +38,18 @@ export const ReflectiveAuthProvider: React.FC<{ children: ReactNode }> = ({ chil
     };
   }, []);
 
-  const isAllowed = (method: string, endpoint: string) => {
+  const isAllowed = useCallback((method: string, endpoint: string) => {
     const normalizedMethod = method.toUpperCase();
     const normalizedEndpoint = endpoint.split('?')[0];
     return !deniedEndpoints.has(`${normalizedMethod}:${normalizedEndpoint}`);
-  };
+  }, [deniedEndpoints]);
 
-  return <ReflectiveAuthContext.Provider value={{ deniedEndpoints, isAllowed }}>{children}</ReflectiveAuthContext.Provider>;
+  const value = useMemo(
+    () => ({ deniedEndpoints, isAllowed }),
+    [deniedEndpoints, isAllowed],
+  );
+
+  return <ReflectiveAuthContext.Provider value={value}>{children}</ReflectiveAuthContext.Provider>;
 };
 
 export const useReflectiveAuth = () => {
