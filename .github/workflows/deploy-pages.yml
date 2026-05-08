@@ -27,6 +27,9 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
+      - run: npm run generate
+      - run: npm run compile:schema
+      - run: npm run validate:contract
       - run: npm run build
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3

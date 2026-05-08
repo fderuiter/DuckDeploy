@@ -13,6 +13,7 @@
     "generate": "npm run generate:api && npm run build:manifest",
     "compile:schema": "node ./scripts/compiler/compile-schema.mjs",
     "verify:shadow": "node ./scripts/verify-shadow-build.mjs",
+    "validate:contract": "node ./scripts/validate-contract.mjs",
     "test:fuzz": "node ./scripts/fuzz/run-schemathesis.mjs"
   },
   "dependencies": {
