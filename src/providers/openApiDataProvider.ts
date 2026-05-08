@@ -188,7 +188,7 @@ export const openApiDataProvider: DataProvider = {
 
     const data = transformed.data
       ? { id: transformed.data.id ?? params.data.id ?? null, ...transformed.data }
-      : { id: sanitizedData['id'] ?? params.data.id ?? null, ...sanitizedData };
+      : { id: params.data.id ?? null, ...sanitizedData };
 
     return { data };
   },
