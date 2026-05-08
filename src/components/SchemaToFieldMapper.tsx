@@ -19,6 +19,7 @@ import {
   FormDataConsumer,
   required,
 } from 'react-admin';
+import { createElement } from 'react';
 import { get } from 'lodash';
 import { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -103,22 +104,23 @@ const WidgetOverrideInput = ({ source, candidates, schemaNode, fallback }: Widge
     return <>{fallback}</>;
   }
 
-  return (
-    <Widget
-      record={(form.getValues() as Record<string, unknown>) || {}}
-      schemaNode={schemaNode}
-      source={source}
-      value={value}
-      setValue={(nextValue) => {
-        form.setValue(source, nextValue, {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true,
-        });
-      }}
-      mutate={async () => undefined}
-    />
-  );
+  return createElement(Widget, {
+    record: (form.getValues() as Record<string, unknown>) ?? {},
+    schemaNode,
+    source,
+    value,
+    setValue: (nextValue) => {
+      form.setValue(source, nextValue, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    },
+    mutate: async (operation) => {
+      console.warn(`Widget mutate('${operation}') was called without a bound mutation handler.`);
+      return undefined;
+    },
+  });
 };
 
 export const renderPrecomputedField = (

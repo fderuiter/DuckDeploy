@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const MAX_REF_DEPTH = 3;
-const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
+const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch']);
 
 const INPUT_CANDIDATES = [
   path.join(repoRoot, 'openapi.yaml'),

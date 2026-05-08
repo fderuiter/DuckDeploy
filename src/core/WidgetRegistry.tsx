@@ -12,10 +12,11 @@ export interface EngineContext {
 export type WidgetComponent = React.FC<EngineContext>;
 
 interface WidgetRegistryValue {
-  registerWidget: (id: string, Component: WidgetComponent) => void;
   getWidget: (id: string) => WidgetComponent | undefined;
 }
 
+// Global singleton registry shared by the app runtime.
+// Register widgets during startup before rendering provider consumers.
 const registry = new Map<string, WidgetComponent>();
 
 const WidgetRegistryContext = createContext<WidgetRegistryValue | undefined>(undefined);
@@ -27,9 +28,6 @@ export const registerWidget = (id: string, Component: WidgetComponent) => {
 export const WidgetRegistryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const value = useMemo<WidgetRegistryValue>(
     () => ({
-      registerWidget: (id: string, Component: WidgetComponent) => {
-        registry.set(id, Component);
-      },
       getWidget: (id: string) => registry.get(id),
     }),
     [],

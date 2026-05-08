@@ -48,7 +48,7 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         } else {
           console.warn(
-            `ui-manifest.json is unavailable (${manifestResponse.status} ${manifestResponse.statusText}); falling back to runtime mapping.`,
+            `ui-manifest.json is unavailable (${manifestResponse.status} ${manifestResponse.statusText}); precomputed UI mapping is disabled for this session.`,
           );
         }
       } catch (err) {

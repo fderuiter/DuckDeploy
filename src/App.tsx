@@ -6,7 +6,6 @@ import { WidgetRegistryProvider, registerWidget } from "./core/WidgetRegistry";
 import { CustomMapWidget } from "./components/custom/CustomMapWidget";
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
-registerWidget('name', CustomMapWidget);
 
 const AdminApp = () => {
   const { isLoading, error } = useSpec();
