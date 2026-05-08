@@ -11,7 +11,7 @@ export default defineConfig({
       clean: true,
       override: {
         mutator: {
-          path: './src/api/custom-instance.ts',
+          path: 'src/api/custom-instance.ts',
           name: 'customInstance',
         },
       },
