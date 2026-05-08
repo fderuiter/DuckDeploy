@@ -1,7 +1,4 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import yaml from 'js-yaml';
-import $RefParser from '@apidevtools/json-schema-ref-parser';
-import specRaw from '../../openapi.yaml?raw';
 
 export interface SpecContextType {
   spec: any | null;
@@ -19,17 +16,8 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const loadSpec = async () => {
       try {
-        // Parse YAML to JSON object
-        const parsedJson = yaml.load(specRaw);
-
-        if (!parsedJson || typeof parsedJson !== 'object') {
-          throw new Error('Failed to parse OpenAPI YAML');
-        }
-
-        // Resolve $ref pointers
-        const resolvedSpec = await $RefParser.dereference(parsedJson as any);
-
-        setSpec(resolvedSpec);
+        const specModule = await import('./spec.json');
+        setSpec(specModule.default || specModule);
       } catch (err) {
         console.error('Error loading OpenAPI spec:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
