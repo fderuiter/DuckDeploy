@@ -186,8 +186,9 @@ export const openApiDataProvider: DataProvider = {
     const response = await callApiFunction(resDef.createOperationId, sanitizedData);
     const transformed = transformResponse(response);
 
-    const data = transformed.data || sanitizedData;
-    if (!data.id) data.id = params.data.id ?? null; // surface the server-assigned id or null – never inject Date.now()
+    const data = transformed.data
+      ? { id: transformed.data.id ?? params.data.id ?? null, ...transformed.data }
+      : { id: sanitizedData['id'] ?? params.data.id ?? null, ...sanitizedData };
 
     return { data };
   },

@@ -10,19 +10,32 @@ import type { OpenAPIV3 } from 'openapi-types';
  */
 
 /**
+ * String representations of `true` / `false` accepted for boolean coercion.
+ * Follows common CDASH conventions: "Y"/"N" shorthand is included alongside
+ * the more common "true"/"false" and numeric "1"/"0" forms.
+ */
+const BOOLEAN_TRUE_STRINGS = new Set(['true', '1', 'y', 'yes']);
+const BOOLEAN_FALSE_STRINGS = new Set(['false', '0', 'n', 'no']);
+
+/**
  * Coerce a single value to a boolean according to CDASH conventions.
- * Returns null when the value is absent or unrecognisable rather than
- * propagating an ambiguous truthy/falsy coercion.
+ * Returns null when the value is absent or unrecognisable.
+ * Emits a console warning when a non-null, non-undefined value cannot be
+ * coerced, so developers can trace unexpected inputs during development.
  */
 const coerceBoolean = (value: unknown): boolean | null => {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
     const lower = value.trim().toLowerCase();
-    if (lower === 'true' || lower === '1' || lower === 'y' || lower === 'yes') return true;
-    if (lower === 'false' || lower === '0' || lower === 'n' || lower === 'no') return false;
+    if (BOOLEAN_TRUE_STRINGS.has(lower)) return true;
+    if (BOOLEAN_FALSE_STRINGS.has(lower)) return false;
   }
   if (typeof value === 'number') return value !== 0;
+  console.warn(
+    `[outboundAdapter] Unable to coerce value to boolean; falling back to null. Value:`,
+    value,
+  );
   return null;
 };
 
@@ -37,8 +50,11 @@ export const adaptOutboundPayload = (
   payload: Record<string, unknown>,
   schema?: OpenAPIV3.SchemaObject | null,
 ): Record<string, unknown> => {
+  // Guard: only process plain objects.
+  // Non-objects (null, arrays, primitives) are not valid payload containers;
+  // return an empty record so the return type is unconditionally satisfied.
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return payload;
+    return {};
   }
 
   const properties = schema?.properties as
