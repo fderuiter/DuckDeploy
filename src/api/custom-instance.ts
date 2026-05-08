@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
+type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
+
 export const AXIOS_INSTANCE = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
   headers: {
@@ -39,9 +41,8 @@ export const customInstance = <T>(
     ...config,
     ...options,
     signal: controller.signal,
-  }).then(({ data }) => data);
+  }).then(({ data }) => data) as CancelablePromise<T>;
 
-  // @ts-expect-error - Orval expects cancel to exist on the returned promise.
   promise.cancel = () => {
     controller.abort();
   };

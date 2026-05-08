@@ -6,7 +6,7 @@ export default defineConfig({
     output: {
       mode: 'tags-split',
       target: 'src/api/generated',
-      schemas: 'src/api/generated/models',
+      schemas: 'src/api/generated/model',
       client: 'react-query',
       clean: true,
       override: {
