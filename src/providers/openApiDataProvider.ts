@@ -1,6 +1,7 @@
 import type { DataProvider, GetListResult } from 'react-admin';
 import * as apiFunctions from '../api/generated';
 import type { ResourceDefinition } from '../core/discovery';
+import { adaptOutboundPayload } from './outboundAdapter';
 
 // A mapping provided dynamically from the app root
 let resourceMap: Record<string, ResourceDefinition> = {};
@@ -154,8 +155,11 @@ export const openApiDataProvider: DataProvider = {
     const resDef = resourceMap[resource];
     if (!resDef) throw new Error(`Unknown resource ${resource}`);
 
+    // Sanitize through outbound adapter before dispatch
+    const sanitizedData = adaptOutboundPayload(params.data, resDef.editRequestBodySchema);
+
     // Usually: updateById(id, data, options)
-    const response = await callApiFunction(resDef.editOperationId, String(params.id), params.data);
+    const response = await callApiFunction(resDef.editOperationId, String(params.id), sanitizedData);
     const transformed = transformResponse(response);
 
     const data = transformed.data || params.data;
@@ -175,12 +179,15 @@ export const openApiDataProvider: DataProvider = {
     const resDef = resourceMap[resource];
     if (!resDef) throw new Error(`Unknown resource ${resource}`);
 
+    // Sanitize through outbound adapter before dispatch
+    const sanitizedData = adaptOutboundPayload(params.data, resDef.createRequestBodySchema);
+
     // Usually: create(data, options)
-    const response = await callApiFunction(resDef.createOperationId, params.data);
+    const response = await callApiFunction(resDef.createOperationId, sanitizedData);
     const transformed = transformResponse(response);
 
-    const data = transformed.data || params.data;
-    if (!data.id) data.id = Date.now(); // fallback ID if none returned
+    const data = transformed.data || sanitizedData;
+    if (!data.id) data.id = params.data.id ?? null; // surface the server-assigned id or null – never inject Date.now()
 
     return { data };
   },
