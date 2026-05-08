@@ -1,8 +1,9 @@
 
 import { List, Datagrid, TextField } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
-import { mapSchemaToField } from './SchemaToFieldMapper';
+import { mapSchemaToField, renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
 import { discoverResources } from '../core/discovery';
+import { precomputedSchemaComponentTree } from '../generated/schemaComponentTree';
 
 export const AutoList = (props: any) => {
   const { spec } = useSpec();
@@ -20,6 +21,24 @@ export const AutoList = (props: any) => {
   }
 
   const schema = resourceDef.listResponseSchema;
+  const precomputedResource = precomputedSchemaComponentTree[resourceDef.name as keyof typeof precomputedSchemaComponentTree];
+  const precomputedListFields = precomputedResource?.listFields as PrecomputedFieldDescriptor[] | undefined;
+
+  if (precomputedListFields && precomputedListFields.length > 0) {
+    const idField = precomputedListFields.find(field => field.source === 'id');
+    const nonIdFields = precomputedListFields.filter(field => field.source !== 'id');
+
+    return (
+      <List {...props}>
+        <Datagrid rowClick="edit">
+          {idField ? renderPrecomputedField(idField, `${resourceDef.name}.id`) : <TextField source="id" />}
+          {nonIdFields.map((field, index) =>
+            renderPrecomputedField(field, `${resourceDef.name}.${field.source || index}`)
+          )}
+        </Datagrid>
+      </List>
+    );
+  }
 
   // Extract properties
   let properties: Record<string, any> = {};
