@@ -1,0 +1,350 @@
+{
+  "version": 1,
+  "depthLimit": 3,
+  "resources": {
+    "Searches": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "mdr": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "maintenanceMode",
+          "kind": "text"
+        },
+        {
+          "source": "maintenanceMessage",
+          "kind": "text"
+        }
+      ]
+    },
+    "Controlled Terminology (CT)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "conceptId",
+          "kind": "reference",
+          "reference": "concept"
+        },
+        {
+          "source": "extensible",
+          "kind": "boolean"
+        },
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "submissionValue",
+          "kind": "text"
+        },
+        {
+          "source": "definition",
+          "kind": "text"
+        },
+        {
+          "source": "preferredTerm",
+          "kind": "text"
+        },
+        {
+          "source": "synonyms",
+          "kind": "array"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "Clinical Data Acquisition Standards Harmonization (CDASH)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "label",
+          "kind": "text"
+        },
+        {
+          "source": "description",
+          "kind": "text"
+        },
+        {
+          "source": "source",
+          "kind": "text"
+        },
+        {
+          "source": "effectiveDate",
+          "kind": "date"
+        },
+        {
+          "source": "registrationStatus",
+          "kind": "text"
+        },
+        {
+          "source": "version",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        },
+        {
+          "source": "fields",
+          "kind": "array"
+        }
+      ]
+    },
+    "CDASH Implementation Guide (CDASHIG)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "ordinal",
+          "kind": "number"
+        },
+        {
+          "source": "domain",
+          "kind": "text"
+        },
+        {
+          "source": "domainName",
+          "kind": "text"
+        },
+        {
+          "source": "scenario",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "Study Data Tabulation Model (SDTM)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "ordinal",
+          "kind": "number"
+        },
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "label",
+          "kind": "text"
+        },
+        {
+          "source": "description",
+          "kind": "text"
+        },
+        {
+          "source": "datasetStructure",
+          "kind": "text"
+        },
+        {
+          "source": "status",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "SDTM Implementation Guide (SDTMIG)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "ordinal",
+          "kind": "number"
+        },
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "label",
+          "kind": "text"
+        },
+        {
+          "source": "description",
+          "kind": "text"
+        },
+        {
+          "source": "datasetStructure",
+          "kind": "text"
+        },
+        {
+          "source": "status",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "SEND Implementation Guide (SENDIG)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "ordinal",
+          "kind": "number"
+        },
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "label",
+          "kind": "text"
+        },
+        {
+          "source": "description",
+          "kind": "text"
+        },
+        {
+          "source": "datasetStructure",
+          "kind": "text"
+        },
+        {
+          "source": "status",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "Analysis Data Model (ADaM)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "ordinal",
+          "kind": "number"
+        },
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "label",
+          "kind": "text"
+        },
+        {
+          "source": "description",
+          "kind": "text"
+        },
+        {
+          "source": "class",
+          "kind": "text"
+        },
+        {
+          "source": "subClass",
+          "kind": "text"
+        },
+        {
+          "source": "status",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "Diff": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": []
+    },
+    "Questionnairs, Ratings & Scales (QRS)": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "Rule": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    },
+    "IG Documents": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "_links",
+          "kind": "text"
+        },
+        {
+          "source": "sections",
+          "kind": "array"
+        }
+      ]
+    },
+    "Integrated": {
+      "createForm": [],
+      "editForm": [],
+      "listFields": [
+        {
+          "source": "ordinal",
+          "kind": "number"
+        },
+        {
+          "source": "name",
+          "kind": "text"
+        },
+        {
+          "source": "label",
+          "kind": "text"
+        },
+        {
+          "source": "description",
+          "kind": "text"
+        },
+        {
+          "source": "datasetStructure",
+          "kind": "text"
+        },
+        {
+          "source": "status",
+          "kind": "text"
+        },
+        {
+          "source": "_links",
+          "kind": "text"
+        }
+      ]
+    }
+  }
+}

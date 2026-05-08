@@ -8,7 +8,9 @@
     "build": "npm run generate && npm run compile:schema && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate": "orval --config ./orval.config.ts && node ./scripts/generate-schema-component-tree.mjs",
+    "generate:api": "orval --config ./orval.config.ts",
+    "build:manifest": "node ./scripts/preprocessor.mjs",
+    "generate": "npm run generate:api && npm run build:manifest",
     "compile:schema": "node ./scripts/compiler/compile-schema.mjs"
   },
   "dependencies": {

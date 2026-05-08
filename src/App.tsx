@@ -2,6 +2,10 @@ import { Admin } from "react-admin";
 import { SpecProvider, useSpec } from "./core/SpecContext";
 import { openApiDataProvider } from "./providers/openApiDataProvider";
 import { ResourceFactory } from "./components/ResourceFactory";
+import { WidgetRegistryProvider, registerWidget } from "./core/WidgetRegistry";
+import { CustomMapWidget } from "./components/custom/CustomMapWidget";
+
+registerWidget('x-ui-custom-map', CustomMapWidget);
 
 const AdminApp = () => {
   const { isLoading, error } = useSpec();
@@ -22,9 +26,11 @@ const AdminApp = () => {
 };
 
 export const App = () => (
-  <SpecProvider>
-    <AdminApp />
-  </SpecProvider>
+  <WidgetRegistryProvider>
+    <SpecProvider>
+      <AdminApp />
+    </SpecProvider>
+  </WidgetRegistryProvider>
 );
 
 export default App;

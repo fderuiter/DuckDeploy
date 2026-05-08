@@ -3,10 +3,10 @@ import { Create, Edit, SimpleForm, TextInput } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { mapSchemaToInput, renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { discoverResources } from '../core/discovery';
-import { precomputedSchemaComponentTree } from '../generated/schemaComponentTree';
 
 const AutoFormContent = ({ resourceDef, isCreate }: { resourceDef: any; isCreate: boolean }) => {
-  const precomputedResource = precomputedSchemaComponentTree[resourceDef.name as keyof typeof precomputedSchemaComponentTree];
+  const { uiManifest } = useSpec();
+  const precomputedResource = uiManifest?.resources?.[resourceDef.name];
   const precomputedNodes = (isCreate ? precomputedResource?.createForm : precomputedResource?.editForm) as
     | PrecomputedInputDescriptor[]
     | undefined;

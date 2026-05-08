@@ -3,10 +3,9 @@ import { List, Datagrid, TextField } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { mapSchemaToField, renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
 import { discoverResources } from '../core/discovery';
-import { precomputedSchemaComponentTree } from '../generated/schemaComponentTree';
 
 export const AutoList = (props: any) => {
-  const { spec } = useSpec();
+  const { spec, uiManifest } = useSpec();
   const resources = discoverResources(spec);
   const resourceDef = resources.find(r => r.name === props.resource);
 
@@ -21,7 +20,7 @@ export const AutoList = (props: any) => {
   }
 
   const schema = resourceDef.listResponseSchema;
-  const precomputedResource = precomputedSchemaComponentTree[resourceDef.name as keyof typeof precomputedSchemaComponentTree];
+  const precomputedResource = uiManifest?.resources?.[resourceDef.name];
   const precomputedListFields = precomputedResource?.listFields as PrecomputedFieldDescriptor[] | undefined;
 
   if (precomputedListFields && precomputedListFields.length > 0) {
