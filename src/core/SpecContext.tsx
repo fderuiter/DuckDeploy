@@ -1,7 +1,4 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import yaml from 'js-yaml';
-import $RefParser from '@apidevtools/json-schema-ref-parser';
-import specRaw from '../../openapi.yaml?raw';
 
 export interface SpecContextType {
   spec: any | null;
@@ -19,19 +16,24 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const loadSpec = async () => {
       try {
-        // Parse YAML to JSON object
-        const parsedJson = yaml.load(specRaw);
+        const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
+        const response = await fetch(schemaUrl, {
+          headers: { Accept: 'application/json' },
+        });
 
-        if (!parsedJson || typeof parsedJson !== 'object') {
-          throw new Error('Failed to parse OpenAPI YAML');
+        if (!response.ok) {
+          throw new Error(`Failed to load compiled schema: ${response.status} ${response.statusText}`);
         }
 
-        // Resolve $ref pointers
-        const resolvedSpec = await $RefParser.dereference(parsedJson as any);
+        const parsedJson = await response.json();
 
-        setSpec(resolvedSpec);
+        if (!parsedJson || typeof parsedJson !== 'object') {
+          throw new Error('Failed to parse compiled OpenAPI schema');
+        }
+
+        setSpec(parsedJson);
       } catch (err) {
-        console.error('Error loading OpenAPI spec:', err);
+        console.error('Error loading compiled OpenAPI schema:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setIsLoading(false);
