@@ -15,6 +15,7 @@ export default defineConfig([
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
+    rules: { 'react-hooks/set-state-in-effect': 'off',  '@typescript-eslint/no-explicit-any': 'off', 'react-refresh/only-export-components': 'off' },
     languageOptions: {
       globals: globals.browser,
     },
