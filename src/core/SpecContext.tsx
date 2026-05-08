@@ -9,6 +9,13 @@ export interface SpecContextType {
 
 const SpecContext = createContext<SpecContextType | undefined>(undefined);
 
+const sha256Hex = async (content: string): Promise<string> => {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(content));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+};
+
 export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [spec, setSpec] = useState<any | null>(null);
   const [uiManifest, setUiManifest] = useState<any | null>(null);
@@ -42,7 +49,20 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSpec(parsedJson);
 
         if (manifestResponse.ok) {
-          const parsedManifest = await manifestResponse.json();
+          const manifestText = await manifestResponse.text();
+          const expectedManifestHash = import.meta.env.VITE_MANIFEST_HASH;
+          if (expectedManifestHash) {
+            const actualManifestHash = await sha256Hex(manifestText);
+            if (actualManifestHash !== expectedManifestHash) {
+              const expectedPrefix = expectedManifestHash.slice(0, 8);
+              const actualPrefix = actualManifestHash.slice(0, 8);
+              throw new Error(
+                `Manifest integrity check failed (expected ${expectedPrefix}…, got ${actualPrefix}…). The UI manifest may have been modified or corrupted.`,
+              );
+            }
+          }
+
+          const parsedManifest = JSON.parse(manifestText);
           if (parsedManifest && typeof parsedManifest === 'object') {
             setUiManifest(parsedManifest);
           }

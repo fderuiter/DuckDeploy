@@ -16,11 +16,9 @@ import {
   ChipField,
   ArrayInput,
   SimpleFormIterator,
-  FormDataConsumer,
   required,
 } from 'react-admin';
-import { createElement } from 'react';
-import { get } from 'lodash';
+import { createElement, useEffect, useRef } from 'react';
 import { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
@@ -28,6 +26,7 @@ import { PolymorphicInput } from './PolymorphicInput';
 import { JsonEditorInput } from './custom/JsonEditorInput';
 import { TerminologyLookupInput } from './custom/TerminologyLookupInput';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
+import { resetPolymorphicValue } from './polymorphicState';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -123,6 +122,53 @@ const WidgetOverrideInput = ({ source, candidates, schemaNode, fallback }: Widge
   });
 };
 
+const PrecomputedPolymorphicInput = ({
+  node,
+  keyPrefix,
+}: {
+  node: PrecomputedInputDescriptor;
+  keyPrefix: string;
+}) => {
+  const form = useFormContext();
+  const { control, unregister, setValue } = form;
+  const typeSource = `${node.source}__schemaIndex`;
+  const selectedIndexRaw = useWatch({ control, name: typeSource });
+  const selectedIndex =
+    selectedIndexRaw === undefined || selectedIndexRaw === null
+      ? undefined
+      : Number.parseInt(String(selectedIndexRaw), 10);
+  const previousSelectedIndexRef = useRef<number | undefined>(undefined);
+  const choices = (node.options || []).map((option, index) => ({ id: index, name: option.label || `Option ${index + 1}` }));
+
+  useEffect(() => {
+    if (selectedIndex === undefined || Number.isNaN(selectedIndex)) return;
+    const previousSelectedIndex = previousSelectedIndexRef.current;
+    if (previousSelectedIndex !== undefined && previousSelectedIndex !== selectedIndex) {
+      resetPolymorphicValue(unregister, setValue, node.source);
+    }
+    previousSelectedIndexRef.current = selectedIndex;
+  }, [selectedIndex, node.source, unregister, setValue]);
+
+  return (
+    <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
+      <SelectInput
+        source={typeSource}
+        choices={choices}
+        label="Select Type"
+        validate={node.isRequired ? [required()] : []}
+      />
+
+      {selectedIndex === undefined || Number.isNaN(selectedIndex)
+        ? null
+        : (() => {
+            const selectedNode = node.options?.[selectedIndex]?.node;
+            if (!selectedNode) return null;
+            return renderPrecomputedInput(selectedNode, `${keyPrefix}.${selectedIndex}`);
+          })()}
+    </div>
+  );
+};
+
 export const renderPrecomputedField = (
   node: PrecomputedFieldDescriptor,
   keyPrefix: string = node.source,
@@ -189,29 +235,7 @@ const renderPrecomputedInputDefault = (
   }
 
   if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
-    const typeSource = `${node.source}__schemaIndex`;
-    const choices = node.options.map((option, index) => ({ id: index, name: option.label || `Option ${index + 1}` }));
-
-    return (
-      <div key={key} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
-        <SelectInput
-          source={typeSource}
-          choices={choices}
-          label="Select Type"
-          validate={node.isRequired ? [required()] : []}
-        />
-
-        <FormDataConsumer>
-          {({ formData }) => {
-            const selectedIndex = get(formData, typeSource);
-            if (selectedIndex === undefined) return null;
-            const selectedNode = node.options?.[selectedIndex]?.node;
-            if (!selectedNode) return null;
-            return renderPrecomputedInput(selectedNode, `${key}.${selectedIndex}`);
-          }}
-        </FormDataConsumer>
-      </div>
-    );
+    return <PrecomputedPolymorphicInput node={node} keyPrefix={key} />;
   }
 
   if (node.kind === 'object') {

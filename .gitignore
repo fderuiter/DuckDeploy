@@ -27,3 +27,6 @@ src/api/*
 !src/api/custom-instance.ts
 
 public/schema.json
+public/ui-manifest.sha256
+schemathesis-junit.xml
+traceability-matrix.json

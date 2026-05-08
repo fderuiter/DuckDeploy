@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosHeaders } from 'axios';
+import type { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
 
 type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
@@ -31,15 +32,36 @@ AXIOS_INSTANCE.interceptors.response.use(
   },
 );
 
+type RequestInput = string | AxiosRequestConfig;
+
+const normalizeConfig = (
+  input: RequestInput,
+  options?: AxiosRequestConfig,
+): AxiosRequestConfig => {
+  if (typeof input === 'string') {
+    const optionHeaders =
+      options?.headers instanceof AxiosHeaders
+        ? options.headers.toJSON()
+        : (options?.headers as RawAxiosRequestHeaders | undefined);
+    return {
+      ...options,
+      url: input,
+      headers: optionHeaders,
+    };
+  }
+
+  return { ...input, ...options };
+};
+
 export const customInstance = <T>(
-  config: AxiosRequestConfig,
+  config: RequestInput,
   options?: AxiosRequestConfig,
 ): Promise<T> => {
   const controller = new AbortController();
+  const normalizedConfig = normalizeConfig(config, options);
 
   const promise = AXIOS_INSTANCE({
-    ...config,
-    ...options,
+    ...normalizedConfig,
     signal: controller.signal,
   }).then(({ data }) => data) as CancelablePromise<T>;
 

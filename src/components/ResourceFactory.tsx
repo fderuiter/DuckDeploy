@@ -7,20 +7,44 @@ import { AutoCreate, AutoEdit } from './AutoForm';
 import { setResourceDefinitions } from '../providers/openApiDataProvider';
 
 export const ResourceFactory = () => {
-  const { spec, isLoading, error } = useSpec();
+  const { spec, uiManifest, isLoading, error } = useSpec();
   const [resources, setResources] = useState<ResourceDefinition[]>([]);
 
   useEffect(() => {
     let active = true;
     if (spec && !isLoading && !error) {
       const discovered = discoverResources(spec);
-      setResourceDefinitions(discovered); // Sync with data provider
+      const discoveredByName = new Map(discovered.map((resourceDefinition) => [resourceDefinition.name, resourceDefinition]));
+      const manifestResources = uiManifest?.resources && typeof uiManifest.resources === 'object'
+        ? Object.entries(uiManifest.resources)
+        : [];
+
+      const fromManifest = manifestResources
+        .map(([resourceName, mapping]) => {
+          const discoveredResource = discoveredByName.get(resourceName);
+          const listFields = Array.isArray((mapping as { listFields?: unknown }).listFields)
+            ? (mapping as { listFields: unknown[] }).listFields
+            : [];
+
+          if (!discoveredResource || !discoveredResource.hasList || listFields.length === 0) {
+            return null;
+          }
+
+          return discoveredResource;
+        })
+        .filter((resource): resource is ResourceDefinition => Boolean(resource));
+
+      const resourcesForAdmin = fromManifest.length > 0
+        ? fromManifest
+        : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
+
+      setResourceDefinitions(resourcesForAdmin); // Sync with data provider
       if (active) {
-        setResources(discovered);
+        setResources(resourcesForAdmin);
       }
     }
     return () => { active = false; };
-  }, [spec, isLoading, error]);
+  }, [spec, uiManifest, isLoading, error]);
 
   if (isLoading) {
     return null; // Return null so React-Admin doesn't render until ready (handled higher up ideally)

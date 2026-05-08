@@ -1,61 +1,117 @@
-import type { DataProvider, GetListResult } from 'react-admin';
-import * as apiFunctions from '../api/generated';
+import type { DataProvider, GetListParams, GetListResult } from 'react-admin';
 import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 
-// A mapping provided dynamically from the app root
 let resourceMap: Record<string, ResourceDefinition> = {};
 
+const generatedModules = import.meta.glob('../api/generated/**/*.ts', { eager: true }) as Record<
+  string,
+  Record<string, unknown>
+>;
+
+const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unknown>>((acc, [path, moduleExports]) => {
+  if (path.includes('/model/')) {
+    return acc;
+  }
+
+  Object.assign(acc, moduleExports);
+  return acc;
+}, {});
+
 export const setResourceDefinitions = (resources: ResourceDefinition[]) => {
-  resourceMap = resources.reduce((acc, res) => {
-    acc[res.name] = res;
+  resourceMap = resources.reduce((acc, resourceDefinition) => {
+    acc[resourceDefinition.name] = resourceDefinition;
     return acc;
   }, {} as Record<string, ResourceDefinition>);
 };
 
-const transformResponse = (response: any): { data: any; total?: number } => {
-  // Try to find the data array or object
-  let data = response.data;
+const toCamelCase = (value: string) =>
+  value
+    .replace(/^[^a-zA-Z]+/, '')
+    .replace(/[-_.\s]+([a-zA-Z0-9])/g, (_, next: string) => next.toUpperCase());
 
-  if (data && data._embedded) {
-    // common HAL structure
-    const keys = Object.keys(data._embedded);
-    if (keys.length > 0) {
-      data = data._embedded[keys[0]];
+const operationCandidates = (operationId: string | undefined): string[] => {
+  if (!operationId) return [];
+  const compact = operationId.replace(/[^a-zA-Z0-9_$]/g, '');
+  const camel = toCamelCase(operationId);
+  // Try explicit operationId first, then Orval-style camelCase, then fully compact fallback.
+  return Array.from(new Set([operationId, camel, compact])).filter(Boolean);
+};
+
+const callApiFunction = async (operationId: string | undefined, ...args: unknown[]) => {
+  const candidates = operationCandidates(operationId);
+  for (const candidate of candidates) {
+    const fn = apiFunctions[candidate];
+    if (typeof fn === 'function') {
+      return await (fn as (...fnArgs: unknown[]) => Promise<unknown>)(...args);
     }
-  } else if (data && Array.isArray(data.items)) {
-    data = data.items;
   }
 
-  // Ensure data is array for lists if needed, but getOne might return a single object
-  // Let the caller handle it if they expect an array.
+  throw new Error(
+    operationId
+      ? `Generated API function for operation "${operationId}" not found.`
+      : 'Operation not supported for this resource.',
+  );
+};
 
-  let total: number | undefined;
+const transformResponse = (response: unknown): { data: unknown; total?: number } => {
+  const isObject = typeof response === 'object' && response !== null;
+  const payload = isObject && 'data' in (response as Record<string, unknown>)
+    ? (response as Record<string, unknown>).data
+    : response;
 
-  // 1. Header Check
-  if (response.headers) {
-    const totalCountHeader =
-      response.headers['x-total-count'] ||
-      response.headers['content-range'] ||
-      import.meta.env.VITE_TOTAL_COUNT_HEADER && response.headers[import.meta.env.VITE_TOTAL_COUNT_HEADER.toLowerCase()];
-    if (totalCountHeader) {
-      if (typeof totalCountHeader === 'string' && totalCountHeader.includes('/')) {
-        total = parseInt(totalCountHeader.split('/').pop() || '0', 10);
-      } else {
-        total = parseInt(totalCountHeader, 10);
+  let data: unknown = payload;
+
+  if (data && typeof data === 'object' && '_embedded' in (data as Record<string, unknown>)) {
+    const embedded = (data as Record<string, unknown>)._embedded as Record<string, unknown> | undefined;
+    if (embedded) {
+      const firstKey = Object.keys(embedded)[0];
+      if (firstKey) {
+        data = embedded[firstKey];
       }
     }
+  } else if (data && typeof data === 'object' && Array.isArray((data as Record<string, unknown>).items)) {
+    data = (data as Record<string, unknown>).items;
   }
 
-  // 2. Body Property Check
-  if (total === undefined && response.data) {
-    if (typeof response.data.total === 'number') total = response.data.total;
-    else if (typeof response.data.count === 'number') total = response.data.count;
-    else if (typeof response.data.totalCount === 'number') total = response.data.totalCount;
-    else if (response.data.page && typeof response.data.page.totalElements === 'number') total = response.data.page.totalElements;
+  let total: number | undefined;
+  const headers =
+    isObject && 'headers' in (response as Record<string, unknown>)
+      ? ((response as Record<string, unknown>).headers as Record<string, string | undefined>)
+      : undefined;
+
+  if (headers) {
+    const customTotalHeader =
+      typeof import.meta.env.VITE_TOTAL_COUNT_HEADER === 'string'
+        ? import.meta.env.VITE_TOTAL_COUNT_HEADER.toLowerCase()
+        : undefined;
+
+    const totalHeaderValue =
+      headers['x-total-count'] ||
+      headers['content-range'] ||
+      (customTotalHeader ? headers[customTotalHeader] : undefined);
+
+    if (typeof totalHeaderValue === 'string') {
+      total = totalHeaderValue.includes('/')
+        ? Number.parseInt(totalHeaderValue.split('/').pop() || '0', 10)
+        : Number.parseInt(totalHeaderValue, 10);
+    }
   }
 
-  // 3. Array Fallback
+  if (total === undefined && payload && typeof payload === 'object') {
+    const source = payload as Record<string, unknown>;
+    const maybeTotal = source.total ?? source.count ?? source.totalCount;
+    if (typeof maybeTotal === 'number') {
+      total = maybeTotal;
+    } else if (
+      source.page &&
+      typeof source.page === 'object' &&
+      typeof (source.page as Record<string, unknown>).totalElements === 'number'
+    ) {
+      total = (source.page as Record<string, unknown>).totalElements as number;
+    }
+  }
+
   if (total === undefined && Array.isArray(data)) {
     total = data.length;
   }
@@ -63,150 +119,143 @@ const transformResponse = (response: any): { data: any; total?: number } => {
   return { data, total };
 };
 
-const callApiFunction = async (operationId: string | undefined, ...args: any[]) => {
-  if (!operationId) throw new Error('Operation not supported for this resource.');
-  const fn = (apiFunctions as any)[operationId];
-  if (!fn || typeof fn !== 'function') {
-    throw new Error(`Generated API function ${operationId} not found.`);
+const buildListQueryParams = (resourceDefinition: ResourceDefinition, params: GetListParams): Record<string, unknown> => {
+  const query: Record<string, unknown> = { ...(params.filter || {}) };
+  const knownQueryParams = new Set(resourceDefinition.listQueryParams || []);
+  const queryIsOpen = knownQueryParams.size === 0;
+  const hasParam = (...candidates: string[]) => candidates.find((candidate) => queryIsOpen || knownQueryParams.has(candidate));
+
+  const setQuery = (key: string | undefined, value: unknown) => {
+    if (!key || value === undefined) return;
+    query[key] = value;
+  };
+
+  if (params.pagination) {
+    const page = params.pagination.page;
+    const perPage = params.pagination.perPage;
+
+    setQuery(hasParam('page', 'pageNumber', 'pageIndex'), page);
+    setQuery(hasParam('perPage', 'pageSize', 'limit', 'size', 'top'), perPage);
+    setQuery(hasParam('offset', 'skip', 'start'), (page - 1) * perPage);
   }
-  return await fn(...args);
+
+  if (params.sort) {
+    const sortField = params.sort.field;
+    const sortOrder = String(params.sort.order || '').toLowerCase();
+    const sortDirection = sortOrder === 'desc' ? 'desc' : 'asc';
+
+    setQuery(hasParam('sort'), `${sortField},${sortDirection}`);
+    setQuery(hasParam('sortBy', 'orderby', 'orderBy'), sortField);
+    setQuery(hasParam('order', 'sortOrder', 'direction'), sortDirection);
+  }
+
+  if (params.meta?.query && typeof params.meta.query === 'object') {
+    Object.assign(query, params.meta.query);
+  }
+
+  if (!queryIsOpen) {
+    return Object.fromEntries(Object.entries(query).filter(([key]) => knownQueryParams.has(key)));
+  }
+
+  return query;
+};
+
+const ensureRecordId = (record: unknown, fallbackId: unknown) => {
+  if (!record || typeof record !== 'object') {
+    return { id: fallbackId };
+  }
+
+  const typedRecord = record as Record<string, unknown>;
+  return {
+    ...typedRecord,
+    id: typedRecord.id ?? typedRecord._id ?? typedRecord.uuid ?? fallbackId,
+  };
 };
 
 export const openApiDataProvider: DataProvider = {
   getList: async (resource, params) => {
-    const resDef = resourceMap[resource];
-    if (!resDef) throw new Error(`Unknown resource ${resource}`);
+    const resourceDefinition = resourceMap[resource];
+    if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    // For list, often the parameters are passed as query objects.
-    // Orval generated functions signature: apiFunction(params?, options?) or apiFunction(options?)
-    // We try to pass React-Admin's sort/filter/pagination as query params.
-    const queryParams: Record<string, any> = {
-      ...params.filter,
-    };
-    if (params.pagination) {
-      queryParams.page = params.pagination.page;
-      queryParams.perPage = params.pagination.perPage;
-      queryParams.limit = params.pagination.perPage;
-      queryParams.offset = (params.pagination.page - 1) * params.pagination.perPage;
-    }
-    if (params.sort) {
-      queryParams.sort = `${params.sort.field},${params.sort.order}`;
-    }
-
-    // Try to inject it. This is a best effort mapping since OpenAPI specs vary.
-    // Many Orval APIs for lists take (params, options). If it doesn't take params, we just pass options.
-    // Actually, orval generated functions usually have explicit typed params.
-    // For generic handling, we'll try passing queryParams as the first argument if it expects any.
-    // In generated.ts, it often expects explicit path parameters first. If this is a root list endpoint,
-    // there are no path parameters, so the first argument might be query params or requestInit.
-
-    // We will blindly pass queryParams. If the spec doesn't have query params, it might ignore them or fail.
-    // In a zero-config template, we try to pass them.
-    const response = await callApiFunction(resDef.listOperationId, queryParams);
-
+    const queryParams = buildListQueryParams(resourceDefinition, params);
+    const response = await callApiFunction(resourceDefinition.listOperationId, queryParams);
     const transformed = transformResponse(response);
-    let data = Array.isArray(transformed.data) ? transformed.data : [];
-
-    // Add id to data if missing, React-Admin needs 'id'
-    data = data.map((item: any, index: number) => ({
-      id: item.id || item._id || item.uuid || index,
-      ...item
-    }));
+    const rows = Array.isArray(transformed.data) ? transformed.data : [];
 
     return {
-      data,
-      total: transformed.total !== undefined ? transformed.total : data.length,
+      data: rows.map((item, index) => ensureRecordId(item, index)),
+      total: transformed.total ?? rows.length,
     } as GetListResult;
   },
 
   getOne: async (resource, params) => {
-    const resDef = resourceMap[resource];
-    if (!resDef) throw new Error(`Unknown resource ${resource}`);
+    const resourceDefinition = resourceMap[resource];
+    if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    // getOne usually expects the ID as the first parameter for path injection
-    const response = await callApiFunction(resDef.showOperationId, String(params.id));
+    const response = await callApiFunction(resourceDefinition.showOperationId, String(params.id));
     const transformed = transformResponse(response);
 
-    const data = transformed.data;
-    if (!data.id) {
-      data.id = params.id;
-    }
-
-    return { data };
+    return { data: ensureRecordId(transformed.data, params.id) };
   },
 
   getMany: async (resource, params) => {
-    // Basic fallback for getMany using getOne
     const data = await Promise.all(
-      params.ids.map(id => openApiDataProvider.getOne(resource, { id }).then(res => res.data))
+      params.ids.map((id) => openApiDataProvider.getOne(resource, { id }).then((response) => response.data)),
     );
     return { data };
   },
 
-  getManyReference: async (resource, params) => {
-    // basic fallback
-    return openApiDataProvider.getList(resource, {
+  getManyReference: async (resource, params) =>
+    openApiDataProvider.getList(resource, {
       ...params,
-      filter: { ...params.filter, [params.target]: params.id }
-    });
-  },
+      filter: { ...params.filter, [params.target]: params.id },
+    }),
 
   update: async (resource, params) => {
-    const resDef = resourceMap[resource];
-    if (!resDef) throw new Error(`Unknown resource ${resource}`);
+    const resourceDefinition = resourceMap[resource];
+    if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    // Sanitize through outbound adapter before dispatch
-    const sanitizedData = adaptOutboundPayload(params.data, resDef.editRequestBodySchema);
-
-    // Usually: updateById(id, data, options)
-    const response = await callApiFunction(resDef.editOperationId, String(params.id), sanitizedData);
+    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.editRequestBodySchema);
+    const response = await callApiFunction(resourceDefinition.editOperationId, String(params.id), outboundData);
     const transformed = transformResponse(response);
 
-    const data = transformed.data || params.data;
-    if (!data.id) data.id = params.id;
-
-    return { data };
+    return { data: ensureRecordId(transformed.data ?? outboundData, params.id) };
   },
 
   updateMany: async (resource, params) => {
-    const data = await Promise.all(
-      params.ids.map(id => openApiDataProvider.update(resource, { id, data: params.data, previousData: {} as any as any }).then(res => res.data))
+    const records = await Promise.all(
+      params.ids.map((id) =>
+        openApiDataProvider
+          .update(resource, { id, data: params.data, previousData: {} as any })
+          .then((response) => response.data),
+      ),
     );
-    return { data: data.map(d => d.id) };
+    return { data: records.map((record) => (record as Record<string, unknown>).id as string | number) };
   },
 
   create: async (resource, params) => {
-    const resDef = resourceMap[resource];
-    if (!resDef) throw new Error(`Unknown resource ${resource}`);
+    const resourceDefinition = resourceMap[resource];
+    if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    // Sanitize through outbound adapter before dispatch
-    const sanitizedData = adaptOutboundPayload(params.data, resDef.createRequestBodySchema);
-
-    // Usually: create(data, options)
-    const response = await callApiFunction(resDef.createOperationId, sanitizedData);
+    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.createRequestBodySchema);
+    const response = await callApiFunction(resourceDefinition.createOperationId, outboundData);
     const transformed = transformResponse(response);
+    const payload = transformed.data ?? outboundData;
 
-    const data = transformed.data
-      ? { id: transformed.data.id ?? params.data.id ?? null, ...transformed.data }
-      : { id: params.data.id ?? null, ...sanitizedData };
-
-    return { data };
+    return { data: ensureRecordId(payload, (params.data as Record<string, unknown>).id ?? null) };
   },
 
   delete: async (resource, params) => {
-    const resDef = resourceMap[resource];
-    if (!resDef) throw new Error(`Unknown resource ${resource}`);
+    const resourceDefinition = resourceMap[resource];
+    if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    const response = await callApiFunction(resDef.deleteOperationId, String(params.id));
+    const response = await callApiFunction(resourceDefinition.deleteOperationId, String(params.id));
     const transformed = transformResponse(response);
-
-    return { data: transformed.data || params.previousData };
+    return { data: transformed.data ?? params.previousData };
   },
 
   deleteMany: async (resource, params) => {
-    await Promise.all(
-      params.ids.map(id => openApiDataProvider.delete(resource, { id, previousData: {} as any }))
-    );
+    await Promise.all(params.ids.map((id) => openApiDataProvider.delete(resource, { id, previousData: {} as any })));
     return { data: params.ids };
   },
 };

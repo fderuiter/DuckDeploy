@@ -1,0 +1,32 @@
+name: Contract Fuzz Testing
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly Monday 3 AM UTC run to keep contract drift visible without daily API load.
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    env:
+      SCHEMATHESIS_BASE_URL: https://api.library.cdisc.org
+      SCHEMATHESIS_MAX_EXAMPLES: "1000"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - run: python3 -m pip install --upgrade pip schemathesis==4.18.0
+      - run: npm ci
+      - run: npm run test:fuzz

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 
@@ -17,6 +18,9 @@ const INPUT_CANDIDATES = [
 ];
 
 const OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.json');
+const TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
+const HASH_OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.sha256');
+const STABLE_JSON_EOL = '\n';
 
 const resolveInputPath = () => INPUT_CANDIDATES.find((candidate) => fs.existsSync(candidate));
 
@@ -43,6 +47,11 @@ const resolveRefPath = (spec, ref) => {
   return current;
 };
 
+const escapeJsonPointer = (segment) =>
+  String(segment)
+    .replace(/~/g, '~0')
+    .replace(/\//g, '~1');
+
 const mergeSchema = (baseSchema, overrideSchema) => {
   const merged = { ...(baseSchema || {}), ...(overrideSchema || {}) };
 
@@ -64,6 +73,7 @@ class OpenApiVisitor {
   constructor(spec, maxDepth) {
     this.spec = spec;
     this.maxDepth = maxDepth;
+    this.traceabilityEntries = [];
   }
 
   withRefDepth(context, ref) {
@@ -142,11 +152,23 @@ class OpenApiVisitor {
     return Object.keys(validation).length > 0 ? validation : undefined;
   }
 
-  visitFieldNode(name, schema, context = { refDepthMap: {} }) {
+  addTraceability(pointer, source, component, status = 'mapped') {
+    this.traceabilityEntries.push({
+      pointer,
+      source,
+      component,
+      status,
+    });
+  }
+
+  visitFieldNode(name, schema, context = { refDepthMap: {} }, pointer = '#') {
     const normalized = this.normalizeSchema(schema, context);
     const node = normalized.schema;
 
-    if (!node || typeof node !== 'object') return null;
+    if (!node || typeof node !== 'object') {
+      this.addTraceability(pointer, name, null, 'discarded');
+      return null;
+    }
 
     const base = {
       source: name,
@@ -155,10 +177,12 @@ class OpenApiVisitor {
 
     if (name.endsWith('_id') || name.endsWith('Id')) {
       const target = name.replace(/_id$/i, '').replace(/Id$/, '');
+      this.addTraceability(pointer, name, '<ReferenceField />');
       return { ...base, kind: 'reference', reference: target };
     }
 
     if (Array.isArray(node.enum) && node.enum.length > 0) {
+      this.addTraceability(pointer, name, '<SelectField />');
       return {
         ...base,
         kind: 'enum',
@@ -166,20 +190,39 @@ class OpenApiVisitor {
       };
     }
 
-    if (node.type === 'boolean') return { ...base, kind: 'boolean' };
-    if (node.type === 'integer' || node.type === 'number') return { ...base, kind: 'number' };
-    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) return { ...base, kind: 'date' };
-    if (node.type === 'array') return { ...base, kind: 'array' };
+    if (node.type === 'boolean') {
+      this.addTraceability(pointer, name, '<BooleanField />');
+      return { ...base, kind: 'boolean' };
+    }
+    if (node.type === 'integer' || node.type === 'number') {
+      this.addTraceability(pointer, name, '<NumberField />');
+      return { ...base, kind: 'number' };
+    }
+    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
+      this.addTraceability(pointer, name, '<DateField />');
+      return { ...base, kind: 'date' };
+    }
+    if (node.type === 'array') {
+      this.addTraceability(pointer, name, '<ArrayField />');
+      return { ...base, kind: 'array' };
+    }
 
+    this.addTraceability(pointer, name, '<TextField />');
     return { ...base, kind: 'text' };
   }
 
-  visitFormNode(source, schema, isRequired, context = { refDepthMap: {} }, depth = 0) {
+  visitFormNode(source, schema, isRequired, context = { refDepthMap: {} }, depth = 0, pointer = '#') {
     const normalized = this.normalizeSchema(schema, context);
     const node = normalized.schema;
 
-    if (!node || typeof node !== 'object') return null;
-    if (depth > this.maxDepth) return null;
+    if (!node || typeof node !== 'object') {
+      this.addTraceability(pointer, source, null, 'discarded');
+      return null;
+    }
+    if (depth > this.maxDepth) {
+      this.addTraceability(pointer, source, null, 'discarded');
+      return null;
+    }
 
     const base = {
       source,
@@ -190,10 +233,12 @@ class OpenApiVisitor {
     };
 
     if (node['x-widget'] === 'json-editor') {
+      this.addTraceability(pointer, source, '<JsonEditorInput />');
       return { ...base, kind: 'custom_json_editor' };
     }
 
     if (node['x-widget'] === 'cdisc-terminology-lookup') {
+      this.addTraceability(pointer, source, '<TerminologyLookupInput />');
       return {
         ...base,
         kind: 'custom_terminology_lookup',
@@ -204,7 +249,8 @@ class OpenApiVisitor {
     if ((Array.isArray(node.oneOf) && node.oneOf.length > 0) || (Array.isArray(node.anyOf) && node.anyOf.length > 0)) {
       const variants = (node.oneOf || node.anyOf)
         .map((variant, index) => {
-          const variantNode = this.visitFormNode(source, variant, isRequired, normalized.context, depth + 1);
+          const variantPointer = `${pointer}/${node.oneOf ? 'oneOf' : 'anyOf'}/${index}`;
+          const variantNode = this.visitFormNode(source, variant, isRequired, normalized.context, depth + 1, variantPointer);
           if (!variantNode) return null;
           return {
             label: variantNode.title || `Option ${index + 1}`,
@@ -214,6 +260,7 @@ class OpenApiVisitor {
         .filter(Boolean);
 
       if (variants.length > 0) {
+        this.addTraceability(pointer, source, '<PolymorphicInput />');
         return { ...base, kind: 'polymorphic', options: variants };
       }
     }
@@ -223,24 +270,29 @@ class OpenApiVisitor {
         .map(([subName, subSchema]) => {
           const nestedSource = source ? `${source}.${subName}` : subName;
           const childRequired = (node.required || []).includes(subName);
-          return this.visitFormNode(nestedSource, subSchema, childRequired, normalized.context, depth + 1);
+          const childPointer = `${pointer}/properties/${escapeJsonPointer(subName)}`;
+          return this.visitFormNode(nestedSource, subSchema, childRequired, normalized.context, depth + 1, childPointer);
         })
         .filter(Boolean);
 
+      this.addTraceability(pointer, source || '(root)', '<ObjectGroup />');
       return { ...base, kind: 'object', children };
     }
 
     if (node.type === 'array' && node.items) {
-      const itemNode = this.visitFormNode('', node.items, false, normalized.context, depth + 1);
+      const itemNode = this.visitFormNode('', node.items, false, normalized.context, depth + 1, `${pointer}/items`);
+      this.addTraceability(pointer, source, '<ArrayInput />');
       return { ...base, kind: 'array', items: itemNode ? [itemNode] : [] };
     }
 
     if (source.endsWith('_id') || source.endsWith('Id')) {
       const target = source.replace(/_id$/i, '').replace(/Id$/, '');
+      this.addTraceability(pointer, source, '<ReferenceInput />');
       return { ...base, kind: 'reference', reference: target };
     }
 
     if (Array.isArray(node.enum) && node.enum.length > 0) {
+      this.addTraceability(pointer, source, '<SelectInput />');
       return {
         ...base,
         kind: 'enum',
@@ -248,10 +300,20 @@ class OpenApiVisitor {
       };
     }
 
-    if (node.type === 'boolean') return { ...base, kind: 'boolean' };
-    if (node.type === 'integer' || node.type === 'number') return { ...base, kind: 'number' };
-    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) return { ...base, kind: 'date' };
+    if (node.type === 'boolean') {
+      this.addTraceability(pointer, source, '<BooleanInput />');
+      return { ...base, kind: 'boolean' };
+    }
+    if (node.type === 'integer' || node.type === 'number') {
+      this.addTraceability(pointer, source, '<NumberInput />');
+      return { ...base, kind: 'number' };
+    }
+    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
+      this.addTraceability(pointer, source, '<DateInput />');
+      return { ...base, kind: 'date' };
+    }
 
+    this.addTraceability(pointer, source, '<TextInput />');
     return { ...base, kind: 'text' };
   }
 }
@@ -302,7 +364,10 @@ const extractListProperties = (schema, visitor) => {
 
 const buildUiManifest = (spec) => {
   if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
-    return { version: 1, depthLimit: MAX_REF_DEPTH, resources: {} };
+    return {
+      manifest: { version: 1, depthLimit: MAX_REF_DEPTH, resources: {} },
+      traceabilityEntries: [],
+    };
   }
 
   const visitor = new OpenApiVisitor(spec, MAX_REF_DEPTH);
@@ -335,13 +400,25 @@ const buildUiManifest = (spec) => {
       if (!operation || typeof operation !== 'object') continue;
 
       if (method === 'get' && !isInstancePath) {
-        const listSchema =
-          getSchemaFromContent(operation.responses?.['200']?.content) ||
-          getSchemaFromContent(operation.responses?.['201']?.content);
+        const listResponseStatus = operation.responses?.['200']?.content
+          ? '200'
+          : operation.responses?.['201']?.content
+            ? '201'
+            : null;
+        const listSchema = listResponseStatus
+          ? getSchemaFromContent(operation.responses?.[listResponseStatus]?.content)
+          : null;
 
         const properties = extractListProperties(listSchema, visitor);
         resources[resourceName].listFields = Object.entries(properties)
-          .map(([fieldName, propertySchema]) => visitor.visitFieldNode(fieldName, propertySchema))
+          .map(([fieldName, propertySchema]) =>
+            visitor.visitFieldNode(
+              fieldName,
+              propertySchema,
+              { refDepthMap: {} },
+              `#/paths/${escapeJsonPointer(apiPath)}/${method}/responses/${listResponseStatus || '200'}/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
+            ),
+          )
           .filter(Boolean);
       }
 
@@ -352,7 +429,16 @@ const buildUiManifest = (spec) => {
         const required = normalized?.required || [];
 
         resources[resourceName].createForm = Object.entries(properties)
-          .map(([fieldName, propertySchema]) => visitor.visitFormNode(fieldName, propertySchema, required.includes(fieldName)))
+          .map(([fieldName, propertySchema]) =>
+            visitor.visitFormNode(
+              fieldName,
+              propertySchema,
+              required.includes(fieldName),
+              { refDepthMap: {} },
+              0,
+              `#/paths/${escapeJsonPointer(apiPath)}/${method}/requestBody/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
+            ),
+          )
           .filter(Boolean);
       }
 
@@ -363,16 +449,28 @@ const buildUiManifest = (spec) => {
         const required = normalized?.required || [];
 
         resources[resourceName].editForm = Object.entries(properties)
-          .map(([fieldName, propertySchema]) => visitor.visitFormNode(fieldName, propertySchema, required.includes(fieldName)))
+          .map(([fieldName, propertySchema]) =>
+            visitor.visitFormNode(
+              fieldName,
+              propertySchema,
+              required.includes(fieldName),
+              { refDepthMap: {} },
+              0,
+              `#/paths/${escapeJsonPointer(apiPath)}/${method}/requestBody/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
+            ),
+          )
           .filter(Boolean);
       }
     }
   }
 
   return {
-    version: 1,
-    depthLimit: MAX_REF_DEPTH,
-    resources,
+    manifest: {
+      version: 1,
+      depthLimit: MAX_REF_DEPTH,
+      resources,
+    },
+    traceabilityEntries: visitor.traceabilityEntries,
   };
 };
 
@@ -389,12 +487,24 @@ const compile = () => {
     throw new Error('Invalid OpenAPI document: expected an object root.');
   }
 
-  const manifest = buildUiManifest(parsed);
+  const { manifest, traceabilityEntries } = buildUiManifest(parsed);
+  const traceabilityReport = {
+    generatedAt: new Date().toISOString(),
+    entries: traceabilityEntries,
+  };
+  const serializedManifest = `${JSON.stringify(manifest, null, 2)}${STABLE_JSON_EOL}`;
+  // Keep SHA-256 + lowercase hex aligned with browser-side verification in SpecContext (Web Crypto API).
+  // STABLE_JSON_EOL is intentional and must stay stable for deterministic hashing.
+  const manifestHash = crypto.createHash('sha256').update(serializedManifest, 'utf8').digest('hex');
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
-  fs.writeFileSync(OUTPUT_PATH, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(OUTPUT_PATH, serializedManifest, 'utf8');
+  fs.writeFileSync(TRACEABILITY_OUTPUT_PATH, `${JSON.stringify(traceabilityReport, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(HASH_OUTPUT_PATH, `${manifestHash}\n`, 'utf8');
 
   console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)} (depth limit: ${MAX_REF_DEPTH})`);
+  console.log(`Generated ${path.relative(repoRoot, TRACEABILITY_OUTPUT_PATH)}`);
+  console.log(`Generated ${path.relative(repoRoot, HASH_OUTPUT_PATH)}`);
 };
 
 try {
