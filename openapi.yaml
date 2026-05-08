@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: DuckDeploy API
+  version: 1.0.0
+paths:
+  /ping:
+    get:
+      operationId: getPing
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    example: ok
