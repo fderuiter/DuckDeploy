@@ -82,6 +82,7 @@ export const mapSchemaToInput = (
     source,
     validate: validators,
     isRequired, // Needed for simple reference/boolean inputs to display asterisk
+    parse: (value: any) => (value === '' ? null : value), // Serialize empty fields to mathematical nulls
   };
 
   // 1. Check for custom vendor extensions first

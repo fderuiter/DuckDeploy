@@ -24,3 +24,7 @@ The GitHub Actions workflow in `.github/workflows/deploy-pages.yml` runs on push
 - Generates TypeScript models and React Query hooks from `openapi.yaml`
 - Builds the app
 - Deploys the `dist` output to GitHub Pages
+
+## Roadmap
+- Schedule integration of the PRISM framework to automate API mock generation from the schema.
+- Configure Schemathesis for comprehensive property-based fuzz testing.
