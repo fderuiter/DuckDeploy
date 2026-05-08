@@ -5,13 +5,13 @@ export default defineConfig({
     input: './openapi.yaml',
     output: {
       mode: 'tags-split',
-      target: 'src/api/generated/index.ts',
+      target: 'src/api/generated',
       schemas: 'src/api/generated/model',
       client: 'react-query',
       clean: true,
       override: {
         mutator: {
-          path: './src/api/custom-instance.ts',
+          path: 'src/api/custom-instance.ts',
           name: 'customInstance',
         },
       },

@@ -4,6 +4,7 @@ import { openApiDataProvider } from "./providers/openApiDataProvider";
 import { ResourceFactory } from "./components/ResourceFactory";
 import { WidgetRegistryProvider, registerWidget } from "./core/WidgetRegistry";
 import { CustomMapWidget } from "./components/custom/CustomMapWidget";
+import { ReflectiveAuthProvider } from "./core/ReflectiveAuthContext";
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
 
@@ -27,9 +28,11 @@ const AdminApp = () => {
 
 export const App = () => (
   <WidgetRegistryProvider>
-    <SpecProvider>
-      <AdminApp />
-    </SpecProvider>
+    <ReflectiveAuthProvider>
+      <SpecProvider>
+        <AdminApp />
+      </SpecProvider>
+    </ReflectiveAuthProvider>
   </WidgetRegistryProvider>
 );
 
