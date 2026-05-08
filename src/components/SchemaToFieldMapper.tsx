@@ -17,14 +17,16 @@ import {
   ArrayInput,
   SimpleFormIterator,
   FormDataConsumer,
-  required
+  required,
 } from 'react-admin';
 import { get } from 'lodash';
 import { OpenAPIV3 } from 'openapi-types';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
 import { JsonEditorInput } from './custom/JsonEditorInput';
 import { TerminologyLookupInput } from './custom/TerminologyLookupInput';
+import { useWidgetRegistry } from '../core/WidgetRegistry';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -37,6 +39,7 @@ type ValidationDescriptor = {
 export type PrecomputedFieldDescriptor = {
   kind: 'reference' | 'enum' | 'boolean' | 'number' | 'date' | 'text' | 'array';
   source: string;
+  widgetId?: string;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
 };
@@ -58,6 +61,7 @@ export type PrecomputedInputDescriptor = {
   isRequired: boolean;
   title?: string;
   domain?: string;
+  widgetId?: string;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
   options?: Array<{ label: string; node: PrecomputedInputDescriptor }>;
@@ -79,9 +83,47 @@ const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) =
   return buildValidators(schemaForValidation, descriptor.isRequired);
 };
 
+type WidgetOverrideInputProps = {
+  source: string;
+  candidates: string[];
+  schemaNode: unknown;
+  fallback: React.ReactNode;
+};
+
+const WidgetOverrideInput = ({ source, candidates, schemaNode, fallback }: WidgetOverrideInputProps) => {
+  const { getWidget } = useWidgetRegistry();
+  const form = useFormContext();
+
+  const widgetId = candidates.find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
+  const Widget = widgetId ? getWidget(widgetId) : undefined;
+
+  const value = useWatch({ control: form.control, name: source });
+
+  if (!Widget || !source) {
+    return <>{fallback}</>;
+  }
+
+  return (
+    <Widget
+      record={(form.getValues() as Record<string, unknown>) || {}}
+      schemaNode={schemaNode}
+      source={source}
+      value={value}
+      setValue={(nextValue) => {
+        form.setValue(source, nextValue, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      }}
+      mutate={async () => undefined}
+    />
+  );
+};
+
 export const renderPrecomputedField = (
   node: PrecomputedFieldDescriptor,
-  keyPrefix: string = node.source
+  keyPrefix: string = node.source,
 ): React.ReactNode => {
   const key = keyPrefix || node.source || 'field';
 
@@ -123,9 +165,9 @@ export const renderPrecomputedField = (
   return <TextField key={key} source={node.source} />;
 };
 
-export const renderPrecomputedInput = (
+const renderPrecomputedInputDefault = (
   node: PrecomputedInputDescriptor,
-  keyPrefix: string = node.source
+  keyPrefix: string = node.source,
 ): React.ReactNode => {
   const validators = buildValidatorsFromDescriptor(node);
   const key = keyPrefix || node.source || 'input';
@@ -141,12 +183,7 @@ export const renderPrecomputedInput = (
   }
 
   if (node.kind === 'custom_terminology_lookup') {
-    return (
-      <TerminologyLookupInput
-        {...commonProps}
-        domain={node.domain}
-      />
-    );
+    return <TerminologyLookupInput {...commonProps} domain={node.domain} />;
   }
 
   if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
@@ -222,6 +259,27 @@ export const renderPrecomputedInput = (
   return <TextInput {...commonProps} />;
 };
 
+export const renderPrecomputedInput = (
+  node: PrecomputedInputDescriptor,
+  keyPrefix: string = node.source,
+): React.ReactNode => {
+  const fallback = renderPrecomputedInputDefault(node, keyPrefix);
+  const candidates = [node.widgetId, node.source].filter(Boolean) as string[];
+
+  if (candidates.length === 0) {
+    return fallback;
+  }
+
+  return (
+    <WidgetOverrideInput
+      source={node.source}
+      candidates={candidates}
+      schemaNode={node}
+      fallback={fallback}
+    />
+  );
+};
+
 export const mapSchemaToField = (name: string, property: any) => {
   // Check for reference
   if (name.endsWith('_id') || name.endsWith('Id') || property.$ref) {
@@ -254,24 +312,24 @@ export const mapSchemaToField = (name: string, property: any) => {
   }
 
   if (property.type === 'array') {
-     return (
-       <ArrayField key={name} source={name}>
-         <SingleFieldList>
-           <ChipField source="id" />
-         </SingleFieldList>
-       </ArrayField>
-     );
+    return (
+      <ArrayField key={name} source={name}>
+        <SingleFieldList>
+          <ChipField source="id" />
+        </SingleFieldList>
+      </ArrayField>
+    );
   }
 
   // Fallback
   return <TextField key={name} source={name} />;
 };
 
-export const mapSchemaToInput = (
+const mapSchemaToInputDefault = (
   source: string,
   property: OpenAPIV3.SchemaObject,
   isRequired: boolean,
-  depth: number = 0
+  depth: number = 0,
 ): React.ReactNode => {
   if (depth > 5) return null; // Infinite recursion guard
 
@@ -289,12 +347,7 @@ export const mapSchemaToInput = (
   }
 
   if (property['x-widget'] === 'cdisc-terminology-lookup') {
-    return (
-      <TerminologyLookupInput
-        {...commonProps}
-        domain={property['x-terminology-domain'] as string}
-      />
-    );
+    return <TerminologyLookupInput {...commonProps} domain={property['x-terminology-domain'] as string} />;
   }
 
   // Polymorphism
@@ -314,7 +367,7 @@ export const mapSchemaToInput = (
             nestedSource,
             subProp as OpenAPIV3.SchemaObject,
             (property.required || []).includes(subName),
-            depth + 1
+            depth + 1,
           );
         })}
       </div>
@@ -328,18 +381,16 @@ export const mapSchemaToInput = (
     return (
       <ArrayInput {...commonProps}>
         <SimpleFormIterator inline>
-          {itemSchema.type === 'object' && itemSchema.properties ? (
-            Object.entries(itemSchema.properties).map(([subName, subProp]) =>
-              mapSchemaToInput(
-                subName,
-                subProp as OpenAPIV3.SchemaObject,
-                (itemSchema.required || []).includes(subName),
-                depth + 1
+          {itemSchema.type === 'object' && itemSchema.properties
+            ? Object.entries(itemSchema.properties).map(([subName, subProp]) =>
+                mapSchemaToInput(
+                  subName,
+                  subProp as OpenAPIV3.SchemaObject,
+                  (itemSchema.required || []).includes(subName),
+                  depth + 1,
+                ),
               )
-            )
-          ) : (
-            mapSchemaToInput('', itemSchema, false, depth + 1)
-          )}
+            : mapSchemaToInput('', itemSchema, false, depth + 1)}
         </SimpleFormIterator>
       </ArrayInput>
     );
@@ -376,4 +427,28 @@ export const mapSchemaToInput = (
 
   // Fallback
   return <TextInput {...commonProps} />;
+};
+
+export const mapSchemaToInput = (
+  source: string,
+  property: OpenAPIV3.SchemaObject,
+  isRequired: boolean,
+  depth: number = 0,
+): React.ReactNode => {
+  const fallback = mapSchemaToInputDefault(source, property, isRequired, depth);
+  const explicitOverride = typeof property['x-ui-override'] === 'string' ? property['x-ui-override'] : undefined;
+  const candidates = [explicitOverride, source].filter(Boolean) as string[];
+
+  if (candidates.length === 0) {
+    return fallback;
+  }
+
+  return (
+    <WidgetOverrideInput
+      source={source}
+      candidates={candidates}
+      schemaNode={property}
+      fallback={fallback}
+    />
+  );
 };
