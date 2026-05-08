@@ -70,6 +70,8 @@ const loadOpenApi = () => {
  */
 const collectConstraintBearingFields = (spec) => {
   const results = [];
+  // HEAD and OPTIONS are excluded: they do not carry request bodies or
+  // meaningful response payload schemas that drive UI component selection.
   const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
 
   const escapeSegment = (s) => String(s).replace(/~/g, '~0').replace(/\//g, '~1');
@@ -156,10 +158,11 @@ const validate = () => {
   const violations = [];
 
   // ── Rule 1: no field should be "discarded" ───────────────────────────────
-  const discarded = entries.filter((e) => e.status === 'discarded' && e.component !== null);
-  // (null component with discarded status means the preprocessor intentionally
-  //  skipped a structural node; only flag entries where a component name exists
-  //  but is marked discarded, which would indicate a regression.)
+  // The preprocessor emits status='discarded' with a null component whenever
+  // it cannot determine a UI component for a schema node (e.g. unsupported
+  // shape, null schema, max-depth reached). Flag every discarded entry so
+  // spec changes that introduce unmappable fields are caught before deployment.
+  const discarded = entries.filter((e) => e.status === 'discarded');
   if (discarded.length > 0) {
     for (const entry of discarded) {
       violations.push(

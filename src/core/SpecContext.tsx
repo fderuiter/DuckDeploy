@@ -78,7 +78,10 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
           worker.onerror = (err) => {
             worker.terminate();
-            reject(new Error(err.message ?? 'Manifest worker encountered an unexpected error'));
+            const detail = err.message || err.filename
+              ? `${err.message} (${err.filename}:${err.lineno})`
+              : 'Manifest worker encountered an unexpected error';
+            reject(new Error(detail));
           };
 
           worker.postMessage({ url: manifestUrl, expectedHash });
