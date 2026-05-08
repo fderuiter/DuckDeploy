@@ -1,14 +1,14 @@
-import { defineConfig } from 'orval'
+import { defineConfig } from 'orval';
 
 export default defineConfig({
-  api: {
+  duckdeploy_api: {
     input: './openapi.yaml',
     output: {
       mode: 'split',
-      client: 'react-query',
       target: 'src/api/generated.ts',
       schemas: 'src/api/model',
+      client: 'react-query',
       clean: true,
     },
   },
-})
+});
