@@ -1,30 +1,26 @@
-# 🐶 DuckDeploy
+# DuckDeploy
 
-**DuckDeploy** is a fully automated, API-first frontend template. It acts as your loyal CI/CD companion—just hand it an `openapi.yaml` file, and it does the heavy lifting of fetching your data contracts, generating your network layer, and deploying the results.
+DuckDeploy is a zero-boilerplate, API-first React template built with Vite and TypeScript.
 
-Built for developers who want to maintain a single source of truth without writing repetitive `fetch` boilerplate, DuckDeploy bridges the gap between your backend OpenAPI specification and your React user interface.
+## How it works
 
-## 🚀 How It Works
+1. Update `openapi.yaml` with your API specification.
+2. Run `npm run dev` locally (or `npm run build` in CI).
+3. Orval generates TypeScript models and React Query hooks into `src/api/`.
+4. GitHub Actions builds the app and deploys it to GitHub Pages.
 
-This repository is wired up with a seamless GitHub Actions pipeline. When you push an updated `openapi.yaml` to the `main` branch:
+## Scripts
 
-1. **Fetch & Generate:** Orval automatically reads the spec and generates TypeScript models, Axios clients, and ready-to-use TanStack React Query hooks.
-2. **Build:** Vite compiles the React application, seamlessly integrating the newly generated API client.
-3. **Deploy:** The pipeline automatically publishes the compiled static site directly to GitHub Pages.
+- `npm run dev` - Generates the API client and starts Vite dev server.
+- `npm run generate` - Regenerates API client code from `openapi.yaml`.
+- `npm run build` - Generates API client code, type-checks, and builds for production.
+- `npm run lint` - Runs ESLint.
 
-## 🛠️ The Tech Stack
+## Deployment
 
-* **Build Tool:** [Vite](https://vitejs.dev/) (React + TypeScript)
-* **API Generator:** [Orval](https://orval.dev/)
-* **State Management:** [TanStack Query (React Query)](https://tanstack.com/query/latest)
-* **HTTP Client:** [Axios](https://axios-http.com/)
-* **CI/CD:** GitHub Actions & GitHub Pages
+The GitHub Actions workflow in `.github/workflows/deploy-pages.yml` runs on pushes to `main` and on manual dispatch. It automatically:
 
-## 📦 Usage
-
-1. Clone or fork this template.
-2. Replace the `openapi.yaml` in the root directory with your own API specification.
-3. Push to `main`.
-4. Your fully typed, automatically generated frontend will be live on GitHub Pages!
-
-*Note: The generated API client is intentionally ignored in version control (`src/api/`). It is generated dynamically during the local development process (`npm run dev`) and the CI/CD build step.*
+- Installs dependencies
+- Generates TypeScript models and React Query hooks from `openapi.yaml`
+- Builds the app
+- Deploys the `dist` output to GitHub Pages
