@@ -17,7 +17,7 @@ const AutoFormContent = ({ resourceDef, isCreate }: { resourceDef: any; isCreate
   return (
     <>
       {Object.entries(properties).map(([name, propSchema]) =>
-        mapSchemaToInput(name, propSchema, required.includes(name))
+        mapSchemaToInput(name, propSchema, required.includes(name), 0)
       )}
     </>
   );
