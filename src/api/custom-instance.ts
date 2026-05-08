@@ -33,17 +33,17 @@ export const customInstance = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig,
 ): Promise<T> => {
-  const source = axios.CancelToken.source();
+  const controller = new AbortController();
 
   const promise = AXIOS_INSTANCE({
     ...config,
     ...options,
-    cancelToken: source.token,
+    signal: controller.signal,
   }).then(({ data }) => data);
 
   // @ts-expect-error - Orval expects cancel to exist on the returned promise.
   promise.cancel = () => {
-    source.cancel('Query was cancelled');
+    controller.abort();
   };
 
   return promise;
