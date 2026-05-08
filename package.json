@@ -4,11 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run generate && vite",
-    "build": "vite build",
+    "dev": "npm run generate && npm run compile:schema && vite",
+    "build": "npm run generate && npm run compile:schema && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate": "orval --config ./orval.config.ts"
+    "generate": "orval --config ./orval.config.ts",
+    "compile:schema": "node ./scripts/compiler/compile-schema.mjs"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^15.3.5",
