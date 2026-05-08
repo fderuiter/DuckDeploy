@@ -36,9 +36,12 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const worker = new SchemaParserWorkerConstructor();
 
     worker.onmessage = (event: MessageEvent<SchemaParserResponse>) => {
-      worker.terminate();
+      if (cancelledRef.current) {
+        worker.terminate();
+        return;
+      }
 
-      if (cancelledRef.current) return;
+      worker.terminate();
 
       if (event.data.type === 'error') {
         setError(new Error(event.data.error));
@@ -55,9 +58,12 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     worker.onerror = (err) => {
-      worker.terminate();
+      if (cancelledRef.current) {
+        worker.terminate();
+        return;
+      }
 
-      if (cancelledRef.current) return;
+      worker.terminate();
 
       const parts: string[] = [];
       if (err.message) parts.push(err.message);
