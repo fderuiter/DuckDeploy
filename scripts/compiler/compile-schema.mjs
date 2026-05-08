@@ -106,7 +106,7 @@ const compile = async () => {
 
   const dereferenced = await $RefParser.dereference(parsed, {
     dereference: {
-      circular: false,
+      circular: 'ignore',
     },
     mutateInputSchema: false,
   });
