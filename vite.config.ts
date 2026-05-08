@@ -34,7 +34,10 @@ const yamlCloakingPlugin = (): Plugin => {
       const absoluteSource = source.startsWith('/')
         ? source
         : path.resolve(path.dirname(importer), source);
-      if (BLOCKED_PATTERNS.some((re) => re.test(absoluteSource))) {
+      // Strip query strings and hash fragments before matching so patterns like
+      // `openapi.yaml?raw` or `schema.yml?url` are caught correctly.
+      const cleanSource = absoluteSource.replace(/[?#].*$/, '');
+      if (BLOCKED_PATTERNS.some((re) => re.test(cleanSource))) {
         this.error(
           `[yaml-cloaking] Blocked import of "${source}" from "${importer}". ` +
             'Raw OpenAPI/build-script files must not be bundled into the browser runtime.',
@@ -55,7 +58,9 @@ export default defineConfig({
     rollupOptions: {
       // Explicitly treat YAML and build-script files as external so that any
       // import that slips past the plugin cannot be bundled.
-      external: [/\.ya?ml$/, /\/scripts\//],
+      // The regex uses `(?:[?#]|$)` so that query-suffixed IDs like
+      // `openapi.yaml?raw` are also matched.
+      external: [/\.ya?ml(?:[?#]|$)/i, /\/scripts\/(?:[^?#].*)?(?:[?#]|$)/],
     },
   },
 });

@@ -37,8 +37,10 @@ const OPENAPI_CANDIDATES = [
 
 // Components that accept enum constraints.
 const ENUM_COMPONENTS = new Set(['<SelectInput />', '<SelectField />', '<PolymorphicInput />']);
-// Components that accept text-based constraints (minLength / pattern).
-const TEXT_COMPONENTS = new Set(['<TextInput />', '<TextField />']);
+// Allow-list of INPUT components that can enforce text constraints (minLength / pattern).
+// Display components (ending with "Field") are read-only — they render existing data
+// and are not responsible for validating it, so they are excluded from this check.
+const TEXT_CONSTRAINT_COMPONENTS = new Set(['<TextInput />', '<PolymorphicInput />']);
 
 const loadMatrix = () => {
   if (!fs.existsSync(MATRIX_PATH)) {
@@ -64,9 +66,27 @@ const loadOpenApi = () => {
 };
 
 /**
+ * Resolve a JSON Reference ($ref) to the schema node it points to within the
+ * given spec object.  Returns null when the ref is invalid or unresolvable.
+ */
+const resolveRef = (spec, ref) => {
+  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
+  const parts = ref.slice(2).split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~'));
+  let current = spec;
+  for (const part of parts) {
+    if (!current || typeof current !== 'object' || !(part in current)) return null;
+    current = current[part];
+  }
+  return current;
+};
+
+/**
  * Recursively collect all schema properties that bear constraints we want to
- * validate (enum, minLength, pattern), returning an array of { pointer, name,
+ * validate (enum, minLength, pattern), returning an array of { pointer,
  * constraintType } descriptors.
+ *
+ * $ref nodes are resolved inline so that constraints defined in shared
+ * component schemas are correctly discovered even in $ref-heavy specs.
  */
 const collectConstraintBearingFields = (spec) => {
   const results = [];
@@ -76,8 +96,27 @@ const collectConstraintBearingFields = (spec) => {
 
   const escapeSegment = (s) => String(s).replace(/~/g, '~0').replace(/\//g, '~1');
 
-  const walk = (schema, pointer) => {
+  const walk = (schema, pointer, visitedRefs = new Set()) => {
     if (!schema || typeof schema !== 'object') return;
+
+    // Follow $ref — keep the original pointer so matrix lookups still match
+    // the path-level location where the field appears in the API.
+    if (typeof schema.$ref === 'string') {
+      if (visitedRefs.has(schema.$ref)) return; // prevent infinite loops
+      const resolved = resolveRef(spec, schema.$ref);
+      if (!resolved) return;
+      visitedRefs.add(schema.$ref);
+      walk(resolved, pointer, visitedRefs);
+      visitedRefs.delete(schema.$ref);
+      return;
+    }
+
+    // Merge allOf by walking each member at the same pointer position.
+    if (Array.isArray(schema.allOf)) {
+      for (let i = 0; i < schema.allOf.length; i++) {
+        walk(schema.allOf[i], pointer, visitedRefs);
+      }
+    }
 
     if (Array.isArray(schema.enum) && schema.enum.length > 0) {
       results.push({ pointer, constraintType: 'enum' });
@@ -91,20 +130,17 @@ const collectConstraintBearingFields = (spec) => {
 
     if (schema.properties && typeof schema.properties === 'object') {
       for (const [propName, propSchema] of Object.entries(schema.properties)) {
-        walk(propSchema, `${pointer}/properties/${escapeSegment(propName)}`);
+        walk(propSchema, `${pointer}/properties/${escapeSegment(propName)}`, visitedRefs);
       }
     }
     if (schema.items && typeof schema.items === 'object') {
-      walk(schema.items, `${pointer}/items`);
-    }
-    if (Array.isArray(schema.allOf)) {
-      schema.allOf.forEach((s, i) => walk(s, `${pointer}/allOf/${i}`));
+      walk(schema.items, `${pointer}/items`, visitedRefs);
     }
     if (Array.isArray(schema.oneOf)) {
-      schema.oneOf.forEach((s, i) => walk(s, `${pointer}/oneOf/${i}`));
+      schema.oneOf.forEach((s, i) => walk(s, `${pointer}/oneOf/${i}`, visitedRefs));
     }
     if (Array.isArray(schema.anyOf)) {
-      schema.anyOf.forEach((s, i) => walk(s, `${pointer}/anyOf/${i}`));
+      schema.anyOf.forEach((s, i) => walk(s, `${pointer}/anyOf/${i}`, visitedRefs));
     }
   };
 
@@ -187,25 +223,14 @@ const validate = () => {
     }
     if (
       (constraintType === 'minLength' || constraintType === 'pattern') &&
-      !TEXT_COMPONENTS.has(entry.component)
+      // Only check INPUT components; display/Field components are read-only
+      // and are not responsible for enforcing schema constraints.
+      entry.component.includes('Input') &&
+      !TEXT_CONSTRAINT_COMPONENTS.has(entry.component)
     ) {
-      // Only flag when the component is a non-text, non-polymorphic component
-      // (e.g. a BooleanInput receiving a string constraint is suspicious)
-      const nonTextComponents = new Set([
-        '<BooleanInput />',
-        '<BooleanField />',
-        '<NumberInput />',
-        '<NumberField />',
-        '<DateInput />',
-        '<DateField />',
-        '<ArrayInput />',
-        '<ArrayField />',
-      ]);
-      if (nonTextComponents.has(entry.component)) {
-        violations.push(
-          `CONSTRAINT MISMATCH (${constraintType}): pointer="${pointer}" mapped to "${entry.component}" which cannot enforce text constraints`,
-        );
-      }
+      violations.push(
+        `CONSTRAINT MISMATCH (${constraintType}): pointer="${pointer}" mapped to "${entry.component}" which cannot enforce text constraints`,
+      );
     }
   }
 

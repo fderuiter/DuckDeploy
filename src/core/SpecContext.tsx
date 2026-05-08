@@ -24,34 +24,14 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const loadSpec = async () => {
       try {
-        // ── 1. Fetch the compiled JSON schema (main thread, small payload) ──
         const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
-        const schemaResponse = await fetch(schemaUrl, {
-          headers: { Accept: 'application/json' },
-        });
-
-        if (!schemaResponse.ok) {
-          throw new Error(
-            `Failed to load compiled schema: ${schemaResponse.status} ${schemaResponse.statusText}`,
-          );
-        }
-
-        const parsedJson = await schemaResponse.json();
-        if (!parsedJson || typeof parsedJson !== 'object') {
-          throw new Error('Failed to parse compiled OpenAPI schema');
-        }
-
-        if (!cancelled) setSpec(parsedJson);
-
-        // ── 2. Offload manifest fetch + integrity check to a Web Worker ─────
-        //    (Phase 6.1 – Web Worker AST Offloading)
-        //    The worker fetches ui-manifest.json as a raw ArrayBuffer, verifies
-        //    the SHA-256 hash injected at build time, and transfers the buffer
-        //    back to this thread via a Transferable Object (zero-copy).
         const manifestUrl = `${import.meta.env.BASE_URL}ui-manifest.json`;
         const expectedHash = import.meta.env.VITE_MANIFEST_HASH as string;
 
-        await new Promise<void>((resolve, reject) => {
+        // ── Start both requests concurrently ─────────────────────────────────
+        // The worker begins fetching + hashing ui-manifest.json in parallel
+        // while the main thread fetches and parses schema.json.
+        const manifestPromise = new Promise<void>((resolve, reject) => {
           const worker = new ManifestWorkerConstructor();
 
           worker.onmessage = (event: MessageEvent<ManifestWorkerResponse>) => {
@@ -78,14 +58,43 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
           worker.onerror = (err) => {
             worker.terminate();
-            const detail = err.message || err.filename
-              ? `${err.message} (${err.filename}:${err.lineno})`
-              : 'Manifest worker encountered an unexpected error';
-            reject(new Error(detail));
+            const parts: string[] = [];
+            if (err.message) parts.push(err.message);
+            if (err.filename) {
+              parts.push(err.lineno != null ? `(${err.filename}:${err.lineno})` : `(${err.filename})`);
+            }
+            reject(
+              new Error(
+                parts.length > 0
+                  ? parts.join(' ')
+                  : 'Manifest worker encountered an unexpected error',
+              ),
+            );
           };
 
           worker.postMessage({ url: manifestUrl, expectedHash });
         });
+
+        // ── 1. Schema fetch (main thread) ─────────────────────────────────────
+        const schemaResponse = await fetch(schemaUrl, {
+          headers: { Accept: 'application/json' },
+        });
+
+        if (!schemaResponse.ok) {
+          throw new Error(
+            `Failed to load compiled schema: ${schemaResponse.status} ${schemaResponse.statusText}`,
+          );
+        }
+
+        const parsedJson = await schemaResponse.json();
+        if (!parsedJson || typeof parsedJson !== 'object') {
+          throw new Error('Failed to parse compiled OpenAPI schema');
+        }
+
+        if (!cancelled) setSpec(parsedJson);
+
+        // ── 2. Await the manifest worker (likely already done by now) ─────────
+        await manifestPromise;
       } catch (err) {
         if (!cancelled) {
           console.error('Error loading compiled OpenAPI schema:', err);

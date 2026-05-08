@@ -1,16 +1,15 @@
+/// <reference lib="webworker" />
 /**
  * manifest.worker.ts – Phase 6.1: Web Worker AST Offloading
  *
  * Runs off the main thread to:
- *   1. Fetch ui-manifest.json as a raw ArrayBuffer (avoids a second
- *      main-thread fetch and keeps large-schema I/O off the UI thread).
+ *   1. Fetch ui-manifest.json as a raw ArrayBuffer (keeps large-schema
+ *      network I/O and SHA-256 hashing off the UI thread).
  *   2. Verify the SHA-256 integrity hash injected at build time.
  *   3. Transfer the verified ArrayBuffer back to the main thread via a
  *      Transferable Object (zero-copy move, no memory duplication).
  *
- * The main thread decodes + parses the transferred buffer, keeping the
- * expensive JSON.parse() on a React render cycle that the browser can
- * schedule independently of the main event loop.
+ * The main thread then decodes the transferred buffer and parses the JSON.
  */
 
 export type ManifestWorkerRequest = {
@@ -65,7 +64,7 @@ self.onmessage = async (event: MessageEvent<ManifestWorkerRequest>) => {
     // Transfer the buffer to the main thread — zero-copy move.
     // After this call the buffer is detached inside the worker and the main
     // thread owns the underlying memory region.
-    (self as unknown as Worker).postMessage(
+    self.postMessage(
       { type: 'success', buffer } satisfies ManifestWorkerResponse,
       [buffer],
     );
