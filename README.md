@@ -14,7 +14,8 @@ DuckDeploy is a zero-boilerplate, API-first React template built with Vite and T
 - `npm run dev` - Generates the API client, compiles OpenAPI to static schema JSON, and starts Vite dev server.
 - `npm run generate` - Regenerates API client code from `openapi.yaml`.
 - `npm run compile:schema` - Compiles `openapi.yaml` into optimized `public/schema.json`.
-- `npm run build` - Generates API client code, compiles schema JSON, and builds for production.
+- `npm run build` - Generates API client code + UI manifest, compiles schema JSON, builds for production, and verifies no raw OpenAPI artifacts leak into `dist`.
+- `npm run test:fuzz` - Runs Schemathesis property-based fuzz testing against the OpenAPI contract.
 - `npm run lint` - Runs ESLint.
 
 ## Deployment

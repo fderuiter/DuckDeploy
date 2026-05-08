@@ -14,6 +14,7 @@ export interface ResourceDefinition {
   showResponseSchema?: any;
   createRequestBodySchema?: any;
   editRequestBodySchema?: any;
+  listQueryParams?: string[];
 }
 
 const resolveResourceName = (path: string, pathItem: any, methods: string[]): string | null => {
@@ -61,6 +62,7 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
         hasShow: false,
         hasEdit: false,
         hasDelete: false,
+        listQueryParams: [],
       };
     }
 
@@ -86,6 +88,13 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
         return operation.requestBody?.content?.['application/json']?.schema || null;
       };
 
+      const getQueryParams = (): string[] => {
+        if (!Array.isArray(operation.parameters)) return [];
+        return operation.parameters
+          .filter((parameter: any) => parameter && parameter.in === 'query' && typeof parameter.name === 'string')
+          .map((parameter: any) => parameter.name);
+      };
+
       if (method === 'get') {
         if (isInstancePath) {
           res.hasShow = true;
@@ -95,6 +104,7 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
           res.hasList = true;
           res.listOperationId = operationId;
           res.listResponseSchema = getResponseSchema();
+          res.listQueryParams = getQueryParams();
         }
       } else if (method === 'post' && !isInstancePath) {
         res.hasCreate = true;
