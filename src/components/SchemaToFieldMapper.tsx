@@ -15,13 +15,212 @@ import {
   SingleFieldList,
   ChipField,
   ArrayInput,
-  SimpleFormIterator
+  SimpleFormIterator,
+  FormDataConsumer,
+  required
 } from 'react-admin';
+import { get } from 'lodash';
 import { OpenAPIV3 } from 'openapi-types';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
 import { JsonEditorInput } from './custom/JsonEditorInput';
 import { TerminologyLookupInput } from './custom/TerminologyLookupInput';
+
+type ValidationDescriptor = {
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  pattern?: string;
+};
+
+export type PrecomputedFieldDescriptor = {
+  kind: 'reference' | 'enum' | 'boolean' | 'number' | 'date' | 'text' | 'array';
+  source: string;
+  reference?: string;
+  choices?: Array<{ id: string; name: string }>;
+};
+
+export type PrecomputedInputDescriptor = {
+  kind:
+    | 'custom_json_editor'
+    | 'custom_terminology_lookup'
+    | 'polymorphic'
+    | 'object'
+    | 'array'
+    | 'reference'
+    | 'enum'
+    | 'boolean'
+    | 'number'
+    | 'date'
+    | 'text';
+  source: string;
+  isRequired: boolean;
+  title?: string;
+  domain?: string;
+  reference?: string;
+  choices?: Array<{ id: string; name: string }>;
+  options?: Array<{ label: string; node: PrecomputedInputDescriptor }>;
+  children?: PrecomputedInputDescriptor[];
+  items?: PrecomputedInputDescriptor[];
+  validation?: ValidationDescriptor;
+};
+
+const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) => {
+  const validation = descriptor.validation || {};
+  const schemaForValidation = {
+    minLength: validation.minLength,
+    maxLength: validation.maxLength,
+    minimum: validation.minimum,
+    maximum: validation.maximum,
+    pattern: validation.pattern,
+  } as OpenAPIV3.SchemaObject;
+
+  return buildValidators(schemaForValidation, descriptor.isRequired);
+};
+
+export const renderPrecomputedField = (
+  node: PrecomputedFieldDescriptor,
+  keyPrefix: string = node.source
+): React.ReactNode => {
+  const key = keyPrefix || node.source || 'field';
+
+  if (node.kind === 'reference') {
+    const reference = node.reference || node.source;
+    return (
+      <ReferenceField key={key} source={node.source} reference={reference}>
+        <TextField source="id" />
+      </ReferenceField>
+    );
+  }
+
+  if (node.kind === 'enum') {
+    return <SelectField key={key} source={node.source} choices={node.choices || []} />;
+  }
+
+  if (node.kind === 'boolean') {
+    return <BooleanField key={key} source={node.source} />;
+  }
+
+  if (node.kind === 'number') {
+    return <NumberField key={key} source={node.source} />;
+  }
+
+  if (node.kind === 'date') {
+    return <DateField key={key} source={node.source} />;
+  }
+
+  if (node.kind === 'array') {
+    return (
+      <ArrayField key={key} source={node.source}>
+        <SingleFieldList>
+          <ChipField source="id" />
+        </SingleFieldList>
+      </ArrayField>
+    );
+  }
+
+  return <TextField key={key} source={node.source} />;
+};
+
+export const renderPrecomputedInput = (
+  node: PrecomputedInputDescriptor,
+  keyPrefix: string = node.source
+): React.ReactNode => {
+  const validators = buildValidatorsFromDescriptor(node);
+  const key = keyPrefix || node.source || 'input';
+  const commonProps = {
+    key,
+    source: node.source,
+    validate: validators,
+    isRequired: node.isRequired,
+  };
+
+  if (node.kind === 'custom_json_editor') {
+    return <JsonEditorInput {...commonProps} />;
+  }
+
+  if (node.kind === 'custom_terminology_lookup') {
+    return (
+      <TerminologyLookupInput
+        {...commonProps}
+        domain={node.domain}
+      />
+    );
+  }
+
+  if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
+    const typeSource = `${node.source}__schemaIndex`;
+    const choices = node.options.map((option, index) => ({ id: index, name: option.label || `Option ${index + 1}` }));
+
+    return (
+      <div key={key} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
+        <SelectInput
+          source={typeSource}
+          choices={choices}
+          label="Select Type"
+          validate={node.isRequired ? [required()] : []}
+        />
+
+        <FormDataConsumer>
+          {({ formData }) => {
+            const selectedIndex = get(formData, typeSource);
+            if (selectedIndex === undefined) return null;
+            const selectedNode = node.options?.[selectedIndex]?.node;
+            if (!selectedNode) return null;
+            return renderPrecomputedInput(selectedNode, `${key}.${selectedIndex}`);
+          }}
+        </FormDataConsumer>
+      </div>
+    );
+  }
+
+  if (node.kind === 'object') {
+    return (
+      <div key={key} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
+        <h4>{node.title || node.source.split('.').pop() || node.source}</h4>
+        {(node.children || []).map((child, index) => renderPrecomputedInput(child, `${key}.${child.source || index}`))}
+      </div>
+    );
+  }
+
+  if (node.kind === 'array') {
+    return (
+      <ArrayInput {...commonProps}>
+        <SimpleFormIterator inline>
+          {(node.items || []).map((item, index) => renderPrecomputedInput(item, `${key}.item.${index}`))}
+        </SimpleFormIterator>
+      </ArrayInput>
+    );
+  }
+
+  if (node.kind === 'reference') {
+    const reference = node.reference || node.source.replace(/_id$/i, '').replace(/Id$/, '');
+    return (
+      <ReferenceInput {...commonProps} reference={reference}>
+        <SelectInput optionText="id" />
+      </ReferenceInput>
+    );
+  }
+
+  if (node.kind === 'enum') {
+    return <SelectInput {...commonProps} choices={node.choices || []} />;
+  }
+
+  if (node.kind === 'boolean') {
+    return <BooleanInput {...commonProps} />;
+  }
+
+  if (node.kind === 'number') {
+    return <NumberInput {...commonProps} />;
+  }
+
+  if (node.kind === 'date') {
+    return <DateInput {...commonProps} />;
+  }
+
+  return <TextInput {...commonProps} />;
+};
 
 export const mapSchemaToField = (name: string, property: any) => {
   // Check for reference

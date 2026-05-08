@@ -1,10 +1,24 @@
 
 import { Create, Edit, SimpleForm, TextInput } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
-import { mapSchemaToInput } from './SchemaToFieldMapper';
+import { mapSchemaToInput, renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { discoverResources } from '../core/discovery';
+import { precomputedSchemaComponentTree } from '../generated/schemaComponentTree';
 
 const AutoFormContent = ({ resourceDef, isCreate }: { resourceDef: any; isCreate: boolean }) => {
+  const precomputedResource = precomputedSchemaComponentTree[resourceDef.name as keyof typeof precomputedSchemaComponentTree];
+  const precomputedNodes = (isCreate ? precomputedResource?.createForm : precomputedResource?.editForm) as
+    | PrecomputedInputDescriptor[]
+    | undefined;
+
+  if (precomputedNodes && precomputedNodes.length > 0) {
+    return (
+      <>
+        {precomputedNodes.map((node, index) => renderPrecomputedInput(node, `${resourceDef.name}.${node.source || index}`))}
+      </>
+    );
+  }
+
   const schema = isCreate ? resourceDef.createRequestBodySchema : resourceDef.editRequestBodySchema;
 
   if (!schema || !schema.properties) {

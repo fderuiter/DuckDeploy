@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate": "orval --config ./orval.config.ts"
+    "generate": "orval --config ./orval.config.ts && node ./scripts/generate-schema-component-tree.mjs"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^15.3.5",
