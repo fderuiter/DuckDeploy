@@ -167,8 +167,8 @@ const ensureRecordId = (record: unknown, fallbackId: unknown) => {
 
   const typedRecord = record as Record<string, unknown>;
   return {
-    id: typedRecord.id ?? typedRecord._id ?? typedRecord.uuid ?? fallbackId,
     ...typedRecord,
+    id: typedRecord.id ?? typedRecord._id ?? typedRecord.uuid ?? fallbackId,
   };
 };
 

@@ -400,9 +400,14 @@ const buildUiManifest = (spec) => {
       if (!operation || typeof operation !== 'object') continue;
 
       if (method === 'get' && !isInstancePath) {
-        const listSchema =
-          getSchemaFromContent(operation.responses?.['200']?.content) ||
-          getSchemaFromContent(operation.responses?.['201']?.content);
+        const listResponseStatus = operation.responses?.['200']?.content
+          ? '200'
+          : operation.responses?.['201']?.content
+            ? '201'
+            : null;
+        const listSchema = listResponseStatus
+          ? getSchemaFromContent(operation.responses?.[listResponseStatus]?.content)
+          : null;
 
         const properties = extractListProperties(listSchema, visitor);
         resources[resourceName].listFields = Object.entries(properties)
@@ -411,7 +416,7 @@ const buildUiManifest = (spec) => {
               fieldName,
               propertySchema,
               { refDepthMap: {} },
-              `#/paths/${escapeJsonPointer(apiPath)}/${method}/responses/200/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
+              `#/paths/${escapeJsonPointer(apiPath)}/${method}/responses/${listResponseStatus || '200'}/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
           )
           .filter(Boolean);

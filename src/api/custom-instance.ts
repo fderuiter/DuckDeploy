@@ -53,20 +53,6 @@ const normalizeConfig = (
   return { ...input, ...options };
 };
 
-const toPlainHeaders = (headers: unknown): Record<string, string> => {
-  if (headers instanceof AxiosHeaders) {
-    return headers.toJSON() as Record<string, string>;
-  }
-
-  if (headers && typeof headers === 'object') {
-    return Object.fromEntries(
-      Object.entries(headers as Record<string, unknown>).map(([key, value]) => [key, String(value)]),
-    );
-  }
-
-  return {};
-};
-
 export const customInstance = <T>(
   config: RequestInput,
   options?: AxiosRequestConfig,
@@ -77,11 +63,7 @@ export const customInstance = <T>(
   const promise = AXIOS_INSTANCE({
     ...normalizedConfig,
     signal: controller.signal,
-  }).then(({ data, status, headers }) => ({
-    data,
-    status,
-    headers: toPlainHeaders(headers),
-  })) as CancelablePromise<T>;
+  }).then(({ data }) => data) as CancelablePromise<T>;
 
   promise.cancel = () => {
     controller.abort();

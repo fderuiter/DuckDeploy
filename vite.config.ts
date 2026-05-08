@@ -1,9 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const manifestHashPath = path.resolve(__dirname, 'public', 'ui-manifest.sha256');
+const configDir = path.dirname(fileURLToPath(import.meta.url));
+const manifestHashPath = path.resolve(configDir, 'public', 'ui-manifest.sha256');
 const manifestHash = fs.existsSync(manifestHashPath)
   ? fs.readFileSync(manifestHashPath, 'utf8').trim()
   : '';
