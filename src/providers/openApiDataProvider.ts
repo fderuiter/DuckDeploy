@@ -1,4 +1,6 @@
-import type { DataProvider, GetListParams, GetListResult } from 'react-admin';
+import { isAxiosError } from 'axios';
+import { HttpError, type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
+import { AXIOS_INSTANCE } from '../api/custom-instance';
 import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 
@@ -42,6 +44,89 @@ const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unkn
 
   return acc;
 }, {});
+
+const extractErrorMessage = (payload: unknown): string | undefined => {
+  if (!payload) {
+    return undefined;
+  }
+
+  if (typeof payload === 'string' && payload.trim().length > 0) {
+    return payload;
+  }
+
+  if (Array.isArray(payload)) {
+    for (const entry of payload) {
+      const message = extractErrorMessage(entry);
+      if (message) {
+        return message;
+      }
+    }
+    return undefined;
+  }
+
+  if (typeof payload === 'object') {
+    const source = payload as Record<string, unknown>;
+    for (const candidate of ['message', 'detail', 'title', 'error', 'error_description']) {
+      const value = source[candidate];
+      if (typeof value === 'string' && value.trim().length > 0) {
+        return value;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const normalizeProviderError = (error: unknown): unknown => {
+  if (error instanceof HttpError) {
+    return error;
+  }
+
+  if (!isAxiosError(error)) {
+    return error;
+  }
+
+  const status = typeof error.response?.status === 'number' ? error.response.status : 0;
+  const responseData = error.response?.data;
+  const message =
+    extractErrorMessage(responseData) ??
+    error.message ??
+    'An unexpected error occurred while communicating with the API.';
+
+  const body =
+    responseData && typeof responseData === 'object' && !Array.isArray(responseData)
+      ? { ...(responseData as Record<string, unknown>), message }
+      : { message, detail: responseData ?? null };
+
+  return new HttpError(message, status, body);
+};
+
+const ERROR_INTERCEPTOR_ID_KEY = '__errorInterceptorId';
+type InterceptorAwareAxiosInstance = typeof AXIOS_INSTANCE & { [ERROR_INTERCEPTOR_ID_KEY]?: number };
+const interceptorAwareAxiosInstance = AXIOS_INSTANCE as InterceptorAwareAxiosInstance;
+
+const installErrorNormalizationInterceptor = () => {
+  if (typeof interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY] === 'number') {
+    return;
+  }
+
+  interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY] = AXIOS_INSTANCE.interceptors.response.use(
+    (response) => response,
+    (error) => Promise.reject(normalizeProviderError(error)),
+  );
+};
+
+export const resetErrorInterceptor = () => {
+  const interceptorId = interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY];
+  if (typeof interceptorId !== 'number') {
+    return;
+  }
+
+  AXIOS_INSTANCE.interceptors.response.eject(interceptorId);
+  delete interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY];
+};
+
+installErrorNormalizationInterceptor();
 
 export const setResourceDefinitions = (
   resources: ResourceDefinition[],
