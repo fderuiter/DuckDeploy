@@ -282,7 +282,7 @@ const renderPrecomputedInputDefault = (
     return <DateInput {...commonProps} />;
   }
 
-  return <TextInput {...commonProps} />;
+  return <TextInput {...commonProps} parse={(value: any) => (value === '' ? null : value)} />;
 };
 
 export const renderPrecomputedInput = (
@@ -448,11 +448,11 @@ const mapSchemaToInputDefault = (
     if (property.format === 'date' || property.format === 'date-time') {
       return <DateInput {...commonProps} />;
     }
-    return <TextInput {...commonProps} />;
+    return <TextInput {...commonProps} parse={(value: any) => (value === '' ? null : value)} />;
   }
 
   // Fallback
-  return <TextInput {...commonProps} />;
+  return <TextInput {...commonProps} parse={(value: any) => (value === '' ? null : value)} />;
 };
 
 export const mapSchemaToInput = (
