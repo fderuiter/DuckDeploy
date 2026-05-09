@@ -4,6 +4,7 @@ import { adaptOutboundPayload } from './outboundAdapter';
 
 let resourceMap: Record<string, ResourceDefinition> = {};
 let operationFunctionMap: Record<string, string> = {};
+const ORVAL_FACTORY_EXPORT_NAME = /^get[A-Z]/;
 
 const generatedModules = import.meta.glob('../api/generated/**/*.ts', { eager: true }) as Record<
   string,
@@ -18,7 +19,10 @@ const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unkn
   for (const [exportName, exportedValue] of Object.entries(moduleExports)) {
     acc[exportName] = exportedValue;
 
-    if (typeof exportedValue === 'function' && exportedValue.length === 0 && /^get[A-Z]/.test(exportName)) {
+    // Orval's axios + tags-split output exports `get<Tag>()` factories that return
+    // objects containing the actual per-operation functions. Flatten them so the
+    // precomputed manifest map can resolve directly to callable functions.
+    if (typeof exportedValue === 'function' && ORVAL_FACTORY_EXPORT_NAME.test(exportName)) {
       try {
         const groupedFunctions = (exportedValue as () => unknown)();
         if (groupedFunctions && typeof groupedFunctions === 'object') {
@@ -28,8 +32,10 @@ const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unkn
             }
           }
         }
-      } catch {
-        // Ignore non-factory exports.
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn(`Failed to inspect generated API export "${exportName}".`, error);
+        }
       }
     }
   }
@@ -55,7 +61,10 @@ const callApiFunction = async (operationKey: string | undefined, ...args: unknow
 
   const functionName = operationFunctionMap[operationKey];
   if (!functionName) {
-    throw new Error(`Generated API function mapping for operation "${operationKey}" not found.`);
+    throw new Error(
+      `Generated API function mapping for operation "${operationKey}" not found. ` +
+        'Ensure ui-manifest.json is up to date (run npm run generate).',
+    );
   }
 
   const fn = apiFunctions[functionName];

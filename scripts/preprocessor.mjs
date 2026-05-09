@@ -396,6 +396,17 @@ const buildGeneratedOperationMap = () => {
   const files = listGeneratedClientFiles(GENERATED_CLIENT_PATH).filter(
     (filePath) => !filePath.includes(`${path.sep}model${path.sep}`),
   );
+  if (files.length === 0) {
+    throw new Error(
+      `No generated API client files found at ${GENERATED_CLIENT_PATH}. Run "npm run generate:api" before build:manifest.`,
+    );
+  }
+
+  let operationCount = 0;
+  // Parse Orval's generated arrow-function operations and extract HTTP method + URL.
+  // Expected format (orval v8 axios + tags-split):
+  //   const operationName = (...) => { return customInstance(... {url: `/path`, method: 'GET' ...}) }
+  // Keep this regex in sync with generated output if Orval generation templates change.
   const operationRegex =
     /(?:^|\n)\s*const\s+([A-Za-z0-9_$]+)\s*=\s*\([\s\S]*?\)\s*=>\s*\{\s*return\s+customInstance<[\s\S]*?>\(\s*\{url:\s*`([^`]+)`\s*,\s*method:\s*'([A-Z]+)'/gm;
 
@@ -405,8 +416,15 @@ const buildGeneratedOperationMap = () => {
 
     while ((match = operationRegex.exec(source)) !== null) {
       const [, functionName, url, method] = match;
-      clients[`${method} ${url}`] = functionName;
+      // Orval emits template placeholders as `${id}`, while OpenAPI paths use `{id}`.
+      const normalizedUrl = url.replace(/\$\{([^}]+)\}/g, '{$1}');
+      clients[`${method} ${normalizedUrl}`] = functionName;
+      operationCount += 1;
     }
+  }
+
+  if (files.length > 0 && operationCount === 0) {
+    throw new Error('Failed to extract operations from generated Orval clients. Check generated output format.');
   }
 
   return clients;
