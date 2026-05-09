@@ -13,7 +13,7 @@ let resourceMap: Record<string, ResourceDefinition> = {};
 const buildCacheKey = (resource: string, action: string) => `${resource}:${action}`;
 
 const buildProbeUrl = (path: string) =>
-  path.replace(/\{([^/}]+)\}/g, (_match, parameterName: string) => `${AUTH_PROBE_ID}_${parameterName}`);
+  path.replace(/\{([^/}]+)\}/g, (_match, pathParam: string) => `${AUTH_PROBE_ID}_${pathParam}`);
 
 const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: ResourceAction): AxiosRequestConfig | null => {
   switch (action) {
@@ -22,6 +22,7 @@ const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: Resou
     case 'show':
       return resourceDefinition.showPath ? { method: 'get', url: buildProbeUrl(resourceDefinition.showPath) } : null;
     case 'create':
+      // Use OPTIONS for mutating actions so permission checks don't create, update, or delete data.
       return resourceDefinition.createPath ? { method: 'options', url: buildProbeUrl(resourceDefinition.createPath) } : null;
     case 'edit':
       return resourceDefinition.editPath
@@ -37,7 +38,7 @@ const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: Resou
 const probeAccess = async (resource: string, action: ResourceAction) => {
   const resourceDefinition = resourceMap[resource];
   if (!resourceDefinition) {
-    return true;
+    return false;
   }
 
   const requestConfig = buildProbeRequest(resourceDefinition, action);
@@ -50,6 +51,9 @@ const probeAccess = async (resource: string, action: ResourceAction) => {
     return true;
   } catch (error) {
     const normalizedStatus = getNormalizedErrorStatus(error);
+    if (typeof normalizedStatus !== 'number') {
+      return false;
+    }
     return normalizedStatus !== 401 && normalizedStatus !== 403;
   }
 };
