@@ -259,6 +259,8 @@ class OpenApiVisitor {
       const { $ref, ...overrides } = schema;
       const merged = mergeSchema(resolved, overrides);
       if (typeof schema.$ref === 'string' && !merged['x-origin-ref']) {
+        // Preserve the originating ref so discriminator.mapping values can be
+        // matched to normalized oneOf/anyOf variants later in visitFormNode.
         merged['x-origin-ref'] = schema.$ref;
       }
       return { schema: this.normalizeSchema(merged, pathState.context).schema, context };

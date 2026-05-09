@@ -24,7 +24,12 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
-import { areShallowObjectsEqual, cleanupPolymorphicObjectValue, resetPolymorphicValue } from './polymorphicState';
+import {
+  areShallowObjectsEqual,
+  cleanupPolymorphicObjectValue,
+  resetPolymorphicValue,
+  setPolymorphicDiscriminatorValue,
+} from './polymorphicState';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -222,16 +227,8 @@ const PrecomputedPolymorphicInput = ({
           shouldValidate: true,
         });
       }
-    } else if (node.discriminatorProperty && selectedDiscriminatorValue !== undefined) {
-      setValue(
-        node.source,
-        { [node.discriminatorProperty]: selectedDiscriminatorValue },
-        {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true,
-        },
-      );
+    } else {
+      setPolymorphicDiscriminatorValue(setValue, node.source, node.discriminatorProperty, selectedDiscriminatorValue);
     }
 
     previousSelectedIndexRef.current = selectedIndex;

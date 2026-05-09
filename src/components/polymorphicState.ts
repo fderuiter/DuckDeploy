@@ -46,3 +46,24 @@ export const resetPolymorphicValue = (
     shouldValidate: true,
   });
 };
+
+export const setPolymorphicDiscriminatorValue = (
+  setValue: SetValue,
+  source: string,
+  discriminatorProperty?: string,
+  discriminatorValue?: string,
+) => {
+  if (!discriminatorProperty || discriminatorValue === undefined) {
+    return;
+  }
+
+  setValue(
+    source,
+    { [discriminatorProperty]: discriminatorValue },
+    {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    },
+  );
+};

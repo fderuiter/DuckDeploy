@@ -3,7 +3,12 @@ import { OpenAPIV3 } from 'openapi-types';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { mapSchemaToInput } from './SchemaToFieldMapper';
-import { areShallowObjectsEqual, cleanupPolymorphicObjectValue, resetPolymorphicValue } from './polymorphicState';
+import {
+  areShallowObjectsEqual,
+  cleanupPolymorphicObjectValue,
+  resetPolymorphicValue,
+  setPolymorphicDiscriminatorValue,
+} from './polymorphicState';
 
 export const PolymorphicInput = ({
   source,
@@ -69,16 +74,8 @@ export const PolymorphicInput = ({
           shouldValidate: true,
         });
       }
-    } else if (discriminatorProperty && selectedDiscriminatorValue !== undefined) {
-      setValue(
-        source,
-        { [discriminatorProperty]: selectedDiscriminatorValue },
-        {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true,
-        },
-      );
+    } else {
+      setPolymorphicDiscriminatorValue(setValue, source, discriminatorProperty, selectedDiscriminatorValue);
     }
 
     previousSelectedIndexRef.current = selectedIndex;
