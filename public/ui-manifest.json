@@ -346,5 +346,17 @@
         }
       ]
     }
+  },
+  "operationFunctionMap": {
+    "api-search-suggest": "apiSearchSuggest",
+    "api-search-search": "apiSearchSearch",
+    "api-search-search_scopes": "apiSearchSearchScopes",
+    "api-search-implemented_by": "apiSearchImplementedBy",
+    "api-products-products-get_products": "apiProductsProductsGetProducts",
+    "api-about-get": "apiAboutGet",
+    "api-products-ct-get_packages": "apiProductsCtGetPackages",
+    "api-products-rule-get_all_catalogs": "apiProductsRuleGetAllCatalogs",
+    "api-about-lastupdated": "apiAboutLastupdated",
+    "api-about-maintenance": "apiAboutMaintenance"
   }
 }

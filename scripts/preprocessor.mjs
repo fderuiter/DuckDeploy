@@ -9,7 +9,8 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const MAX_REF_DEPTH = 3;
-const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch']);
+const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
+const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
 
 const INPUT_CANDIDATES = [
   path.join(repoRoot, 'openapi.yaml'),
@@ -369,6 +370,48 @@ const extractListProperties = (schema, visitor) => {
   return {};
 };
 
+const listGeneratedClientFiles = (directory) => {
+  if (!fs.existsSync(directory)) return [];
+
+  const entries = fs.readdirSync(directory, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...listGeneratedClientFiles(entryPath));
+      continue;
+    }
+
+    if (entry.isFile() && entryPath.endsWith('.ts')) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+};
+
+const buildGeneratedOperationMap = () => {
+  const clients = {};
+  const files = listGeneratedClientFiles(GENERATED_CLIENT_PATH).filter(
+    (filePath) => !filePath.includes(`${path.sep}model${path.sep}`),
+  );
+  const operationRegex =
+    /(?:^|\n)\s*const\s+([A-Za-z0-9_$]+)\s*=\s*\([\s\S]*?\)\s*=>\s*\{\s*return\s+customInstance<[\s\S]*?>\(\s*\{url:\s*`([^`]+)`\s*,\s*method:\s*'([A-Z]+)'/gm;
+
+  for (const filePath of files) {
+    const source = fs.readFileSync(filePath, 'utf8');
+    let match;
+
+    while ((match = operationRegex.exec(source)) !== null) {
+      const [, functionName, url, method] = match;
+      clients[`${method} ${url}`] = functionName;
+    }
+  }
+
+  return clients;
+};
+
 const buildUiManifest = (spec) => {
   if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
     return {
@@ -379,6 +422,8 @@ const buildUiManifest = (spec) => {
 
   const visitor = new OpenApiVisitor(spec, MAX_REF_DEPTH);
   const resources = {};
+  const generatedOperationMap = buildGeneratedOperationMap();
+  const operationFunctionMap = {};
 
   for (const [apiPath, pathItem] of Object.entries(spec.paths)) {
     if (!pathItem || typeof pathItem !== 'object') continue;
@@ -405,6 +450,15 @@ const buildUiManifest = (spec) => {
     for (const method of methods) {
       const operation = pathItem[method];
       if (!operation || typeof operation !== 'object') continue;
+
+      const operationKey =
+        typeof operation.operationId === 'string' && operation.operationId.trim().length > 0
+          ? operation.operationId
+          : `${method.toUpperCase()} ${apiPath}`;
+      const generatedFunctionName = generatedOperationMap[`${method.toUpperCase()} ${apiPath}`];
+      if (generatedFunctionName) {
+        operationFunctionMap[operationKey] = generatedFunctionName;
+      }
 
       if (method === 'get' && !isInstancePath) {
         const listResponseStatus = operation.responses?.['200']?.content
@@ -476,6 +530,7 @@ const buildUiManifest = (spec) => {
       version: 1,
       depthLimit: MAX_REF_DEPTH,
       resources,
+      operationFunctionMap,
     },
     traceabilityEntries: visitor.traceabilityEntries,
   };

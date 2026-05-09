@@ -3,6 +3,7 @@ import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 
 let resourceMap: Record<string, ResourceDefinition> = {};
+let operationFunctionMap: Record<string, string> = {};
 
 const generatedModules = import.meta.glob('../api/generated/**/*.ts', { eager: true }) as Record<
   string,
@@ -14,43 +15,56 @@ const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unkn
     return acc;
   }
 
-  Object.assign(acc, moduleExports);
+  for (const [exportName, exportedValue] of Object.entries(moduleExports)) {
+    acc[exportName] = exportedValue;
+
+    if (typeof exportedValue === 'function' && exportedValue.length === 0 && /^get[A-Z]/.test(exportName)) {
+      try {
+        const groupedFunctions = (exportedValue as () => unknown)();
+        if (groupedFunctions && typeof groupedFunctions === 'object') {
+          for (const [groupedName, groupedFunction] of Object.entries(groupedFunctions)) {
+            if (typeof groupedFunction === 'function') {
+              acc[groupedName] = groupedFunction;
+            }
+          }
+        }
+      } catch {
+        // Ignore non-factory exports.
+      }
+    }
+  }
+
   return acc;
 }, {});
 
-export const setResourceDefinitions = (resources: ResourceDefinition[]) => {
+export const setResourceDefinitions = (
+  resources: ResourceDefinition[],
+  operationMappings: Record<string, string> = {},
+) => {
   resourceMap = resources.reduce((acc, resourceDefinition) => {
     acc[resourceDefinition.name] = resourceDefinition;
     return acc;
   }, {} as Record<string, ResourceDefinition>);
+  operationFunctionMap = operationMappings;
 };
 
-const toCamelCase = (value: string) =>
-  value
-    .replace(/^[^a-zA-Z]+/, '')
-    .replace(/[-_.\s]+([a-zA-Z0-9])/g, (_, next: string) => next.toUpperCase());
+const callApiFunction = async (operationKey: string | undefined, ...args: unknown[]) => {
+  if (!operationKey) {
+    throw new Error('Operation not supported for this resource.');
+  }
 
-const operationCandidates = (operationId: string | undefined): string[] => {
-  if (!operationId) return [];
-  const compact = operationId.replace(/[^a-zA-Z0-9_$]/g, '');
-  const camel = toCamelCase(operationId);
-  // Try explicit operationId first, then Orval-style camelCase, then fully compact fallback.
-  return Array.from(new Set([operationId, camel, compact])).filter(Boolean);
-};
+  const functionName = operationFunctionMap[operationKey];
+  if (!functionName) {
+    throw new Error(`Generated API function mapping for operation "${operationKey}" not found.`);
+  }
 
-const callApiFunction = async (operationId: string | undefined, ...args: unknown[]) => {
-  const candidates = operationCandidates(operationId);
-  for (const candidate of candidates) {
-    const fn = apiFunctions[candidate];
-    if (typeof fn === 'function') {
-      return await (fn as (...fnArgs: unknown[]) => Promise<unknown>)(...args);
-    }
+  const fn = apiFunctions[functionName];
+  if (typeof fn === 'function') {
+    return await (fn as (...fnArgs: unknown[]) => Promise<unknown>)(...args);
   }
 
   throw new Error(
-    operationId
-      ? `Generated API function for operation "${operationId}" not found.`
-      : 'Operation not supported for this resource.',
+    `Generated API function "${functionName}" for operation "${operationKey}" not found.`,
   );
 };
 
