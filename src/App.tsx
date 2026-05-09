@@ -1,11 +1,11 @@
 import { Admin } from "react-admin";
 import { SpecProvider, useSpec } from "./core/SpecContext";
+import { duckDeployAuthProvider } from "./core/authProvider";
 import { openApiDataProvider } from "./providers/openApiDataProvider";
 import { ResourceFactory } from "./components/ResourceFactory";
 import { WidgetRegistryProvider, registerWidget } from "./core/WidgetRegistry";
 import { CustomMapWidget } from "./components/custom/CustomMapWidget";
 import { TerminologyLookupInput } from "./components/custom/TerminologyLookupInput";
-import { ReflectiveAuthProvider } from "./core/ReflectiveAuthContext";
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
 registerWidget('cdisc-terminology', TerminologyLookupInput);
@@ -22,7 +22,7 @@ const AdminApp = () => {
   }
 
   return (
-    <Admin dataProvider={openApiDataProvider}>
+    <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider}>
       <ResourceFactory />
     </Admin>
   );
@@ -30,11 +30,9 @@ const AdminApp = () => {
 
 export const App = () => (
   <WidgetRegistryProvider>
-    <ReflectiveAuthProvider>
-      <SpecProvider>
-        <AdminApp />
-      </SpecProvider>
-    </ReflectiveAuthProvider>
+    <SpecProvider>
+      <AdminApp />
+    </SpecProvider>
   </WidgetRegistryProvider>
 );
 

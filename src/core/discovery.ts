@@ -5,6 +5,12 @@ export interface ResourceDefinition {
   hasShow: boolean;
   hasEdit: boolean;
   hasDelete: boolean;
+  listPath?: string;
+  createPath?: string;
+  showPath?: string;
+  editPath?: string;
+  editMethod?: 'put' | 'patch';
+  deletePath?: string;
   listOperationId?: string;
   createOperationId?: string;
   showOperationId?: string;
@@ -102,24 +108,30 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
       if (method === 'get') {
         if (isInstancePath) {
           res.hasShow = true;
+          res.showPath = path;
           res.showOperationId = operationKey;
           res.showResponseSchema = getResponseSchema();
         } else {
           res.hasList = true;
+          res.listPath = path;
           res.listOperationId = operationKey;
           res.listResponseSchema = getResponseSchema();
           res.listQueryParams = getQueryParams();
         }
       } else if (method === 'post' && !isInstancePath) {
         res.hasCreate = true;
+        res.createPath = path;
         res.createOperationId = operationKey;
         res.createRequestBodySchema = getRequestBodySchema();
       } else if ((method === 'put' || method === 'patch') && isInstancePath) {
         res.hasEdit = true;
+        res.editPath = path;
+        res.editMethod = method;
         res.editOperationId = operationKey;
         res.editRequestBodySchema = getRequestBodySchema();
       } else if (method === 'delete' && isInstancePath) {
         res.hasDelete = true;
+        res.deletePath = path;
         res.deleteOperationId = operationKey;
       }
     }
