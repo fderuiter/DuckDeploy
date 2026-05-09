@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Resource } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { discoverResources, type ResourceDefinition } from '../core/discovery';
+import { setAuthorizationResources } from '../core/authProvider';
 import { AutoList } from './AutoList';
 import { AutoCreate, AutoEdit } from './AutoForm';
 import { setResourceDefinitions } from '../providers/openApiDataProvider';
@@ -44,6 +45,7 @@ export const ResourceFactory = () => {
           : {};
 
       setResourceDefinitions(resourcesForAdmin, operationMappings); // Sync with data provider
+      setAuthorizationResources(resourcesForAdmin);
       if (active) {
         setResources(resourcesForAdmin);
       }

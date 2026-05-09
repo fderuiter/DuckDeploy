@@ -200,6 +200,11 @@ const normalizeProviderError = (error: unknown): unknown => {
   return new HttpError(message, normalizedStatus, body);
 };
 
+export const getNormalizedErrorStatus = (error: unknown): number | undefined => {
+  const normalizedError = normalizeProviderError(error);
+  return normalizedError instanceof HttpError ? normalizedError.status : undefined;
+};
+
 const ERROR_INTERCEPTOR_ID_KEY = '__errorInterceptorId';
 type InterceptorAwareAxiosInstance = typeof AXIOS_INSTANCE & { [ERROR_INTERCEPTOR_ID_KEY]?: number };
 const interceptorAwareAxiosInstance = AXIOS_INSTANCE as InterceptorAwareAxiosInstance;
