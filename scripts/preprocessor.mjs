@@ -19,7 +19,8 @@ const INPUT_CANDIDATES = [
 ];
 
 const OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.json');
-const TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
+const MANIFEST_GENERATION_LOG_PATH = path.join(repoRoot, 'manifest-generation-log.json');
+const LEGACY_TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
 const HASH_OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.sha256');
 const STABLE_JSON_EOL = '\n';
 
@@ -765,7 +766,7 @@ const compile = () => {
   }
 
   const { manifest, traceabilityEntries } = buildUiManifest(parsed);
-  const traceabilityReport = {
+  const manifestGenerationLog = {
     generatedAt: new Date().toISOString(),
     entries: traceabilityEntries,
   };
@@ -775,12 +776,15 @@ const compile = () => {
   const manifestHash = crypto.createHash('sha256').update(serializedManifest, 'utf8').digest('hex');
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
+  if (fs.existsSync(LEGACY_TRACEABILITY_OUTPUT_PATH)) {
+    fs.unlinkSync(LEGACY_TRACEABILITY_OUTPUT_PATH);
+  }
   fs.writeFileSync(OUTPUT_PATH, serializedManifest, 'utf8');
-  fs.writeFileSync(TRACEABILITY_OUTPUT_PATH, `${JSON.stringify(traceabilityReport, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(MANIFEST_GENERATION_LOG_PATH, `${JSON.stringify(manifestGenerationLog, null, 2)}\n`, 'utf8');
   fs.writeFileSync(HASH_OUTPUT_PATH, `${manifestHash}\n`, 'utf8');
 
   console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)} (depth limit: ${MAX_REF_DEPTH})`);
-  console.log(`Generated ${path.relative(repoRoot, TRACEABILITY_OUTPUT_PATH)}`);
+  console.log(`Generated ${path.relative(repoRoot, MANIFEST_GENERATION_LOG_PATH)}`);
   console.log(`Generated ${path.relative(repoRoot, HASH_OUTPUT_PATH)}`);
 };
 

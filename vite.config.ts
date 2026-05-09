@@ -14,7 +14,7 @@ const yamlCloakingPlugin = (): Plugin => {
   const BLOCKED_PATTERNS = [
     /\.ya?ml$/i,
     /\/scripts\//,
-    /traceability-matrix/i,
+    /manifest-generation-log/i,
     /ui-manifest\.sha256/i,
   ];
 

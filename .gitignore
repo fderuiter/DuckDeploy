@@ -29,4 +29,4 @@ src/api/*
 public/schema.json
 public/ui-manifest.sha256
 schemathesis-junit.xml
-traceability-matrix.json
+manifest-generation-log.json
