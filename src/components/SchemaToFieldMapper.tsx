@@ -24,7 +24,12 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
-import { resetPolymorphicValue } from './polymorphicState';
+import {
+  areShallowObjectsEqual,
+  cleanupPolymorphicObjectValue,
+  resetPolymorphicValue,
+  setPolymorphicDiscriminatorValue,
+} from './polymorphicState';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -59,12 +64,51 @@ export type PrecomputedInputDescriptor = {
   widgetId?: string;
   widgetProps?: Record<string, unknown>;
   uiExtensions?: Record<string, unknown>;
+  discriminatorProperty?: string;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
-  options?: Array<{ label: string; node: PrecomputedInputDescriptor }>;
+  options?: Array<{ label: string; discriminatorValue?: string; node: PrecomputedInputDescriptor }>;
   children?: PrecomputedInputDescriptor[];
   items?: PrecomputedInputDescriptor[];
   validation?: ValidationDescriptor;
+};
+
+const toDiscriminatorValue = (value: unknown): string | undefined =>
+  typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : undefined;
+
+const resolveDiscriminatorMetadata = (
+  property: OpenAPIV3.SchemaObject,
+  schemas: OpenAPIV3.SchemaObject[],
+): { propertyName: string; values: Array<string | undefined> } | undefined => {
+  const discriminator = property.discriminator;
+  const propertyName =
+    typeof discriminator?.propertyName === 'string' && discriminator.propertyName.trim().length > 0
+      ? discriminator.propertyName
+      : undefined;
+
+  if (!propertyName) {
+    return undefined;
+  }
+
+  const values = schemas.map((schema) => {
+    const discriminatorProperty = schema.properties?.[propertyName];
+    if (!discriminatorProperty || '$ref' in discriminatorProperty) {
+      return undefined;
+    }
+
+    const constValue = toDiscriminatorValue(discriminatorProperty.const);
+    if (constValue !== undefined) {
+      return constValue;
+    }
+
+    if (Array.isArray(discriminatorProperty.enum) && discriminatorProperty.enum.length === 1) {
+      return toDiscriminatorValue(discriminatorProperty.enum[0]);
+    }
+
+    return undefined;
+  });
+
+  return { propertyName, values };
 };
 
 const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) => {
@@ -146,15 +190,49 @@ const PrecomputedPolymorphicInput = ({
       : Number.parseInt(String(selectedIndexRaw), 10);
   const previousSelectedIndexRef = useRef<number | undefined>(undefined);
   const choices = (node.options || []).map((option, index) => ({ id: index, name: option.label || `Option ${index + 1}` }));
+  const selectedDiscriminatorValue =
+    selectedIndex === undefined || Number.isNaN(selectedIndex) ? undefined : node.options?.[selectedIndex]?.discriminatorValue;
 
   useEffect(() => {
     if (selectedIndex === undefined || Number.isNaN(selectedIndex)) return;
     const previousSelectedIndex = previousSelectedIndexRef.current;
     if (previousSelectedIndex !== undefined && previousSelectedIndex !== selectedIndex) {
-      resetPolymorphicValue(unregister, setValue, node.source);
+      resetPolymorphicValue(unregister, setValue, node.source, node.discriminatorProperty, selectedDiscriminatorValue);
+      previousSelectedIndexRef.current = selectedIndex;
+      return;
     }
+
+    const selectedNode = node.options?.[selectedIndex]?.node;
+    const allowedKeys =
+      selectedNode?.kind === 'object'
+        ? new Set(
+            (selectedNode.children || [])
+              .map((child) => child.source.split('.').pop())
+              .filter((key): key is string => Boolean(key)),
+          )
+        : null;
+    const currentValue = form.getValues(node.source);
+    if (currentValue !== null && typeof currentValue === 'object' && !Array.isArray(currentValue)) {
+      const cleanedValue = cleanupPolymorphicObjectValue(
+        currentValue as Record<string, unknown>,
+        allowedKeys,
+        node.discriminatorProperty,
+        selectedDiscriminatorValue,
+      );
+
+      if (!areShallowObjectsEqual(currentValue as Record<string, unknown>, cleanedValue)) {
+        setValue(node.source, cleanedValue, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      }
+    } else {
+      setPolymorphicDiscriminatorValue(setValue, node.source, node.discriminatorProperty, selectedDiscriminatorValue);
+    }
+
     previousSelectedIndexRef.current = selectedIndex;
-  }, [selectedIndex, node.source, unregister, setValue]);
+  }, [form, node.discriminatorProperty, node.options, node.source, selectedDiscriminatorValue, selectedIndex, unregister, setValue]);
 
   return (
     <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
@@ -367,7 +445,18 @@ const mapSchemaToInputDefault = (
   // Polymorphism
   if (property.oneOf || property.anyOf) {
     const schemas = (property.oneOf || property.anyOf) as OpenAPIV3.SchemaObject[];
-    return <PolymorphicInput key={source} source={source} schemas={schemas} isRequired={isRequired} depth={depth + 1} />;
+    const discriminatorMetadata = resolveDiscriminatorMetadata(property, schemas);
+    return (
+      <PolymorphicInput
+        key={source}
+        source={source}
+        schemas={schemas}
+        isRequired={isRequired}
+        depth={depth + 1}
+        discriminatorProperty={discriminatorMetadata?.propertyName}
+        discriminatorValues={discriminatorMetadata?.values}
+      />
+    );
   }
 
   // Nested Objects
