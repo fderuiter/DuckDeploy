@@ -94,7 +94,7 @@ const extractErrorCode = (payload: unknown): string | undefined => {
 };
 
 const AUTH_HINT_PATTERN =
-  /\b(unauthori[sz]ed|forbidden|access denied|authentication required|not authenticated|invalid token|token expired|missing credentials)\b/i;
+  /\b(unauthori[sz]ed|authentication required|not authenticated|invalid token|token expired|missing credentials)\b/i;
 const FORBIDDEN_HINT_PATTERN = /\b(forbidden|insufficient permissions?|not allowed|access denied)\b/i;
 
 const getHeaderValue = (headers: unknown, headerName: string): string | undefined => {
@@ -143,7 +143,11 @@ const normalizeErrorStatus = (status: number, message: string, responseData: unk
     return status;
   }
 
-  return FORBIDDEN_HINT_PATTERN.test(message) ? 403 : 401;
+  const isForbiddenHint =
+    FORBIDDEN_HINT_PATTERN.test(message) ||
+    (typeof errorCode === 'string' && FORBIDDEN_HINT_PATTERN.test(errorCode));
+
+  return isForbiddenHint ? 403 : 401;
 };
 
 const dispatchNormalizedAuthViolation = (error: AxiosError, status: number) => {
