@@ -23,8 +23,6 @@ import { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
-import { JsonEditorInput } from './custom/JsonEditorInput';
-import { TerminologyLookupInput } from './custom/TerminologyLookupInput';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
 import { resetPolymorphicValue } from './polymorphicState';
 
@@ -46,8 +44,6 @@ export type PrecomputedFieldDescriptor = {
 
 export type PrecomputedInputDescriptor = {
   kind:
-    | 'custom_json_editor'
-    | 'custom_terminology_lookup'
     | 'polymorphic'
     | 'object'
     | 'array'
@@ -60,8 +56,9 @@ export type PrecomputedInputDescriptor = {
   source: string;
   isRequired: boolean;
   title?: string;
-  domain?: string;
   widgetId?: string;
+  widgetProps?: Record<string, unknown>;
+  uiExtensions?: Record<string, unknown>;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
   options?: Array<{ label: string; node: PrecomputedInputDescriptor }>;
@@ -85,16 +82,25 @@ const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) =
 
 type WidgetOverrideInputProps = {
   source: string;
-  candidates: string[];
+  candidateWidgetId?: string;
+  fallbackWidgetId?: string;
+  widgetProps?: Record<string, unknown>;
   schemaNode: unknown;
   fallback: React.ReactNode;
 };
 
-const WidgetOverrideInput = ({ source, candidates, schemaNode, fallback }: WidgetOverrideInputProps) => {
+const WidgetOverrideInput = ({
+  source,
+  candidateWidgetId,
+  fallbackWidgetId,
+  widgetProps,
+  schemaNode,
+  fallback,
+}: WidgetOverrideInputProps) => {
   const { getWidget } = useWidgetRegistry();
   const form = useFormContext();
 
-  const widgetId = candidates.find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
+  const widgetId = [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
   const Widget = widgetId ? getWidget(widgetId) : undefined;
 
   const value = useWatch({ control: form.control, name: source });
@@ -108,6 +114,7 @@ const WidgetOverrideInput = ({ source, candidates, schemaNode, fallback }: Widge
     schemaNode,
     source,
     value,
+    widgetProps: widgetProps || {},
     setValue: (nextValue) => {
       form.setValue(source, nextValue, {
         shouldDirty: true,
@@ -226,14 +233,6 @@ const renderPrecomputedInputDefault = (
     isRequired: node.isRequired,
   };
 
-  if (node.kind === 'custom_json_editor') {
-    return <JsonEditorInput {...commonProps} />;
-  }
-
-  if (node.kind === 'custom_terminology_lookup') {
-    return <TerminologyLookupInput {...commonProps} domain={node.domain} />;
-  }
-
   if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
     return <PrecomputedPolymorphicInput node={node} keyPrefix={key} />;
   }
@@ -290,16 +289,14 @@ export const renderPrecomputedInput = (
   keyPrefix: string = node.source,
 ): React.ReactNode => {
   const fallback = renderPrecomputedInputDefault(node, keyPrefix);
-  const candidates = [node.widgetId, node.source].filter(Boolean) as string[];
-
-  if (candidates.length === 0) {
-    return fallback;
-  }
+  const widgetId = typeof node.widgetId === 'string' ? node.widgetId : undefined;
 
   return (
     <WidgetOverrideInput
       source={node.source}
-      candidates={candidates}
+      candidateWidgetId={widgetId}
+      fallbackWidgetId={node.source}
+      widgetProps={node.widgetProps}
       schemaNode={node}
       fallback={fallback}
     />
@@ -366,15 +363,6 @@ const mapSchemaToInputDefault = (
     validate: validators,
     isRequired, // Needed for simple reference/boolean inputs to display asterisk
   };
-
-  // 1. Check for custom vendor extensions first
-  if (property['x-widget'] === 'json-editor') {
-    return <JsonEditorInput {...commonProps} />;
-  }
-
-  if (property['x-widget'] === 'cdisc-terminology-lookup') {
-    return <TerminologyLookupInput {...commonProps} domain={property['x-terminology-domain'] as string} />;
-  }
 
   // Polymorphism
   if (property.oneOf || property.anyOf) {
@@ -462,17 +450,17 @@ export const mapSchemaToInput = (
   depth: number = 0,
 ): React.ReactNode => {
   const fallback = mapSchemaToInputDefault(source, property, isRequired, depth);
-  const explicitOverride = typeof property['x-ui-override'] === 'string' ? property['x-ui-override'] : undefined;
-  const candidates = [explicitOverride, source].filter(Boolean) as string[];
-
-  if (candidates.length === 0) {
-    return fallback;
-  }
+  const explicitWidgetId = typeof property['x-ui-widget'] === 'string' ? property['x-ui-widget'] : undefined;
+  const widgetProps = property['x-ui-props'] && typeof property['x-ui-props'] === 'object'
+    ? (property['x-ui-props'] as Record<string, unknown>)
+    : {};
 
   return (
     <WidgetOverrideInput
       source={source}
-      candidates={candidates}
+      candidateWidgetId={explicitWidgetId}
+      fallbackWidgetId={source}
+      widgetProps={widgetProps}
       schemaNode={property}
       fallback={fallback}
     />

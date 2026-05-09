@@ -5,6 +5,7 @@ export interface EngineContext {
   schemaNode: unknown;
   source: string;
   value: unknown;
+  widgetProps: Record<string, unknown>;
   setValue: (value: unknown) => void;
   mutate: (operation: string, payload?: unknown) => Promise<unknown>;
 }
