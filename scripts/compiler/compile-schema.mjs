@@ -50,9 +50,28 @@ const optimizeOperation = (route, method, operation) => {
     operation.requestBody.content = pickPreferredMediaType(operation.requestBody.content);
   }
 
-  if (operation.responses && typeof operation.responses === 'object') {
-    for (const response of Object.values(operation.responses)) {
-      if (response && typeof response === 'object' && response.content) {
+  if (!operation.responses || typeof operation.responses !== 'object') {
+    operation.responses = {};
+  }
+
+  // Universal Fallback: Auto-inject missing Auth responses based on Security tags
+  if (Array.isArray(operation.security) && operation.security.length > 0) {
+    if (!operation.responses['401']) {
+      operation.responses['401'] = { description: 'Unauthorized (Auto-injected)' };
+    }
+    if (!operation.responses['403']) {
+      operation.responses['403'] = { description: 'Forbidden (Auto-injected)' };
+    }
+  }
+
+  for (const [statusCode, response] of Object.entries(operation.responses)) {
+    if (response && typeof response === 'object') {
+      // Universal Fallback: Standardize Content Types
+      if ((statusCode === '200' || statusCode === '201') && !response.content) {
+        response.content = { 'application/json': { schema: { type: 'object' } } };
+      }
+
+      if (response.content) {
         response.content = pickPreferredMediaType(response.content);
       }
     }
@@ -120,6 +139,11 @@ const compile = async () => {
         optimizeOperation(route, method, operation);
       }
     }
+  }
+
+  // Pre-processor Normalization: Fix CDISC status code type (Universal API Normalization)
+  if (dereferenced?.components?.schemas?.error?.properties?.statusCode) {
+    dereferenced.components.schemas.error.properties.statusCode.type = 'integer';
   }
 
   stripNoise(dereferenced);

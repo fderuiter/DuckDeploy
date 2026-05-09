@@ -59903,7 +59903,7 @@ components:
     error:
       properties:
         statusCode:
-          type: string
+          type: integer
           description: HTTP Status Code
         reasonPhrase:
           type: string

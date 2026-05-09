@@ -14,7 +14,31 @@ AXIOS_INSTANCE.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response) {
-      const { status, config } = error.response;
+      let { status } = error.response;
+      const { config } = error.response;
+
+      // Universal Fallback: Coerce 404 to 401 if auth headers are missing/empty
+      if (status === 404 && config.headers) {
+        const hasAuth =
+          config.headers['api-key'] ||
+          config.headers['Authorization'] ||
+          config.headers['authorization'];
+        if (!hasAuth) {
+          status = 401;
+          error.response.status = 401;
+        }
+      }
+
+      // Universal Fallback: Payload Sanitizer
+      if (
+        typeof error.response.data === 'string' &&
+        /^\s*<(?:!DOCTYPE|html)/i.test(error.response.data)
+      ) {
+        error.response.data = {
+          error: 'Upstream format violation',
+          raw: error.response.data,
+        };
+      }
 
       if (status === 401 || status === 403) {
         const event = new CustomEvent('duckdeploy:auth_violation', {
