@@ -14,17 +14,32 @@ const resourceActions: ResourceAction[] = ['list', 'show', 'create', 'edit', 'de
 const buildCacheKey = (resource: string, action: string) => `${resource}:${action}`;
 
 const createProbeToken = (pathParam: string) => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (typeof crypto.randomUUID === 'function') {
     return `${AUTH_PROBE_ID}_${pathParam}_${crypto.randomUUID()}`;
   }
 
-  return `${AUTH_PROBE_ID}_${pathParam}_${Math.random().toString(36).slice(2)}`;
+  const bytes = new Uint32Array(4);
+  crypto.getRandomValues(bytes);
+  const fallbackToken = Array.from(bytes, (value) => value.toString(16)).join('');
+  return `${AUTH_PROBE_ID}_${pathParam}_${fallbackToken}`;
 };
 
 const buildProbeUrl = (path: string) =>
   path.replace(/\{([^/}]+)\}/g, (_match, pathParam: string) => createProbeToken(pathParam));
 
 const isResourceAction = (action: string): action is ResourceAction => resourceActions.includes(action as ResourceAction);
+
+const isAllowedProbeStatus = (action: ResourceAction, status: number) => {
+  if (status >= 200 && status < 300) {
+    return true;
+  }
+
+  if (status === 400 || status === 404) {
+    return true;
+  }
+
+  return status === 405 && (action === 'create' || action === 'edit' || action === 'delete');
+};
 
 const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: ResourceAction): AxiosRequestConfig | null => {
   switch (action) {
@@ -34,7 +49,8 @@ const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: Resou
       return resourceDefinition.showPath ? { method: 'get', url: buildProbeUrl(resourceDefinition.showPath) } : null;
     case 'create':
       // Use OPTIONS for mutating actions so permission checks don't create, update, or delete data.
-      // Any non-401/403 result (including 405 when OPTIONS isn't implemented) is treated as allowed.
+      // A 405 response is treated as allowed for mutating probes because it means the endpoint exists,
+      // but the server does not implement OPTIONS for it.
       return resourceDefinition.createPath ? { method: 'options', url: buildProbeUrl(resourceDefinition.createPath) } : null;
     case 'edit':
       return resourceDefinition.editPath
@@ -66,7 +82,10 @@ const probeAccess = async (resource: string, action: ResourceAction) => {
     if (typeof normalizedStatus !== 'number') {
       return false;
     }
-    return normalizedStatus !== 401 && normalizedStatus !== 403;
+    if (normalizedStatus === 401 || normalizedStatus === 403) {
+      return false;
+    }
+    return isAllowedProbeStatus(action, normalizedStatus);
   }
 };
 
