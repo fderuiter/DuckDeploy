@@ -3,6 +3,8 @@ import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 
 let resourceMap: Record<string, ResourceDefinition> = {};
+let operationFunctionMap: Record<string, string> = {};
+const ORVAL_FACTORY_EXPORT_NAME = /^get[A-Z]/;
 
 const generatedModules = import.meta.glob('../api/generated/**/*.ts', { eager: true }) as Record<
   string,
@@ -14,43 +16,64 @@ const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unkn
     return acc;
   }
 
-  Object.assign(acc, moduleExports);
+  for (const [exportName, exportedValue] of Object.entries(moduleExports)) {
+    acc[exportName] = exportedValue;
+
+    // Orval's axios + tags-split output exports `get<Tag>()` factories that return
+    // objects containing the actual per-operation functions. Flatten them so the
+    // precomputed manifest map can resolve directly to callable functions.
+    if (typeof exportedValue === 'function' && ORVAL_FACTORY_EXPORT_NAME.test(exportName)) {
+      try {
+        const groupedFunctions = (exportedValue as () => unknown)();
+        if (groupedFunctions && typeof groupedFunctions === 'object') {
+          for (const [groupedName, groupedFunction] of Object.entries(groupedFunctions)) {
+            if (typeof groupedFunction === 'function') {
+              acc[groupedName] = groupedFunction;
+            }
+          }
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn(`Failed to inspect generated API export "${exportName}".`, error);
+        }
+      }
+    }
+  }
+
   return acc;
 }, {});
 
-export const setResourceDefinitions = (resources: ResourceDefinition[]) => {
+export const setResourceDefinitions = (
+  resources: ResourceDefinition[],
+  operationMappings: Record<string, string> = {},
+) => {
   resourceMap = resources.reduce((acc, resourceDefinition) => {
     acc[resourceDefinition.name] = resourceDefinition;
     return acc;
   }, {} as Record<string, ResourceDefinition>);
+  operationFunctionMap = operationMappings;
 };
 
-const toCamelCase = (value: string) =>
-  value
-    .replace(/^[^a-zA-Z]+/, '')
-    .replace(/[-_.\s]+([a-zA-Z0-9])/g, (_, next: string) => next.toUpperCase());
+const callApiFunction = async (operationKey: string | undefined, ...args: unknown[]) => {
+  if (!operationKey) {
+    throw new Error('Operation not supported for this resource.');
+  }
 
-const operationCandidates = (operationId: string | undefined): string[] => {
-  if (!operationId) return [];
-  const compact = operationId.replace(/[^a-zA-Z0-9_$]/g, '');
-  const camel = toCamelCase(operationId);
-  // Try explicit operationId first, then Orval-style camelCase, then fully compact fallback.
-  return Array.from(new Set([operationId, camel, compact])).filter(Boolean);
-};
+  const functionName = operationFunctionMap[operationKey];
+  if (!functionName) {
+    throw new Error(
+      `Generated API function mapping for operation "${operationKey}" not found. ` +
+        'Ensure ui-manifest.json is up to date (run npm run generate).',
+    );
+  }
 
-const callApiFunction = async (operationId: string | undefined, ...args: unknown[]) => {
-  const candidates = operationCandidates(operationId);
-  for (const candidate of candidates) {
-    const fn = apiFunctions[candidate];
-    if (typeof fn === 'function') {
-      return await (fn as (...fnArgs: unknown[]) => Promise<unknown>)(...args);
-    }
+  const fn = apiFunctions[functionName];
+  if (typeof fn === 'function') {
+    return await (fn as (...fnArgs: unknown[]) => Promise<unknown>)(...args);
   }
 
   throw new Error(
-    operationId
-      ? `Generated API function for operation "${operationId}" not found.`
-      : 'Operation not supported for this resource.',
+    `Generated API function "${functionName}" for operation "${operationKey}" not found.`,
   );
 };
 

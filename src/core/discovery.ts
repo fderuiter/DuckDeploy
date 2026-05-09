@@ -77,6 +77,10 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
       if (!operation) continue;
 
       const operationId = operation.operationId;
+      const operationKey =
+        typeof operationId === 'string' && operationId.trim().length > 0
+          ? operationId
+          : `${method.toUpperCase()} ${path}`;
 
       // Determine response schemas for list and show
       const getResponseSchema = () => {
@@ -98,25 +102,25 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
       if (method === 'get') {
         if (isInstancePath) {
           res.hasShow = true;
-          res.showOperationId = operationId;
+          res.showOperationId = operationKey;
           res.showResponseSchema = getResponseSchema();
         } else {
           res.hasList = true;
-          res.listOperationId = operationId;
+          res.listOperationId = operationKey;
           res.listResponseSchema = getResponseSchema();
           res.listQueryParams = getQueryParams();
         }
       } else if (method === 'post' && !isInstancePath) {
         res.hasCreate = true;
-        res.createOperationId = operationId;
+        res.createOperationId = operationKey;
         res.createRequestBodySchema = getRequestBodySchema();
       } else if ((method === 'put' || method === 'patch') && isInstancePath) {
         res.hasEdit = true;
-        res.editOperationId = operationId;
+        res.editOperationId = operationKey;
         res.editRequestBodySchema = getRequestBodySchema();
       } else if (method === 'delete' && isInstancePath) {
         res.hasDelete = true;
-        res.deleteOperationId = operationId;
+        res.deleteOperationId = operationKey;
       }
     }
   }

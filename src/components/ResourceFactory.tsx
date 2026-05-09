@@ -38,7 +38,12 @@ export const ResourceFactory = () => {
         ? fromManifest
         : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
 
-      setResourceDefinitions(resourcesForAdmin); // Sync with data provider
+      const operationMappings =
+        uiManifest?.operationFunctionMap && typeof uiManifest.operationFunctionMap === 'object'
+          ? (uiManifest.operationFunctionMap as Record<string, string>)
+          : {};
+
+      setResourceDefinitions(resourcesForAdmin, operationMappings); // Sync with data provider
       if (active) {
         setResources(resourcesForAdmin);
       }

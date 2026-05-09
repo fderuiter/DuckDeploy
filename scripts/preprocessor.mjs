@@ -9,7 +9,8 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const MAX_REF_DEPTH = 3;
-const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch']);
+const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
+const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
 
 const INPUT_CANDIDATES = [
   path.join(repoRoot, 'openapi.yaml'),
@@ -369,6 +370,66 @@ const extractListProperties = (schema, visitor) => {
   return {};
 };
 
+const listGeneratedClientFiles = (directory) => {
+  if (!fs.existsSync(directory)) return [];
+
+  const entries = fs.readdirSync(directory, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...listGeneratedClientFiles(entryPath));
+      continue;
+    }
+
+    if (entry.isFile() && entryPath.endsWith('.ts')) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+};
+
+const buildGeneratedOperationMap = () => {
+  const clients = {};
+  const files = listGeneratedClientFiles(GENERATED_CLIENT_PATH).filter(
+    (filePath) => !filePath.includes(`${path.sep}model${path.sep}`),
+  );
+  if (files.length === 0) {
+    throw new Error(
+      `No generated API client files found at ${GENERATED_CLIENT_PATH}. Run "npm run generate:api" before build:manifest.`,
+    );
+  }
+
+  let operationCount = 0;
+  // Parse Orval's generated arrow-function operations and extract HTTP method + URL.
+  // Expected format (orval v8 axios + tags-split):
+  //   const operationName = (...) => { return customInstance(... {url: `/path`, method: 'GET' ...}) }
+  // Keep this regex in sync with generated output if Orval generation templates change.
+  const operationRegex =
+    /(?:^|\n)\s*const\s+([A-Za-z0-9_$]+)\s*=\s*\([\s\S]*?\)\s*=>\s*\{\s*return\s+customInstance<[\s\S]*?>\(\s*\{url:\s*`([^`]+)`\s*,\s*method:\s*'([A-Z]+)'/gm;
+
+  for (const filePath of files) {
+    const source = fs.readFileSync(filePath, 'utf8');
+    let match;
+
+    while ((match = operationRegex.exec(source)) !== null) {
+      const [, functionName, url, method] = match;
+      // Orval emits template placeholders as `${id}`, while OpenAPI paths use `{id}`.
+      const normalizedUrl = url.replace(/\$\{([^}]+)\}/g, '{$1}');
+      clients[`${method} ${normalizedUrl}`] = functionName;
+      operationCount += 1;
+    }
+  }
+
+  if (files.length > 0 && operationCount === 0) {
+    throw new Error('Failed to extract operations from generated Orval clients. Check generated output format.');
+  }
+
+  return clients;
+};
+
 const buildUiManifest = (spec) => {
   if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
     return {
@@ -379,6 +440,8 @@ const buildUiManifest = (spec) => {
 
   const visitor = new OpenApiVisitor(spec, MAX_REF_DEPTH);
   const resources = {};
+  const generatedOperationMap = buildGeneratedOperationMap();
+  const operationFunctionMap = {};
 
   for (const [apiPath, pathItem] of Object.entries(spec.paths)) {
     if (!pathItem || typeof pathItem !== 'object') continue;
@@ -405,6 +468,15 @@ const buildUiManifest = (spec) => {
     for (const method of methods) {
       const operation = pathItem[method];
       if (!operation || typeof operation !== 'object') continue;
+
+      const operationKey =
+        typeof operation.operationId === 'string' && operation.operationId.trim().length > 0
+          ? operation.operationId
+          : `${method.toUpperCase()} ${apiPath}`;
+      const generatedFunctionName = generatedOperationMap[`${method.toUpperCase()} ${apiPath}`];
+      if (generatedFunctionName) {
+        operationFunctionMap[operationKey] = generatedFunctionName;
+      }
 
       if (method === 'get' && !isInstancePath) {
         const listResponseStatus = operation.responses?.['200']?.content
@@ -476,6 +548,7 @@ const buildUiManifest = (spec) => {
       version: 1,
       depthLimit: MAX_REF_DEPTH,
       resources,
+      operationFunctionMap,
     },
     traceabilityEntries: visitor.traceabilityEntries,
   };
