@@ -9,11 +9,22 @@ type ResourceAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
 const AUTH_PROBE_ID = '__duckdeploy_auth_probe__';
 const accessCache = new Map<string, Promise<boolean>>();
 let resourceMap: Record<string, ResourceDefinition> = {};
+const resourceActions: ResourceAction[] = ['list', 'show', 'create', 'edit', 'delete'];
 
 const buildCacheKey = (resource: string, action: string) => `${resource}:${action}`;
 
+const createProbeToken = (pathParam: string) => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${AUTH_PROBE_ID}_${pathParam}_${crypto.randomUUID()}`;
+  }
+
+  return `${AUTH_PROBE_ID}_${pathParam}_${Math.random().toString(36).slice(2)}`;
+};
+
 const buildProbeUrl = (path: string) =>
-  path.replace(/\{([^/}]+)\}/g, (_match, pathParam: string) => `${AUTH_PROBE_ID}_${pathParam}`);
+  path.replace(/\{([^/}]+)\}/g, (_match, pathParam: string) => createProbeToken(pathParam));
+
+const isResourceAction = (action: string): action is ResourceAction => resourceActions.includes(action as ResourceAction);
 
 const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: ResourceAction): AxiosRequestConfig | null => {
   switch (action) {
@@ -23,6 +34,7 @@ const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: Resou
       return resourceDefinition.showPath ? { method: 'get', url: buildProbeUrl(resourceDefinition.showPath) } : null;
     case 'create':
       // Use OPTIONS for mutating actions so permission checks don't create, update, or delete data.
+      // Any non-401/403 result (including 405 when OPTIONS isn't implemented) is treated as allowed.
       return resourceDefinition.createPath ? { method: 'options', url: buildProbeUrl(resourceDefinition.createPath) } : null;
     case 'edit':
       return resourceDefinition.editPath
@@ -79,7 +91,7 @@ export const duckDeployAuthProvider: AuthProvider = {
       return true;
     }
 
-    if (!['list', 'show', 'create', 'edit', 'delete'].includes(action)) {
+    if (!isResourceAction(action)) {
       return true;
     }
 
@@ -89,7 +101,7 @@ export const duckDeployAuthProvider: AuthProvider = {
       return cached;
     }
 
-    const accessPromise = probeAccess(resource, action as ResourceAction);
+    const accessPromise = probeAccess(resource, action);
     accessCache.set(cacheKey, accessPromise);
     return accessPromise;
   },
