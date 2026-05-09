@@ -35,7 +35,10 @@ const parseSpec = (sourcePath, raw) => {
 const resolveRefPath = (spec, ref) => {
   if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
 
-  const parts = ref.slice(2).split('/');
+  const parts = ref
+    .slice(2)
+    .split('/')
+    .map((part) => part.replace(/~1/g, '/').replace(/~0/g, '~'));
   let current = spec;
 
   for (const part of parts) {
@@ -64,18 +67,95 @@ const extractUiExtensions = (node) => {
     }, {});
 };
 
+const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const mergeUnique = (base = [], override = []) => Array.from(new Set([...(base || []), ...(override || [])]));
+
 const mergeSchema = (baseSchema, overrideSchema) => {
+  if (!isObject(baseSchema) || !isObject(overrideSchema)) {
+    if (overrideSchema !== undefined) return overrideSchema;
+    if (baseSchema !== undefined) return baseSchema;
+    return {};
+  }
+
   const merged = { ...(baseSchema || {}), ...(overrideSchema || {}) };
 
   if (baseSchema?.properties || overrideSchema?.properties) {
-    merged.properties = {
-      ...(baseSchema?.properties || {}),
-      ...(overrideSchema?.properties || {}),
-    };
+    const baseProperties = baseSchema?.properties || {};
+    const overrideProperties = overrideSchema?.properties || {};
+    const propertyNames = new Set([...Object.keys(baseProperties), ...Object.keys(overrideProperties)]);
+    merged.properties = {};
+    for (const propertyName of propertyNames) {
+      const baseProperty = baseProperties[propertyName];
+      const overrideProperty = overrideProperties[propertyName];
+      merged.properties[propertyName] =
+        baseProperty !== undefined && overrideProperty !== undefined
+          ? mergeSchema(baseProperty, overrideProperty)
+          : (baseProperty ?? overrideProperty);
+    }
   }
 
   if (baseSchema?.required || overrideSchema?.required) {
-    merged.required = Array.from(new Set([...(baseSchema?.required || []), ...(overrideSchema?.required || [])]));
+    merged.required = mergeUnique(baseSchema?.required || [], overrideSchema?.required || []);
+  }
+
+  if (baseSchema?.allOf || overrideSchema?.allOf) {
+    merged.allOf = [...(baseSchema?.allOf || []), ...(overrideSchema?.allOf || [])];
+  }
+
+  if (baseSchema?.anyOf || overrideSchema?.anyOf) {
+    merged.anyOf = [...(baseSchema?.anyOf || []), ...(overrideSchema?.anyOf || [])];
+  }
+
+  if (baseSchema?.oneOf || overrideSchema?.oneOf) {
+    merged.oneOf = [...(baseSchema?.oneOf || []), ...(overrideSchema?.oneOf || [])];
+  }
+
+  if (isObject(baseSchema?.dependentSchemas) || isObject(overrideSchema?.dependentSchemas)) {
+    const mergedDependentSchemas = {
+      ...(baseSchema?.dependentSchemas || {}),
+      ...(overrideSchema?.dependentSchemas || {}),
+    };
+
+    for (const key of Object.keys(baseSchema?.dependentSchemas || {})) {
+      if (isObject(baseSchema.dependentSchemas[key]) && isObject(overrideSchema?.dependentSchemas?.[key])) {
+        mergedDependentSchemas[key] = mergeSchema(baseSchema.dependentSchemas[key], overrideSchema.dependentSchemas[key]);
+      }
+    }
+
+    merged.dependentSchemas = mergedDependentSchemas;
+  }
+
+  if (isObject(baseSchema?.dependentRequired) || isObject(overrideSchema?.dependentRequired)) {
+    const keys = new Set([
+      ...Object.keys(baseSchema?.dependentRequired || {}),
+      ...Object.keys(overrideSchema?.dependentRequired || {}),
+    ]);
+    merged.dependentRequired = {};
+    for (const key of keys) {
+      merged.dependentRequired[key] = mergeUnique(
+        baseSchema?.dependentRequired?.[key] || [],
+        overrideSchema?.dependentRequired?.[key] || [],
+      );
+    }
+  }
+
+  if (isObject(baseSchema?.items) && isObject(overrideSchema?.items)) {
+    merged.items = mergeSchema(baseSchema.items, overrideSchema.items);
+  }
+
+  if (isObject(baseSchema?.additionalProperties) && isObject(overrideSchema?.additionalProperties)) {
+    merged.additionalProperties = mergeSchema(baseSchema.additionalProperties, overrideSchema.additionalProperties);
+  }
+
+  if (isObject(baseSchema?.not) && isObject(overrideSchema?.not)) {
+    merged.not = mergeSchema(baseSchema.not, overrideSchema.not);
+  }
+
+  for (const keyword of ['if', 'then', 'else', 'contains', 'propertyNames', 'unevaluatedProperties']) {
+    if (isObject(baseSchema?.[keyword]) && isObject(overrideSchema?.[keyword])) {
+      merged[keyword] = mergeSchema(baseSchema[keyword], overrideSchema[keyword]);
+    }
   }
 
   return merged;
@@ -88,67 +168,117 @@ class OpenApiVisitor {
     this.traceabilityEntries = [];
   }
 
-  withRefDepth(context, ref) {
-    const refDepthMap = { ...(context.refDepthMap || {}) };
-    const nextDepth = (refDepthMap[ref] || 0) + 1;
-
-    if (nextDepth > this.maxDepth) {
+  withRefPath(context, ref) {
+    const refPath = context.refPath || [];
+    if (refPath.includes(ref)) {
       return {
         context,
         stop: true,
         marker: {
           'x-lazy-ref': ref,
-          'x-max-depth-reached': true,
+          'x-circular-ref': true,
         },
       };
     }
 
-    refDepthMap[ref] = nextDepth;
     return {
-      context: { ...context, refDepthMap },
+      context: { ...context, refPath: [...refPath, ref] },
       stop: false,
       marker: null,
     };
   }
 
-  normalizeSchema(schema, context = { refDepthMap: {} }) {
+  normalizeSchema(schema, context = { refPath: [] }) {
     if (!schema || typeof schema !== 'object') {
       return { schema: null, context };
     }
 
     if (schema.$ref) {
-      const depthState = this.withRefDepth(context, schema.$ref);
-      if (depthState.stop) {
-        return { schema: depthState.marker, context };
+      const pathState = this.withRefPath(context, schema.$ref);
+      if (pathState.stop) {
+        const { $ref, ...overrides } = schema;
+        return { schema: mergeSchema(pathState.marker, overrides), context };
       }
 
       const resolved = resolveRefPath(this.spec, schema.$ref);
       if (!resolved || typeof resolved !== 'object') {
-        return { schema: null, context: depthState.context };
+        return { schema: null, context };
       }
 
       const { $ref, ...overrides } = schema;
       const merged = mergeSchema(resolved, overrides);
-      return this.normalizeSchema(merged, depthState.context);
+      return { schema: this.normalizeSchema(merged, pathState.context).schema, context };
     }
 
     if (Array.isArray(schema.allOf) && schema.allOf.length > 0) {
       let accumulator = {};
-      let nextContext = context;
 
       for (const partial of schema.allOf) {
-        const normalized = this.normalizeSchema(partial, nextContext);
+        const normalized = this.normalizeSchema(partial, context);
         if (normalized.schema) {
           accumulator = mergeSchema(accumulator, normalized.schema);
         }
-        nextContext = normalized.context;
       }
 
       const { allOf, ...rest } = schema;
-      return { schema: mergeSchema(accumulator, rest), context: nextContext };
+      return this.normalizeSchema(mergeSchema(accumulator, rest), context);
     }
 
-    return { schema, context };
+    const normalizedSchema = { ...schema };
+
+    if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
+      normalizedSchema.oneOf = schema.oneOf
+        .map((variant) => this.normalizeSchema(variant, context).schema)
+        .filter((variant) => Boolean(variant));
+    }
+
+    if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
+      normalizedSchema.anyOf = schema.anyOf
+        .map((variant) => this.normalizeSchema(variant, context).schema)
+        .filter((variant) => Boolean(variant));
+    }
+
+    if (isObject(schema.not)) {
+      normalizedSchema.not = this.normalizeSchema(schema.not, context).schema || schema.not;
+    }
+
+    if (isObject(schema.dependentSchemas)) {
+      normalizedSchema.dependentSchemas = Object.entries(schema.dependentSchemas).reduce((acc, [key, dependentSchema]) => {
+        const normalized = this.normalizeSchema(dependentSchema, context).schema;
+        if (normalized) acc[key] = normalized;
+        return acc;
+      }, {});
+    }
+
+    if (isObject(schema.properties)) {
+      normalizedSchema.properties = Object.entries(schema.properties).reduce((acc, [key, value]) => {
+        const normalized = this.normalizeSchema(value, context).schema;
+        acc[key] = normalized || value;
+        return acc;
+      }, {});
+    }
+
+    if (isObject(schema.patternProperties)) {
+      normalizedSchema.patternProperties = Object.entries(schema.patternProperties).reduce((acc, [key, value]) => {
+        const normalized = this.normalizeSchema(value, context).schema;
+        acc[key] = normalized || value;
+        return acc;
+      }, {});
+    }
+
+    if (isObject(schema.items)) {
+      normalizedSchema.items = this.normalizeSchema(schema.items, context).schema || schema.items;
+    } else if (Array.isArray(schema.items)) {
+      normalizedSchema.items = schema.items.map((item) => this.normalizeSchema(item, context).schema || item);
+    }
+
+    for (const keyword of ['if', 'then', 'else', 'contains', 'propertyNames', 'additionalProperties', 'unevaluatedProperties']) {
+      if (isObject(schema[keyword])) {
+        normalizedSchema[keyword] = this.normalizeSchema(schema[keyword], context).schema || schema[keyword];
+      }
+    }
+
+    return { schema: normalizedSchema, context };
   }
 
   getValidation(schema) {
@@ -173,7 +303,7 @@ class OpenApiVisitor {
     });
   }
 
-  visitFieldNode(name, schema, context = { refDepthMap: {} }, pointer = '#') {
+  visitFieldNode(name, schema, context = { refPath: [] }, pointer = '#') {
     const normalized = this.normalizeSchema(schema, context);
     const node = normalized.schema;
 
@@ -228,7 +358,7 @@ class OpenApiVisitor {
     return { ...base, kind: 'text' };
   }
 
-  visitFormNode(source, schema, isRequired, context = { refDepthMap: {} }, depth = 0, pointer = '#') {
+  visitFormNode(source, schema, isRequired, context = { refPath: [] }, depth = 0, pointer = '#') {
     const normalized = this.normalizeSchema(schema, context);
     const node = normalized.schema;
 
@@ -348,20 +478,20 @@ const getSchemaFromContent = (content) => {
 const extractListProperties = (schema, visitor) => {
   if (!schema || typeof schema !== 'object') return {};
 
-  const normalizedRoot = visitor.normalizeSchema(schema, { refDepthMap: {} }).schema || schema;
+  const normalizedRoot = visitor.normalizeSchema(schema, { refPath: [] }).schema || schema;
 
   if (normalizedRoot.type === 'array' && normalizedRoot.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.items, { refDepthMap: {} }).schema;
+    const normalizedItems = visitor.normalizeSchema(normalizedRoot.items, { refPath: [] }).schema;
     if (normalizedItems?.properties) return normalizedItems.properties;
   }
 
   if (normalizedRoot.properties?.items?.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.items.items, { refDepthMap: {} }).schema;
+    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.items.items, { refPath: [] }).schema;
     if (normalizedItems?.properties) return normalizedItems.properties;
   }
 
   if (normalizedRoot.properties?.data?.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.data.items, { refDepthMap: {} }).schema;
+    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.data.items, { refPath: [] }).schema;
     if (normalizedItems?.properties) return normalizedItems.properties;
   }
 
@@ -494,7 +624,7 @@ const buildUiManifest = (spec) => {
             visitor.visitFieldNode(
               fieldName,
               propertySchema,
-              { refDepthMap: {} },
+              { refPath: [] },
               `#/paths/${escapeJsonPointer(apiPath)}/${method}/responses/${listResponseStatus || '200'}/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
           )
@@ -503,7 +633,7 @@ const buildUiManifest = (spec) => {
 
       if (method === 'post' && !isInstancePath) {
         const createSchema = getSchemaFromContent(operation.requestBody?.content);
-        const normalized = visitor.normalizeSchema(createSchema, { refDepthMap: {} }).schema || createSchema;
+        const normalized = visitor.normalizeSchema(createSchema, { refPath: [] }).schema || createSchema;
         const properties = normalized?.properties || {};
         const required = normalized?.required || [];
 
@@ -513,7 +643,7 @@ const buildUiManifest = (spec) => {
               fieldName,
               propertySchema,
               required.includes(fieldName),
-              { refDepthMap: {} },
+              { refPath: [] },
               0,
               `#/paths/${escapeJsonPointer(apiPath)}/${method}/requestBody/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
@@ -523,7 +653,7 @@ const buildUiManifest = (spec) => {
 
       if ((method === 'put' || method === 'patch') && isInstancePath) {
         const editSchema = getSchemaFromContent(operation.requestBody?.content);
-        const normalized = visitor.normalizeSchema(editSchema, { refDepthMap: {} }).schema || editSchema;
+        const normalized = visitor.normalizeSchema(editSchema, { refPath: [] }).schema || editSchema;
         const properties = normalized?.properties || {};
         const required = normalized?.required || [];
 
@@ -533,7 +663,7 @@ const buildUiManifest = (spec) => {
               fieldName,
               propertySchema,
               required.includes(fieldName),
-              { refDepthMap: {} },
+              { refPath: [] },
               0,
               `#/paths/${escapeJsonPointer(apiPath)}/${method}/requestBody/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
