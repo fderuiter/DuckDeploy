@@ -1,6 +1,8 @@
 name: Contract Fuzz Testing
 
 on:
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
   schedule:
     # Weekly Monday 3 AM UTC run to keep contract drift visible without daily API load.
