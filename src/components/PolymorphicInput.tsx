@@ -5,6 +5,13 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { mapSchemaToInput } from './SchemaToFieldMapper';
 import { resetPolymorphicValue } from './polymorphicState';
 
+const areShallowObjectsEqual = (left: Record<string, unknown>, right: Record<string, unknown>) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) return false;
+  return leftKeys.every((key) => left[key] === right[key]);
+};
+
 export const PolymorphicInput = ({
   source,
   schemas,
@@ -69,7 +76,7 @@ export const PolymorphicInput = ({
         cleanedValue[discriminatorProperty] = selectedDiscriminatorValue;
       }
 
-      if (JSON.stringify(currentValue) !== JSON.stringify(cleanedValue)) {
+      if (!areShallowObjectsEqual(currentValue as Record<string, unknown>, cleanedValue)) {
         setValue(source, cleanedValue, {
           shouldDirty: true,
           shouldTouch: true,

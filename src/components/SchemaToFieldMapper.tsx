@@ -106,6 +106,13 @@ const resolveDiscriminatorMetadata = (
   return { propertyName, values };
 };
 
+const areShallowObjectsEqual = (left: Record<string, unknown>, right: Record<string, unknown>) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) return false;
+  return leftKeys.every((key) => left[key] === right[key]);
+};
+
 const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) => {
   const validation = descriptor.validation || {};
   const schemaForValidation = {
@@ -222,7 +229,7 @@ const PrecomputedPolymorphicInput = ({
         cleanedValue[node.discriminatorProperty] = selectedDiscriminatorValue;
       }
 
-      if (JSON.stringify(currentValue) !== JSON.stringify(cleanedValue)) {
+      if (!areShallowObjectsEqual(currentValue as Record<string, unknown>, cleanedValue)) {
         setValue(node.source, cleanedValue, {
           shouldDirty: true,
           shouldTouch: true,
