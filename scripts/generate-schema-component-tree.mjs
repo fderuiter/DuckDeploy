@@ -52,6 +52,17 @@ const mergeSchemas = (baseSchema, overrideSchema) => {
   return merged;
 };
 
+const extractUiExtensions = (node) => {
+  if (!node || typeof node !== 'object') return {};
+
+  return Object.keys(node)
+    .filter((key) => key.startsWith('x-ui-'))
+    .reduce((acc, key) => {
+      acc[key] = node[key];
+      return acc;
+    }, {});
+};
+
 const extractListProperties = (schema, visitor) => {
   if (!schema || typeof schema !== 'object') return {};
   const normalizedRoot = visitor.normalizeSchema(schema, { refDepthMap: {} }).schema || schema;
@@ -198,24 +209,18 @@ class SchemaAstVisitor {
 
     if (depth > this.maxCircularRefDepth) return null;
 
+    const uiExtensions = extractUiExtensions(node);
+    const hasUiExtensions = Object.keys(uiExtensions).length > 0;
     const base = {
       source,
       isRequired,
       title: node.title,
       validation: this.getValidation(node),
+      widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
+      widgetProps:
+        uiExtensions['x-ui-props'] && typeof uiExtensions['x-ui-props'] === 'object' ? uiExtensions['x-ui-props'] : undefined,
+      uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
-
-    if (node['x-widget'] === 'json-editor') {
-      return { ...base, kind: 'custom_json_editor' };
-    }
-
-    if (node['x-widget'] === 'cdisc-terminology-lookup') {
-      return {
-        ...base,
-        kind: 'custom_terminology_lookup',
-        domain: node['x-terminology-domain'],
-      };
-    }
 
     if ((Array.isArray(node.oneOf) && node.oneOf.length > 0) || (Array.isArray(node.anyOf) && node.anyOf.length > 0)) {
       const options = (node.oneOf || node.anyOf)

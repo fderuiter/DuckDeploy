@@ -4,9 +4,11 @@ import { openApiDataProvider } from "./providers/openApiDataProvider";
 import { ResourceFactory } from "./components/ResourceFactory";
 import { WidgetRegistryProvider, registerWidget } from "./core/WidgetRegistry";
 import { CustomMapWidget } from "./components/custom/CustomMapWidget";
+import { TerminologyLookupInput } from "./components/custom/TerminologyLookupInput";
 import { ReflectiveAuthProvider } from "./core/ReflectiveAuthContext";
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
+registerWidget('cdisc-terminology', TerminologyLookupInput);
 
 const AdminApp = () => {
   const { isLoading, error } = useSpec();
