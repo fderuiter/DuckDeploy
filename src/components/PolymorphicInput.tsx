@@ -3,14 +3,7 @@ import { OpenAPIV3 } from 'openapi-types';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { mapSchemaToInput } from './SchemaToFieldMapper';
-import { resetPolymorphicValue } from './polymorphicState';
-
-const areShallowObjectsEqual = (left: Record<string, unknown>, right: Record<string, unknown>) => {
-  const leftKeys = Object.keys(left);
-  const rightKeys = Object.keys(right);
-  if (leftKeys.length !== rightKeys.length) return false;
-  return leftKeys.every((key) => left[key] === right[key]);
-};
+import { areShallowObjectsEqual, cleanupPolymorphicObjectValue, resetPolymorphicValue } from './polymorphicState';
 
 export const PolymorphicInput = ({
   source,
@@ -62,19 +55,12 @@ export const PolymorphicInput = ({
         : null;
     const currentValue = getValues(source);
     if (currentValue !== null && typeof currentValue === 'object' && !Array.isArray(currentValue)) {
-      const cleanedValue = Object.entries(currentValue as Record<string, unknown>).reduce<Record<string, unknown>>(
-        (acc, [key, value]) => {
-          if (key.endsWith('__schemaIndex')) return acc;
-          if (allowedKeys && !allowedKeys.has(key)) return acc;
-          acc[key] = value;
-          return acc;
-        },
-        {},
+      const cleanedValue = cleanupPolymorphicObjectValue(
+        currentValue as Record<string, unknown>,
+        allowedKeys,
+        discriminatorProperty,
+        selectedDiscriminatorValue,
       );
-
-      if (discriminatorProperty && selectedDiscriminatorValue !== undefined) {
-        cleanedValue[discriminatorProperty] = selectedDiscriminatorValue;
-      }
 
       if (!areShallowObjectsEqual(currentValue as Record<string, unknown>, cleanedValue)) {
         setValue(source, cleanedValue, {

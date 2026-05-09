@@ -71,6 +71,8 @@ export const adaptOutboundPayload = (
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(payload)) {
+    // `__schemaIndex` is internal UI state used by polymorphic selectors and
+    // must never be forwarded to backend APIs.
     if (key.endsWith('__schemaIndex')) continue;
 
     // Strip undefined – undefined is not valid JSON and pollutes downstream payloads
