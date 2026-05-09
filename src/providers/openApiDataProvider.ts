@@ -189,8 +189,13 @@ const normalizeProviderError = (error: unknown): unknown => {
 
   const body =
     responseData && typeof responseData === 'object' && !Array.isArray(responseData)
-      ? { ...(responseData as Record<string, unknown>), message, status: normalizedStatus, originalStatus: status }
-      : { message, detail: responseData ?? null, status: normalizedStatus, originalStatus: status };
+      ? {
+        ...(responseData as Record<string, unknown>),
+        message,
+        _normalizedStatus: normalizedStatus,
+        _originalStatus: status,
+      }
+      : { message, detail: responseData ?? null, _normalizedStatus: normalizedStatus, _originalStatus: status };
 
   return new HttpError(message, normalizedStatus, body);
 };
