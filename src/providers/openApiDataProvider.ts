@@ -88,7 +88,10 @@ const normalizeProviderError = (error: unknown): unknown => {
 
   const status = typeof error.response?.status === 'number' ? error.response.status : 0;
   const responseData = error.response?.data;
-  const message = extractErrorMessage(responseData) ?? error.message ?? 'Request failed';
+  const message =
+    extractErrorMessage(responseData) ??
+    error.message ??
+    'An unexpected error occurred while communicating with the API.';
 
   const body =
     responseData && typeof responseData === 'object' && !Array.isArray(responseData)
@@ -98,18 +101,29 @@ const normalizeProviderError = (error: unknown): unknown => {
   return new HttpError(message, status, body);
 };
 
-let hasInstalledErrorInterceptor = false;
+const ERROR_INTERCEPTOR_ID_KEY = '__errorInterceptorId';
+type InterceptorAwareAxiosInstance = typeof AXIOS_INSTANCE & { [ERROR_INTERCEPTOR_ID_KEY]?: number };
+const interceptorAwareAxiosInstance = AXIOS_INSTANCE as InterceptorAwareAxiosInstance;
 
 const installErrorNormalizationInterceptor = () => {
-  if (hasInstalledErrorInterceptor) {
+  if (typeof interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY] === 'number') {
     return;
   }
 
-  AXIOS_INSTANCE.interceptors.response.use(
+  interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY] = AXIOS_INSTANCE.interceptors.response.use(
     (response) => response,
     (error) => Promise.reject(normalizeProviderError(error)),
   );
-  hasInstalledErrorInterceptor = true;
+};
+
+export const resetErrorInterceptor = () => {
+  const interceptorId = interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY];
+  if (typeof interceptorId !== 'number') {
+    return;
+  }
+
+  AXIOS_INSTANCE.interceptors.response.eject(interceptorId);
+  delete interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY];
 };
 
 installErrorNormalizationInterceptor();
