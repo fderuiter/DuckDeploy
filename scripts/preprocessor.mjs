@@ -115,7 +115,7 @@ const resolveStrictDiscriminator = (schema, variants) => {
     return undefined;
   });
 
-  if (values.some((value) => value === undefined)) {
+  if (values.some((value) => value === undefined || value === '')) {
     return null;
   }
 

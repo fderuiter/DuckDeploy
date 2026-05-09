@@ -23,7 +23,7 @@ export const cleanupPolymorphicObjectValue = (
     return acc;
   }, {});
 
-  if (discriminatorProperty && discriminatorValue !== undefined) {
+  if (discriminatorProperty && discriminatorProperty.trim().length > 0 && discriminatorValue !== undefined && discriminatorValue !== '') {
     cleanedValue[discriminatorProperty] = discriminatorValue;
   }
 
@@ -39,7 +39,9 @@ export const resetPolymorphicValue = (
 ) => {
   unregister(source);
   const nextValue =
-    discriminatorProperty && discriminatorValue !== undefined ? { [discriminatorProperty]: discriminatorValue } : undefined;
+    discriminatorProperty && discriminatorProperty.trim().length > 0 && discriminatorValue !== undefined && discriminatorValue !== ''
+      ? { [discriminatorProperty]: discriminatorValue }
+      : undefined;
   setValue(source, nextValue, {
     shouldDirty: true,
     shouldTouch: true,
@@ -53,7 +55,12 @@ export const setPolymorphicDiscriminatorValue = (
   discriminatorProperty?: string,
   discriminatorValue?: string,
 ) => {
-  if (!discriminatorProperty || discriminatorValue === undefined) {
+  if (
+    !discriminatorProperty ||
+    discriminatorProperty.trim().length === 0 ||
+    discriminatorValue === undefined ||
+    discriminatorValue === ''
+  ) {
     return;
   }
 
