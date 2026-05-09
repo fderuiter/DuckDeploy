@@ -34,7 +34,7 @@ const pickPreferredMediaType = (content) => {
   return firstType ? { [firstType]: content[firstType] } : content;
 };
 
-const optimizeOperation = (route, method, operation) => {
+const optimizeOperation = (route, method, operation, rootSchema) => {
   if (!operation || typeof operation !== 'object') return;
 
   if (!operation.operationId || typeof operation.operationId !== 'string') {
@@ -44,6 +44,51 @@ const optimizeOperation = (route, method, operation) => {
   if (!Array.isArray(operation.tags) || operation.tags.length === 0) {
     const fallbackTag = route.split('/').filter(Boolean)[0] ?? 'default';
     operation.tags = [fallbackTag];
+  }
+
+  // Auto-Injecting Auth Responses
+  let requiresAuth = false;
+  if (operation.security && Array.isArray(operation.security)) {
+    if (operation.security.length > 0) {
+      requiresAuth = true;
+    } else {
+      requiresAuth = false; // explicitly empty [] overrides and means no auth
+    }
+  } else if (rootSchema.security && Array.isArray(rootSchema.security) && rootSchema.security.length > 0) {
+    requiresAuth = true;
+  }
+
+  if (requiresAuth) {
+    if (!operation.responses) {
+      operation.responses = {};
+    }
+    if (!operation.responses['401']) {
+      operation.responses['401'] = {
+        description: 'Unauthorized',
+        content: { 'application/json': { schema: {} } },
+      };
+    }
+    if (!operation.responses['403']) {
+      operation.responses['403'] = {
+        description: 'Forbidden',
+        content: { 'application/json': { schema: {} } },
+      };
+    }
+  }
+
+  // Standardize Content Types
+  if (['get', 'post', 'put', 'patch', 'delete'].includes(method.toLowerCase())) {
+    if (operation.responses && typeof operation.responses === 'object') {
+      for (const [statusCode, response] of Object.entries(operation.responses)) {
+        if (response && typeof response === 'object' && !response.content) {
+          response.content = { 'application/json': { schema: {} } };
+        }
+      }
+    }
+  }
+
+  if (operation.requestBody && typeof operation.requestBody === 'object' && !operation.requestBody.content) {
+    operation.requestBody.content = { 'application/json': { schema: {} } };
   }
 
   if (operation.requestBody?.content) {
@@ -117,7 +162,7 @@ const compile = async () => {
 
       for (const [method, operation] of Object.entries(pathItem)) {
         if (!HTTP_METHODS.has(method.toLowerCase())) continue;
-        optimizeOperation(route, method, operation);
+        optimizeOperation(route, method, operation, dereferenced);
       }
     }
   }
