@@ -770,8 +770,8 @@ const compile = () => {
     entries: traceabilityEntries,
   };
   const serializedManifest = `${JSON.stringify(manifest, null, 2)}${STABLE_JSON_EOL}`;
-  // Keep SHA-256 + lowercase hex aligned with browser-side verification in SpecContext (Web Crypto API).
   // STABLE_JSON_EOL is intentional and must stay stable for deterministic hashing.
+  // This hash is emitted as build metadata (ui-manifest.sha256) for CI/artifact traceability.
   const manifestHash = crypto.createHash('sha256').update(serializedManifest, 'utf8').digest('hex');
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });

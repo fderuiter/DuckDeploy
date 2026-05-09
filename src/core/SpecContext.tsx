@@ -26,7 +26,6 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
         const manifestUrl = `${import.meta.env.BASE_URL}ui-manifest.json`;
-        const expectedHash = import.meta.env.VITE_MANIFEST_HASH as string;
 
         // ── Start both requests concurrently ─────────────────────────────────
         // The worker begins fetching + hashing ui-manifest.json in parallel
@@ -72,7 +71,7 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             );
           };
 
-          worker.postMessage({ url: manifestUrl, expectedHash });
+          worker.postMessage({ url: manifestUrl });
         });
 
         // ── 1. Schema fetch (main thread) ─────────────────────────────────────
