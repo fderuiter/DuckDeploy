@@ -12,7 +12,8 @@ let resourceMap: Record<string, ResourceDefinition> = {};
 
 const buildCacheKey = (resource: string, action: string) => `${resource}:${action}`;
 
-const buildProbeUrl = (path: string) => path.replace(/\{[^/]+\}/g, AUTH_PROBE_ID);
+const buildProbeUrl = (path: string) =>
+  path.replace(/\{([^/}]+)\}/g, (_match, parameterName: string) => `${AUTH_PROBE_ID}_${parameterName}`);
 
 const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: ResourceAction): AxiosRequestConfig | null => {
   switch (action) {
@@ -23,11 +24,11 @@ const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: Resou
     case 'create':
       return resourceDefinition.createPath ? { method: 'options', url: buildProbeUrl(resourceDefinition.createPath) } : null;
     case 'edit':
-      return resourceDefinition.editPath && resourceDefinition.editMethod
-        ? { method: resourceDefinition.editMethod, url: buildProbeUrl(resourceDefinition.editPath), data: {} }
+      return resourceDefinition.editPath
+        ? { method: 'options', url: buildProbeUrl(resourceDefinition.editPath) }
         : null;
     case 'delete':
-      return resourceDefinition.deletePath ? { method: 'delete', url: buildProbeUrl(resourceDefinition.deletePath) } : null;
+      return resourceDefinition.deletePath ? { method: 'options', url: buildProbeUrl(resourceDefinition.deletePath) } : null;
     default:
       return null;
   }
