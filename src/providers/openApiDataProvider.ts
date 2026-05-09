@@ -1,4 +1,4 @@
-import { isAxiosError } from 'axios';
+import { isAxiosError, type AxiosError } from 'axios';
 import { HttpError, type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
 import { AXIOS_INSTANCE } from '../api/custom-instance';
 import type { ResourceDefinition } from '../core/discovery';
@@ -77,6 +77,91 @@ const extractErrorMessage = (payload: unknown): string | undefined => {
   return undefined;
 };
 
+const extractErrorCode = (payload: unknown): string | undefined => {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return undefined;
+  }
+
+  const source = payload as Record<string, unknown>;
+  for (const candidate of ['code', 'errorCode', 'type', 'reason']) {
+    const value = source[candidate];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
+const AUTH_HINT_PATTERN =
+  /\b(unauthori[sz]ed|forbidden|access denied|authentication required|not authenticated|invalid token|token expired|missing credentials)\b/i;
+const FORBIDDEN_HINT_PATTERN = /\b(forbidden|insufficient permissions?|not allowed|access denied)\b/i;
+
+const getHeaderValue = (headers: unknown, headerName: string): string | undefined => {
+  if (!headers || typeof headers !== 'object') {
+    return undefined;
+  }
+
+  const normalizedHeaderName = headerName.toLowerCase();
+  for (const [key, value] of Object.entries(headers as Record<string, unknown>)) {
+    if (key.toLowerCase() !== normalizedHeaderName) {
+      continue;
+    }
+
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      const firstString = value.find((entry): entry is string => typeof entry === 'string');
+      if (firstString) {
+        return firstString;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const normalizeErrorStatus = (status: number, message: string, responseData: unknown, responseHeaders: unknown): number => {
+  if (status === 401 || status === 403) {
+    return status;
+  }
+
+  if (status !== 404 && (status < 500 || status > 599)) {
+    return status;
+  }
+
+  const errorCode = extractErrorCode(responseData);
+  const hasWwwAuthenticateHeader = typeof getHeaderValue(responseHeaders, 'www-authenticate') === 'string';
+  const hasAuthHint =
+    AUTH_HINT_PATTERN.test(message) ||
+    (typeof errorCode === 'string' && AUTH_HINT_PATTERN.test(errorCode)) ||
+    hasWwwAuthenticateHeader;
+
+  if (!hasAuthHint) {
+    return status;
+  }
+
+  return FORBIDDEN_HINT_PATTERN.test(message) ? 403 : 401;
+};
+
+const dispatchNormalizedAuthViolation = (error: AxiosError, status: number) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const requestConfig = error?.response?.config ?? error?.config;
+  const event = new CustomEvent('duckdeploy:auth_violation', {
+    detail: {
+      method: requestConfig?.method?.toUpperCase(),
+      url: requestConfig?.url,
+      status,
+    },
+  });
+  window.dispatchEvent(event);
+};
+
 const normalizeProviderError = (error: unknown): unknown => {
   if (error instanceof HttpError) {
     return error;
@@ -92,13 +177,18 @@ const normalizeProviderError = (error: unknown): unknown => {
     extractErrorMessage(responseData) ??
     error.message ??
     'An unexpected error occurred while communicating with the API.';
+  const normalizedStatus = normalizeErrorStatus(status, message, responseData, error.response?.headers);
+
+  if ((normalizedStatus === 401 || normalizedStatus === 403) && normalizedStatus !== status) {
+    dispatchNormalizedAuthViolation(error, normalizedStatus);
+  }
 
   const body =
     responseData && typeof responseData === 'object' && !Array.isArray(responseData)
-      ? { ...(responseData as Record<string, unknown>), message }
-      : { message, detail: responseData ?? null };
+      ? { ...(responseData as Record<string, unknown>), message, status: normalizedStatus, originalStatus: status }
+      : { message, detail: responseData ?? null, status: normalizedStatus, originalStatus: status };
 
-  return new HttpError(message, status, body);
+  return new HttpError(message, normalizedStatus, body);
 };
 
 const ERROR_INTERCEPTOR_ID_KEY = '__errorInterceptorId';
