@@ -6,7 +6,7 @@ DuckDeploy is a zero-boilerplate, API-first React template built with Vite and T
 
 1. Update `openapi.yaml` with your API specification.
 2. Run `npm run dev` locally (or `npm run build` in CI).
-3. The build pipeline compiles `openapi.yaml` into `public/schema.json` (dereferenced + optimized) and Orval generates TypeScript models and React Query hooks into `src/api/`.
+3. The build pipeline compiles `openapi.yaml` into `public/schema.json` (dereferenced + optimized) and Orval generates TypeScript models and Axios fetchers into `src/api/`.
 4. The browser loads only the static `schema.json` artifact (not raw YAML), and GitHub Actions builds and deploys the app to GitHub Pages.
 
 ## Scripts
@@ -23,7 +23,7 @@ DuckDeploy is a zero-boilerplate, API-first React template built with Vite and T
 The GitHub Actions workflow in `.github/workflows/deploy-pages.yml` runs on pushes to `main` and on manual dispatch. It automatically:
 
 - Installs dependencies
-- Generates TypeScript models and React Query hooks from `openapi.yaml`
+- Generates TypeScript models and Axios fetchers from `openapi.yaml`
 - Compiles OpenAPI into static `public/schema.json`
 - Builds the app
 - Deploys the `dist` output to GitHub Pages
