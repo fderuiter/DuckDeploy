@@ -70,6 +70,57 @@ const extractUiExtensions = (node) => {
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const mergeUnique = (base = [], override = []) => Array.from(new Set([...(base || []), ...(override || [])]));
+const toDiscriminatorValue = (value) =>
+  typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : undefined;
+
+const resolveStrictDiscriminator = (schema, variants) => {
+  const discriminator = isObject(schema?.discriminator) ? schema.discriminator : null;
+  const propertyName =
+    typeof discriminator?.propertyName === 'string' && discriminator.propertyName.trim().length > 0
+      ? discriminator.propertyName
+      : null;
+
+  if (!propertyName || !Array.isArray(variants) || variants.length === 0) {
+    return null;
+  }
+
+  const mappingByRef = new Map();
+  if (isObject(discriminator.mapping)) {
+    for (const [value, ref] of Object.entries(discriminator.mapping)) {
+      if (typeof ref === 'string' && ref.trim().length > 0) {
+        mappingByRef.set(ref, value);
+      }
+    }
+  }
+
+  const values = variants.map((variant) => {
+    const variantRef = typeof variant?.['x-origin-ref'] === 'string' ? variant['x-origin-ref'] : null;
+    if (variantRef && mappingByRef.has(variantRef)) {
+      return mappingByRef.get(variantRef);
+    }
+
+    const discriminatorProperty = isObject(variant?.properties?.[propertyName]) ? variant.properties[propertyName] : null;
+    const constValue = toDiscriminatorValue(discriminatorProperty?.const);
+    if (constValue !== undefined) {
+      return constValue;
+    }
+
+    if (Array.isArray(discriminatorProperty?.enum) && discriminatorProperty.enum.length === 1) {
+      const enumValue = toDiscriminatorValue(discriminatorProperty.enum[0]);
+      if (enumValue !== undefined) {
+        return enumValue;
+      }
+    }
+
+    return undefined;
+  });
+
+  if (values.some((value) => value === undefined)) {
+    return null;
+  }
+
+  return { propertyName, values };
+};
 
 const mergeSchema = (baseSchema, overrideSchema) => {
   if (!isObject(baseSchema) || !isObject(overrideSchema)) {
@@ -207,6 +258,9 @@ class OpenApiVisitor {
 
       const { $ref, ...overrides } = schema;
       const merged = mergeSchema(resolved, overrides);
+      if (typeof schema.$ref === 'string' && !merged['x-origin-ref']) {
+        merged['x-origin-ref'] = schema.$ref;
+      }
       return { schema: this.normalizeSchema(merged, pathState.context).schema, context };
     }
 
@@ -385,21 +439,32 @@ class OpenApiVisitor {
     };
 
     if ((Array.isArray(node.oneOf) && node.oneOf.length > 0) || (Array.isArray(node.anyOf) && node.anyOf.length > 0)) {
-      const variants = (node.oneOf || node.anyOf)
+      const variantSchemas = node.oneOf || node.anyOf;
+      const strictDiscriminator = resolveStrictDiscriminator(node, variantSchemas);
+      const variants = variantSchemas
         .map((variant, index) => {
           const variantPointer = `${pointer}/${node.oneOf ? 'oneOf' : 'anyOf'}/${index}`;
           const variantNode = this.visitFormNode(source, variant, isRequired, normalized.context, depth + 1, variantPointer);
           if (!variantNode) return null;
-          return {
+          const resolvedVariant = {
             label: variantNode.title || `Option ${index + 1}`,
             node: variantNode,
           };
+          if (strictDiscriminator) {
+            resolvedVariant.discriminatorValue = strictDiscriminator.values[index];
+          }
+          return resolvedVariant;
         })
         .filter(Boolean);
 
       if (variants.length > 0) {
         this.addTraceability(pointer, source, '<PolymorphicInput />');
-        return { ...base, kind: 'polymorphic', options: variants };
+        return {
+          ...base,
+          kind: 'polymorphic',
+          discriminatorProperty: strictDiscriminator?.propertyName,
+          options: variants,
+        };
       }
     }
 

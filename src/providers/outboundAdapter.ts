@@ -71,6 +71,8 @@ export const adaptOutboundPayload = (
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(payload)) {
+    if (key.endsWith('__schemaIndex')) continue;
+
     // Strip undefined – undefined is not valid JSON and pollutes downstream payloads
     if (value === undefined) continue;
 
