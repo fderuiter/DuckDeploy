@@ -133,18 +133,20 @@ const AdminApp = () => {
   }, [resources, operationMappings]);
 
   useEffect(() => {
-    if (!runtimeConfig.healthUrl) {
-      setIsProxyLoading(false);
-      return;
-    }
-
     const controller = new AbortController();
+    const healthUrl = runtimeConfig.healthUrl;
+    if (!healthUrl) {
+      setIsProxyLoading(false);
+      return () => {
+        controller.abort();
+      };
+    }
 
     const loadProxyHealth = async () => {
       setIsProxyLoading(true);
 
       try {
-        const response = await fetch(runtimeConfig.healthUrl!, {
+        const response = await fetch(healthUrl, {
           headers: { Accept: 'application/json' },
           signal: controller.signal,
         });

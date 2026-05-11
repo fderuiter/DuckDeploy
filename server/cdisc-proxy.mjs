@@ -3,13 +3,14 @@ import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
 import yaml from 'js-yaml';
 
-const PORT = Number.parseInt(process.env.PORT ?? '8787', 10);
+const PORT = parsePort(process.env.PORT);
 const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdisc');
 const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
 const MAX_REQUEST_BODY_BYTES = Number.parseInt(process.env.CDISC_PROXY_MAX_BODY_BYTES ?? '1048576', 10);
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CDISC_PROXY_TIMEOUT_MS ?? '15000', 10);
 const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
+const PROXY_ALLOWED_RESPONSE_HEADERS = ['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count'];
 const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS);
 const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'true';
 const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_URL);
@@ -25,6 +26,16 @@ function normalizePrefix(value) {
 
   const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   return withLeadingSlash.replace(/\/+$/, '');
+}
+
+function parsePort(rawValue) {
+  const normalized = typeof rawValue === 'string' && rawValue.trim().length > 0 ? rawValue.trim() : '8787';
+  const parsed = Number(normalized);
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
+    throw new Error(`Invalid PORT value: ${normalized}`);
+  }
+
+  return parsed;
 }
 
 function parseAllowedOrigins(rawValue) {
@@ -251,7 +262,9 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
       : await readRequestBody(request);
 
   const queryParams = new URLSearchParams(url.searchParams);
-  queryParams.delete('api-key');
+  for (const keyName of ['api-key', 'apikey', 'apiKey', 'API-KEY', 'APIKEY']) {
+    queryParams.delete(keyName);
+  }
 
   const upstreamUrl = new URL(upstreamPath, UPSTREAM_BASE_URL);
   upstreamUrl.search = queryParams.toString();
@@ -280,7 +293,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
   response.statusCode = upstreamResponse.status;
 
   for (const [name, value] of upstreamResponse.headers.entries()) {
-    if (['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count'].includes(name.toLowerCase())) {
+    if (PROXY_ALLOWED_RESPONSE_HEADERS.includes(name.toLowerCase())) {
       response.setHeader(name, value);
     }
   }
