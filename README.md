@@ -25,7 +25,7 @@ DuckDeploy is a zero-boilerplate, API-first React template built with Vite and T
 
 The frontend is static, so `CDISC_PRIMARY_KEY` and `CDISC_SECONDARY_KEY` must **not** be injected into the Vite build. Instead:
 
-1. Deploy the backend proxy from `/home/runner/work/DuckDeploy/DuckDeploy/server/cdisc-proxy.mjs`.
+1. Deploy the backend proxy from `server/cdisc-proxy.mjs`.
 2. Configure these environment variables on the proxy host:
    - `CDISC_PRIMARY_KEY`
    - `CDISC_SECONDARY_KEY`

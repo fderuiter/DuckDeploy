@@ -316,11 +316,11 @@ const server = http.createServer(async (request, response) => {
   try {
     await proxyToUpstream(request, response, requestUrl, requestOrigin);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    console.error('CDISC proxy request failed:', error);
     sendJson(response, 502, {
       ok: false,
       code: 'PROXY_REQUEST_FAILED',
-      message,
+      message: 'The proxy could not complete the upstream request.',
     }, requestOrigin);
   }
 });
