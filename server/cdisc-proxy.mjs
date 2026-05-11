@@ -65,7 +65,7 @@ function parseAllowedOrigins(rawValue) {
 }
 
 function validateTrustedIngressConfig() {
-  if ((TRUSTED_INGRESS_HEADER_NAME && !TRUSTED_INGRESS_HEADER_VALUE) || (!TRUSTED_INGRESS_HEADER_NAME && TRUSTED_INGRESS_HEADER_VALUE)) {
+  if (Boolean(TRUSTED_INGRESS_HEADER_NAME) !== Boolean(TRUSTED_INGRESS_HEADER_VALUE)) {
     throw new Error(
       'CDISC_TRUSTED_INGRESS_HEADER_NAME and CDISC_TRUSTED_INGRESS_HEADER_VALUE must be configured together.',
     );
@@ -114,7 +114,8 @@ function buildUpstreamUrl(upstreamPath, searchParams) {
   const upstreamUrl = new URL(UPSTREAM_BASE_URL);
   const basePath = upstreamUrl.pathname.replace(/\/+$/, '');
   const relativePath = upstreamPath.replace(/^\/+/, '');
-  upstreamUrl.pathname = [basePath, relativePath].filter(Boolean).join('/').replace(/^([^/])/, '/$1');
+  const joinedPath = [basePath, relativePath].filter(Boolean).join('/');
+  upstreamUrl.pathname = joinedPath.startsWith('/') ? joinedPath : `/${joinedPath}`;
   upstreamUrl.search = searchParams.toString();
   return upstreamUrl;
 }
