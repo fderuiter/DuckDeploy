@@ -1,10 +1,13 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 import type { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
+import { getRuntimeApiConfig } from '../core/runtimeConfig';
 
 type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
+const runtimeConfig = getRuntimeApiConfig();
+
 export const AXIOS_INSTANCE = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: runtimeConfig.apiBaseUrl ?? '',
   headers: {
     'Content-Type': 'application/json',
   },
