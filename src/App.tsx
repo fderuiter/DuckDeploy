@@ -39,6 +39,7 @@ interface AuthViolationDetail {
 }
 
 const runtimeConfig = getRuntimeApiConfig();
+const AUTH_VIOLATION_EVENT = 'duckdeploy:auth_violation';
 
 const createSpecIssue = (error: Error): BootstrapIssue => ({
   title: 'Application bootstrap failed',
@@ -79,9 +80,14 @@ const createProxyHealthIssue = (status: number, payload: ProxyHealthResponse | n
 
 const createProxyUnavailableIssue = (error: Error): BootstrapIssue => ({
   title: 'API proxy is unreachable',
-  message: 'DuckDeploy could not reach the configured backend proxy.',
+  message:
+    error.name === 'TypeError'
+      ? 'DuckDeploy could not connect to the configured backend proxy.'
+      : 'DuckDeploy could not reach the configured backend proxy.',
   details: [
-    error.message,
+    error.name === 'TypeError'
+      ? 'The proxy may be stopped, deployed at a different URL, or blocked by CORS/origin policy.'
+      : error.message,
     'Start the local proxy with `npm run proxy`, or deploy the backend proxy and set VITE_API_BASE_URL to its public base URL.',
   ],
 });
@@ -189,9 +195,9 @@ const AdminApp = () => {
       setProxyIssue(createAuthViolationIssue(customEvent.detail ?? {}));
     };
 
-    window.addEventListener('duckdeploy:auth_violation', handleAuthViolation as EventListener);
+    window.addEventListener(AUTH_VIOLATION_EVENT, handleAuthViolation as EventListener);
     return () => {
-      window.removeEventListener('duckdeploy:auth_violation', handleAuthViolation as EventListener);
+      window.removeEventListener(AUTH_VIOLATION_EVENT, handleAuthViolation as EventListener);
     };
   }, []);
 

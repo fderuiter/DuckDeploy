@@ -6,10 +6,14 @@ import { AutoCreate, AutoEdit } from './AutoForm';
 export const resolveAdminResources = (spec: unknown, uiManifest: unknown): ResourceDefinition[] => {
   const discovered = discoverResources(spec);
   const discoveredByName = new Map(discovered.map((resourceDefinition) => [resourceDefinition.name, resourceDefinition]));
-  const manifestResources =
-    uiManifest && typeof uiManifest === 'object' && (uiManifest as { resources?: unknown }).resources && typeof (uiManifest as { resources?: unknown }).resources === 'object'
-      ? Object.entries((uiManifest as { resources: Record<string, unknown> }).resources)
-      : [];
+  const manifestResourceMap =
+    uiManifest &&
+    typeof uiManifest === 'object' &&
+    (uiManifest as { resources?: unknown }).resources &&
+    typeof (uiManifest as { resources?: unknown }).resources === 'object'
+      ? ((uiManifest as { resources: Record<string, unknown> }).resources)
+      : null;
+  const manifestResources = manifestResourceMap ? Object.entries(manifestResourceMap) : [];
 
   const fromManifest = manifestResources
     .map(([resourceName, mapping]) => {

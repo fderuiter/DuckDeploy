@@ -9,6 +9,7 @@ const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdi
 const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
 const MAX_REQUEST_BODY_BYTES = Number.parseInt(process.env.CDISC_PROXY_MAX_BODY_BYTES ?? '1048576', 10);
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CDISC_PROXY_TIMEOUT_MS ?? '15000', 10);
+const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS);
 const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'true';
 
@@ -26,10 +27,9 @@ function normalizePrefix(value) {
 }
 
 function parseAllowedOrigins(rawValue) {
-  const fallbackOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
   const values = typeof rawValue === 'string' && rawValue.trim().length > 0
     ? rawValue.split(',').map((entry) => entry.trim()).filter(Boolean)
-    : fallbackOrigins;
+    : DEFAULT_ALLOWED_ORIGINS;
   return new Set(values);
 }
 
@@ -263,15 +263,6 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     if (upstreamResponse.status !== 401 && upstreamResponse.status !== 403) {
       break;
     }
-  }
-
-  if (!upstreamResponse) {
-    sendJson(response, 502, {
-      ok: false,
-      code: 'PROXY_UPSTREAM_UNAVAILABLE',
-      message: 'CDISC proxy could not reach the upstream API.',
-    }, requestOrigin);
-    return;
   }
 
   setCorsHeaders(response, requestOrigin);
