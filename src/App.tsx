@@ -97,7 +97,8 @@ const createAuthViolationIssue = (detail: AuthViolationDetail): BootstrapIssue =
   message: 'The backend proxy reached CDISC but the configured credentials were rejected.',
   details: [
     `HTTP status: ${detail.status ?? 'unknown'}`,
-    detail.method && detail.url ? `Request: ${detail.method} ${detail.url}` : 'Verify CDISC_PRIMARY_KEY and CDISC_SECONDARY_KEY on the proxy deployment.',
+    'Verify CDISC_PRIMARY_KEY and CDISC_SECONDARY_KEY on the proxy deployment.',
+    ...(detail.method && detail.url ? [`Request: ${detail.method} ${detail.url}`] : []),
   ],
 });
 

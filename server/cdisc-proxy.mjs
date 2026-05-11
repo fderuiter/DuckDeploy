@@ -4,14 +4,15 @@ import { URL } from 'node:url';
 import yaml from 'js-yaml';
 
 const PORT = Number.parseInt(process.env.PORT ?? '8787', 10);
-const UPSTREAM_BASE_URL = new URL(process.env.CDISC_UPSTREAM_BASE_URL ?? 'https://api.library.cdisc.org');
 const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdisc');
 const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
 const MAX_REQUEST_BODY_BYTES = Number.parseInt(process.env.CDISC_PROXY_MAX_BODY_BYTES ?? '1048576', 10);
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CDISC_PROXY_TIMEOUT_MS ?? '15000', 10);
 const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
 const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS);
 const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'true';
+const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_URL);
 
 const OPENAPI_SPEC_URL = new URL('../openapi.yaml', import.meta.url);
 const allowedOperations = await loadAllowedOperations(OPENAPI_SPEC_URL);
@@ -53,6 +54,17 @@ async function loadAllowedOperations(specUrl) {
       methods,
     };
   });
+}
+
+function parseUpstreamBaseUrl(rawValue) {
+  try {
+    return new URL(rawValue ?? 'https://api.library.cdisc.org');
+  } catch (error) {
+    const configuredValue = typeof rawValue === 'string' && rawValue.trim().length > 0
+      ? rawValue
+      : '(default)';
+    throw new Error(`Invalid CDISC_UPSTREAM_BASE_URL: ${configuredValue}`, { cause: error });
+  }
 }
 
 function pathToRegExp(pathTemplate) {
@@ -135,7 +147,7 @@ function setCorsHeaders(response, requestOrigin) {
   }
 
   response.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Accept, Accept-Language, Content-Type, If-Match, If-None-Match, Prefer, Range');
+  response.setHeader('Access-Control-Allow-Headers', PROXY_ALLOWED_HEADERS.join(', '));
   response.setHeader('Access-Control-Max-Age', '600');
   response.setHeader('Vary', 'Origin');
 }
@@ -150,11 +162,10 @@ function sendJson(response, status, payload, requestOrigin) {
 }
 
 function stripHopByHopHeaders(headers) {
-  const allowedHeaders = ['accept', 'accept-language', 'content-type', 'if-match', 'if-none-match', 'prefer', 'range'];
   const stripped = new Headers();
 
   for (const [name, value] of Object.entries(headers)) {
-    if (!allowedHeaders.includes(name.toLowerCase())) {
+    if (!PROXY_ALLOWED_HEADERS.map((header) => header.toLowerCase()).includes(name.toLowerCase())) {
       continue;
     }
 
