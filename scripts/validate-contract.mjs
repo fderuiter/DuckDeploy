@@ -1,14 +1,13 @@
 /**
  * validate-contract.mjs
  *
- * Static "Contract of Substitutability" check.
+ * Static manifest-mapping check.
  *
- * Reads the traceability-matrix.json produced by the preprocessor and verifies
+ * Reads the manifest-generation-log.json produced by the preprocessor and verifies
  * that every field discovered in the OpenAPI spec is legally mapped to a UI
  * component.  A field is "discarded" when the preprocessor could not determine
  * a component for it (e.g. unsupported schema shape); having such unmapped
- * fields means the generated UI would silently drop backend data, violating the
- * 1:1 structural bisimilarity contract.
+ * fields means the generated UI would silently drop backend data.
  *
  * The script also cross-validates that constraint-bearing fields (enum,
  * minLength, pattern) have been emitted with a component that enforces those
@@ -28,7 +27,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
-const MATRIX_PATH = path.join(repoRoot, 'traceability-matrix.json');
+const MATRIX_PATH = path.join(repoRoot, 'manifest-generation-log.json');
 const OPENAPI_CANDIDATES = [
   path.join(repoRoot, 'openapi.yaml'),
   path.join(repoRoot, 'openapi.yml'),
@@ -45,13 +44,13 @@ const TEXT_CONSTRAINT_COMPONENTS = new Set(['<TextInput />', '<PolymorphicInput 
 const loadMatrix = () => {
   if (!fs.existsSync(MATRIX_PATH)) {
     throw new Error(
-      `traceability-matrix.json not found at ${MATRIX_PATH}. Run "npm run generate" first.`,
+      `manifest-generation-log.json not found at ${MATRIX_PATH}. Run "npm run generate" first.`,
     );
   }
   const raw = fs.readFileSync(MATRIX_PATH, 'utf8');
   const parsed = JSON.parse(raw);
   if (!Array.isArray(parsed?.entries)) {
-    throw new Error('traceability-matrix.json is malformed: expected { entries: [...] }.');
+    throw new Error('manifest-generation-log.json is malformed: expected { entries: [...] }.');
   }
   return parsed.entries;
 };
@@ -238,7 +237,7 @@ const validate = () => {
   const total = entries.length;
   const mapped = entries.filter((e) => e.status === 'mapped').length;
 
-  console.log(`Contract validation — ${mapped}/${total} entries mapped.`);
+  console.log(`Manifest mapping validation — ${mapped}/${total} entries mapped.`);
 
   if (violations.length > 0) {
     console.error(`\nContract violations (${violations.length}):`);
@@ -248,7 +247,7 @@ const validate = () => {
     console.error('\nDeployment blocked: fix the above violations before proceeding.');
     process.exitCode = 1;
   } else {
-    console.log('Contract of Substitutability: VALID ✓');
+    console.log('Manifest mapping checks: VALID ✓');
   }
 };
 
