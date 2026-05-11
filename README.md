@@ -29,9 +29,12 @@ The frontend is static, so `CDISC_PRIMARY_KEY` and `CDISC_SECONDARY_KEY` must **
 2. Configure these environment variables on the proxy host:
    - `CDISC_PRIMARY_KEY`
    - `CDISC_SECONDARY_KEY`
-   - `CDISC_ALLOWED_ORIGINS` (comma-separated frontend origins; defaults to local Vite origins only)
-   - `CDISC_UPSTREAM_BASE_URL` (optional, defaults to `https://api.library.cdisc.org`)
+   - `CDISC_ALLOWED_ORIGINS` (comma-separated frontend origins for CORS; defaults to local Vite origins only)
+   - `CDISC_UPSTREAM_BASE_URL` (optional, defaults to `https://api.library.cdisc.org`; base paths are preserved)
+   - `CDISC_TRUSTED_INGRESS_HEADER_NAME` and `CDISC_TRUSTED_INGRESS_HEADER_VALUE` (optional for local loopback-only usage, required when the proxy is exposed behind a reverse proxy)
 3. Configure the frontend build with `VITE_API_BASE_URL`, pointing at the deployed proxy base URL such as `https://proxy.example.com/api/cdisc`.
+
+For public deployments, do not rely on `Origin`/`Referer` as an access-control boundary. Instead, place the proxy behind infrastructure that injects the configured trusted ingress header (or an equivalent network control such as IP allow-listing) before requests reach `server/cdisc-proxy.mjs`.
 
 For local development, run the proxy and Vite side by side:
 

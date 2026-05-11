@@ -32,14 +32,7 @@ interface ProxyHealthResponse {
   upstreamBaseUrl?: string;
 }
 
-interface AuthViolationDetail {
-  method?: string;
-  status?: number;
-  url?: string;
-}
-
 const runtimeConfig = getRuntimeApiConfig();
-const AUTH_VIOLATION_EVENT = 'duckdeploy:auth_violation';
 
 const createSpecIssue = (error: Error): BootstrapIssue => ({
   title: 'Application bootstrap failed',
@@ -89,16 +82,6 @@ const createProxyUnavailableIssue = (error: Error): BootstrapIssue => ({
       ? 'The proxy may be stopped, deployed at a different URL, or blocked by CORS/origin policy.'
       : error.message,
     'Start the local proxy with `npm run proxy`, or deploy the backend proxy and set VITE_API_BASE_URL to its public base URL.',
-  ],
-});
-
-const createAuthViolationIssue = (detail: AuthViolationDetail): BootstrapIssue => ({
-  title: 'Proxy authentication failed',
-  message: 'The backend proxy reached CDISC but the configured credentials were rejected.',
-  details: [
-    `HTTP status: ${detail.status ?? 'unknown'}`,
-    'Verify CDISC_PRIMARY_KEY and CDISC_SECONDARY_KEY on the proxy deployment.',
-    ...(detail.method && detail.url ? [`Request: ${detail.method} ${detail.url}`] : []),
   ],
 });
 
@@ -189,18 +172,6 @@ const AdminApp = () => {
 
     return () => {
       controller.abort();
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleAuthViolation = (event: Event) => {
-      const customEvent = event as CustomEvent<AuthViolationDetail>;
-      setProxyIssue(createAuthViolationIssue(customEvent.detail ?? {}));
-    };
-
-    window.addEventListener(AUTH_VIOLATION_EVENT, handleAuthViolation as EventListener);
-    return () => {
-      window.removeEventListener(AUTH_VIOLATION_EVENT, handleAuthViolation as EventListener);
     };
   }, []);
 

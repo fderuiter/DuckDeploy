@@ -10,7 +10,10 @@ const MAX_REQUEST_BODY_BYTES = Number.parseInt(process.env.CDISC_PROXY_MAX_BODY_
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CDISC_PROXY_TIMEOUT_MS ?? '15000', 10);
 const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
+const NORMALIZED_PROXY_ALLOWED_HEADERS = PROXY_ALLOWED_HEADERS.map((header) => header.toLowerCase());
 const PROXY_ALLOWED_RESPONSE_HEADERS = ['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count'];
+const TRUSTED_INGRESS_HEADER_NAME = normalizeHeaderName(process.env.CDISC_TRUSTED_INGRESS_HEADER_NAME);
+const TRUSTED_INGRESS_HEADER_VALUE = normalizeHeaderValue(process.env.CDISC_TRUSTED_INGRESS_HEADER_VALUE);
 const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS);
 const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'true';
 const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_URL);
@@ -28,6 +31,22 @@ function normalizePrefix(value) {
   return withLeadingSlash.replace(/\/+$/, '');
 }
 
+function normalizeHeaderName(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null;
+  }
+
+  return value.trim().toLowerCase();
+}
+
+function normalizeHeaderValue(value) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null;
+  }
+
+  return value.trim();
+}
+
 function parsePort(rawValue) {
   const normalized = typeof rawValue === 'string' && rawValue.trim().length > 0 ? rawValue.trim() : '8787';
   const parsed = Number(normalized);
@@ -43,6 +62,14 @@ function parseAllowedOrigins(rawValue) {
     ? rawValue.split(',').map((entry) => entry.trim()).filter(Boolean)
     : DEFAULT_ALLOWED_ORIGINS;
   return new Set(values);
+}
+
+function validateTrustedIngressConfig() {
+  if ((TRUSTED_INGRESS_HEADER_NAME && !TRUSTED_INGRESS_HEADER_VALUE) || (!TRUSTED_INGRESS_HEADER_NAME && TRUSTED_INGRESS_HEADER_VALUE)) {
+    throw new Error(
+      'CDISC_TRUSTED_INGRESS_HEADER_NAME and CDISC_TRUSTED_INGRESS_HEADER_VALUE must be configured together.',
+    );
+  }
 }
 
 async function loadAllowedOperations(specUrl) {
@@ -81,6 +108,15 @@ function parseUpstreamBaseUrl(rawValue) {
 function pathToRegExp(pathTemplate) {
   const escaped = pathTemplate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`^${escaped.replace(/\\\{[^/}]+\\\}/g, '[^/]+')}$`);
+}
+
+function buildUpstreamUrl(upstreamPath, searchParams) {
+  const upstreamUrl = new URL(UPSTREAM_BASE_URL);
+  const basePath = upstreamUrl.pathname.replace(/\/+$/, '');
+  const relativePath = upstreamPath.replace(/^\/+/, '');
+  upstreamUrl.pathname = [basePath, relativePath].filter(Boolean).join('/').replace(/^([^/])/, '/$1');
+  upstreamUrl.search = searchParams.toString();
+  return upstreamUrl;
 }
 
 function getKeyChain() {
@@ -137,17 +173,21 @@ function resolveRequestOrigin(headers) {
   return null;
 }
 
-function isTrustedOrigin(request) {
-  if (allowUntrustedOrigins) {
-    return true;
+function hasTrustedIngressAssertion(request) {
+  if (!TRUSTED_INGRESS_HEADER_NAME || !TRUSTED_INGRESS_HEADER_VALUE) {
+    return false;
   }
 
-  const resolvedOrigin = resolveRequestOrigin(request.headers);
-  if (resolvedOrigin) {
-    return configuredOrigins.has(resolvedOrigin);
+  const headerValue = request.headers[TRUSTED_INGRESS_HEADER_NAME];
+  if (Array.isArray(headerValue)) {
+    return headerValue.includes(TRUSTED_INGRESS_HEADER_VALUE);
   }
 
-  return isLoopbackAddress(request.socket.remoteAddress);
+  return headerValue === TRUSTED_INGRESS_HEADER_VALUE;
+}
+
+function isTrustedRequest(request) {
+  return isLoopbackAddress(request.socket.remoteAddress) || hasTrustedIngressAssertion(request);
 }
 
 function setCorsHeaders(response, requestOrigin) {
@@ -176,7 +216,7 @@ function stripHopByHopHeaders(headers) {
   const stripped = new Headers();
 
   for (const [name, value] of Object.entries(headers)) {
-    if (!PROXY_ALLOWED_HEADERS.map((header) => header.toLowerCase()).includes(name.toLowerCase())) {
+    if (!NORMALIZED_PROXY_ALLOWED_HEADERS.includes(name.toLowerCase())) {
       continue;
     }
 
@@ -266,8 +306,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     queryParams.delete(keyName);
   }
 
-  const upstreamUrl = new URL(upstreamPath, UPSTREAM_BASE_URL);
-  upstreamUrl.search = queryParams.toString();
+  const upstreamUrl = buildUpstreamUrl(upstreamPath, queryParams);
 
   const baseHeaders = stripHopByHopHeaders(request.headers);
   let upstreamResponse;
@@ -306,11 +345,12 @@ const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
   const requestOrigin = resolveRequestOrigin(request.headers);
 
-  if (!isTrustedOrigin(request)) {
+  if (!isTrustedRequest(request)) {
     sendJson(response, 403, {
       ok: false,
-      code: 'PROXY_ORIGIN_FORBIDDEN',
-      message: 'This proxy only serves requests from configured frontend origins.',
+      code: 'PROXY_REQUEST_FORBIDDEN',
+      message:
+        'This proxy only serves loopback traffic unless a trusted ingress header is configured and injected by the reverse proxy.',
     }, requestOrigin);
     return;
   }
@@ -339,6 +379,8 @@ const server = http.createServer(async (request, response) => {
     }, requestOrigin);
   }
 });
+
+validateTrustedIngressConfig();
 
 server.listen(PORT, () => {
   console.log(`DuckDeploy CDISC proxy listening on http://localhost:${PORT}${PROXY_PREFIX}`);
