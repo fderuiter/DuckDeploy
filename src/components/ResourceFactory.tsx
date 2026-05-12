@@ -1,66 +1,46 @@
-import { useEffect, useState } from 'react';
 import { Resource } from 'react-admin';
-import { useSpec } from '../core/SpecContext';
 import { discoverResources, type ResourceDefinition } from '../core/discovery';
-import { setAuthorizationResources } from '../core/authProvider';
 import { AutoList } from './AutoList';
 import { AutoCreate, AutoEdit } from './AutoForm';
-import { setResourceDefinitions } from '../providers/openApiDataProvider';
 
-export const ResourceFactory = () => {
-  const { spec, uiManifest, isLoading, error } = useSpec();
-  const [resources, setResources] = useState<ResourceDefinition[]>([]);
+export const resolveAdminResources = (spec: unknown, uiManifest: unknown): ResourceDefinition[] => {
+  const discovered = discoverResources(spec);
+  const discoveredByName = new Map(discovered.map((resourceDefinition) => [resourceDefinition.name, resourceDefinition]));
+  const manifestResourceMap =
+    uiManifest &&
+    typeof uiManifest === 'object' &&
+    (uiManifest as { resources?: unknown }).resources &&
+    typeof (uiManifest as { resources?: unknown }).resources === 'object'
+      ? ((uiManifest as { resources: Record<string, unknown> }).resources)
+      : null;
+  const manifestResources = manifestResourceMap ? Object.entries(manifestResourceMap) : [];
 
-  useEffect(() => {
-    let active = true;
-    if (spec && !isLoading && !error) {
-      const discovered = discoverResources(spec);
-      const discoveredByName = new Map(discovered.map((resourceDefinition) => [resourceDefinition.name, resourceDefinition]));
-      const manifestResources = uiManifest?.resources && typeof uiManifest.resources === 'object'
-        ? Object.entries(uiManifest.resources)
+  const fromManifest = manifestResources
+    .map(([resourceName, mapping]) => {
+      const discoveredResource = discoveredByName.get(resourceName);
+      const listFields = Array.isArray((mapping as { listFields?: unknown }).listFields)
+        ? (mapping as { listFields: unknown[] }).listFields
         : [];
 
-      const fromManifest = manifestResources
-        .map(([resourceName, mapping]) => {
-          const discoveredResource = discoveredByName.get(resourceName);
-          const listFields = Array.isArray((mapping as { listFields?: unknown }).listFields)
-            ? (mapping as { listFields: unknown[] }).listFields
-            : [];
-
-          if (!discoveredResource || !discoveredResource.hasList || listFields.length === 0) {
-            return null;
-          }
-
-          return discoveredResource;
-        })
-        .filter((resource): resource is ResourceDefinition => Boolean(resource));
-
-      const resourcesForAdmin = fromManifest.length > 0
-        ? fromManifest
-        : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
-
-      const operationMappings =
-        uiManifest?.operationFunctionMap && typeof uiManifest.operationFunctionMap === 'object'
-          ? (uiManifest.operationFunctionMap as Record<string, string>)
-          : {};
-
-      setResourceDefinitions(resourcesForAdmin, operationMappings); // Sync with data provider
-      setAuthorizationResources(resourcesForAdmin);
-      if (active) {
-        setResources(resourcesForAdmin);
+      if (!discoveredResource || !discoveredResource.hasList || listFields.length === 0) {
+        return null;
       }
-    }
-    return () => { active = false; };
-  }, [spec, uiManifest, isLoading, error]);
 
-  if (isLoading) {
-    return null; // Return null so React-Admin doesn't render until ready (handled higher up ideally)
-  }
+      return discoveredResource;
+    })
+    .filter((resource): resource is ResourceDefinition => Boolean(resource));
 
-  if (error) {
-    return <div>Error loading API Specification: {error.message}</div>;
-  }
+  return fromManifest.length > 0
+    ? fromManifest
+    : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
+};
 
+export const resolveOperationMappings = (uiManifest: unknown): Record<string, string> =>
+  uiManifest && typeof uiManifest === 'object' && (uiManifest as { operationFunctionMap?: unknown }).operationFunctionMap && typeof (uiManifest as { operationFunctionMap?: unknown }).operationFunctionMap === 'object'
+    ? ((uiManifest as { operationFunctionMap: Record<string, string> }).operationFunctionMap)
+    : {};
+
+export const ResourceFactory = ({ resources }: { resources: ResourceDefinition[] }) => {
   return (
     <>
       {resources.map((resource) => (

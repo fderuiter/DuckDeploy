@@ -43,6 +43,14 @@ const yamlCloakingPlugin = (): Plugin => {
 export default defineConfig({
   plugins: [yamlCloakingPlugin(), react()],
   base: '/DuckDeploy/',
+  server: {
+    proxy: {
+      '/api/cdisc': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       // Explicitly treat YAML and build-script files as external so that any

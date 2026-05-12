@@ -8,6 +8,7 @@
     "build": "npm run generate && npm run compile:schema && npm run validate:contract && vite build && npm run verify:shadow",
     "lint": "eslint .",
     "preview": "vite preview",
+    "proxy": "node ./server/cdisc-proxy.mjs",
     "generate:api": "orval --config ./orval.config.ts",
     "build:manifest": "node ./scripts/preprocessor.mjs",
     "generate": "npm run generate:api && npm run build:manifest",
