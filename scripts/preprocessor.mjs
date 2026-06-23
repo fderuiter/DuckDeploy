@@ -612,11 +612,17 @@ const buildGeneratedOperationMap = () => {
     const source = fs.readFileSync(filePath, 'utf8');
     let match;
 
+    const relativePath = path.relative(GENERATED_CLIENT_PATH, filePath);
+    const modulePath = `../api/generated/${relativePath.replace(/\\/g, '/')}`;
+
     while ((match = operationRegex.exec(source)) !== null) {
       const [, functionName, url, method] = match;
       // Orval emits template placeholders as `${id}`, while OpenAPI paths use `{id}`.
       const normalizedUrl = url.replace(/\$\{([^}]+)\}/g, '{$1}');
-      clients[`${method} ${normalizedUrl}`] = functionName;
+      clients[`${method} ${normalizedUrl}`] = {
+        functionName,
+        modulePath,
+      };
       operationCount += 1;
     }
   }
