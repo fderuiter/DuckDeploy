@@ -1,3 +1,5 @@
+import { HTTP_METHODS } from './constants.ts';
+
 export interface AllowedOperation {
   pattern: RegExp;
   methods: Set<string>;
@@ -18,7 +20,7 @@ export const parseAllowedOperations = (parsedSpec: any): AllowedOperation[] => {
     const methods = new Set(
       Object.keys(pathItem)
         .filter((method) =>
-          ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'].includes(method.toLowerCase())
+          HTTP_METHODS.has(method.toLowerCase()) || ['options', 'head'].includes(method.toLowerCase())
         )
         .map((method) => method.toUpperCase())
     );

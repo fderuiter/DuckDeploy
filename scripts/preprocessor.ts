@@ -4,6 +4,17 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import {
+  resolveResourceName,
+  getSchemaFromContent,
+  HTTP_METHODS,
+  MAX_REF_DEPTH,
+  BaseSchemaVisitor,
+  extractListProperties,
+  escapeJsonPointer,
+  resolveStrictDiscriminator
+} from '@duckdeploy/openapi';
+
+import {
   isReferenceField,
   getReferenceTarget,
   extractUiExtensions,
@@ -11,15 +22,12 @@ import {
   getWidgetProps,
   determineSchemaKindForField,
   determineSchemaKindForInput,
-} from '../src/utils/heuristics.ts';
-import { resolveResourceName, getSchemaFromContent } from '@duckdeploy/openapi';
+} from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
-const MAX_REF_DEPTH = 3;
-const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
 const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
 
 const INPUT_CANDIDATES = [
@@ -43,304 +51,25 @@ const parseSpec = (sourcePath, raw) => {
   return yaml.load(raw);
 };
 
-const resolveRefPath = (spec, ref) => {
-  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
 
-  const parts = ref
-    .slice(2)
-    .split('/')
-    .map((part) => part.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
 
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) {
-      return null;
-    }
-    current = current[part];
-  }
-
-  return current;
-};
-
-const escapeJsonPointer = (segment) =>
-  String(segment)
-    .replace(/~/g, '~0')
-    .replace(/\//g, '~1');
-
-const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const mergeUnique = (base = [], override = []) => Array.from(new Set([...(base || []), ...(override || [])]));
-const toDiscriminatorValue = (value) =>
-  typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : undefined;
 
-const resolveStrictDiscriminator = (schema, variants) => {
-  const discriminator = isObject(schema?.discriminator) ? schema.discriminator : null;
-  const propertyName =
-    typeof discriminator?.propertyName === 'string' && discriminator.propertyName.trim().length > 0
-      ? discriminator.propertyName
-      : null;
 
-  if (!propertyName || !Array.isArray(variants) || variants.length === 0) {
-    return null;
-  }
 
-  const mappingByRef = new Map();
-  if (isObject(discriminator.mapping)) {
-    for (const [value, ref] of Object.entries(discriminator.mapping)) {
-      if (typeof ref === 'string' && ref.trim().length > 0) {
-        mappingByRef.set(ref, value);
-      }
-    }
-  }
+class OpenApiVisitor extends BaseSchemaVisitor {
+  traceabilityEntries: any[];
 
-  const values = variants.map((variant) => {
-    const variantRef = typeof variant?.['x-origin-ref'] === 'string' ? variant['x-origin-ref'] : null;
-    if (variantRef && mappingByRef.has(variantRef)) {
-      return mappingByRef.get(variantRef);
-    }
-
-    const discriminatorProperty = isObject(variant?.properties?.[propertyName]) ? variant.properties[propertyName] : null;
-    const constValue = toDiscriminatorValue(discriminatorProperty?.const);
-    if (constValue !== undefined) {
-      return constValue;
-    }
-
-    if (Array.isArray(discriminatorProperty?.enum) && discriminatorProperty.enum.length === 1) {
-      const enumValue = toDiscriminatorValue(discriminatorProperty.enum[0]);
-      if (enumValue !== undefined) {
-        return enumValue;
-      }
-    }
-
-    return undefined;
-  });
-
-  if (values.some((value) => value === undefined || value === '')) {
-    return null;
-  }
-
-  return { propertyName, values };
-};
-
-const mergeSchema = (baseSchema, overrideSchema) => {
-  if (!isObject(baseSchema) || !isObject(overrideSchema)) {
-    if (overrideSchema !== undefined) return overrideSchema;
-    if (baseSchema !== undefined) return baseSchema;
-    return {};
-  }
-
-  const merged = { ...(baseSchema || {}), ...(overrideSchema || {}) };
-
-  if (baseSchema?.properties || overrideSchema?.properties) {
-    const baseProperties = baseSchema?.properties || {};
-    const overrideProperties = overrideSchema?.properties || {};
-    const propertyNames = new Set([...Object.keys(baseProperties), ...Object.keys(overrideProperties)]);
-    merged.properties = {};
-    for (const propertyName of propertyNames) {
-      const baseProperty = baseProperties[propertyName];
-      const overrideProperty = overrideProperties[propertyName];
-      merged.properties[propertyName] =
-        baseProperty !== undefined && overrideProperty !== undefined
-          ? mergeSchema(baseProperty, overrideProperty)
-          : (baseProperty ?? overrideProperty);
-    }
-  }
-
-  if (baseSchema?.required || overrideSchema?.required) {
-    merged.required = mergeUnique(baseSchema?.required || [], overrideSchema?.required || []);
-  }
-
-  if (baseSchema?.allOf || overrideSchema?.allOf) {
-    merged.allOf = [...(baseSchema?.allOf || []), ...(overrideSchema?.allOf || [])];
-  }
-
-  if (baseSchema?.anyOf || overrideSchema?.anyOf) {
-    merged.anyOf = [...(baseSchema?.anyOf || []), ...(overrideSchema?.anyOf || [])];
-  }
-
-  if (baseSchema?.oneOf || overrideSchema?.oneOf) {
-    merged.oneOf = [...(baseSchema?.oneOf || []), ...(overrideSchema?.oneOf || [])];
-  }
-
-  if (isObject(baseSchema?.dependentSchemas) || isObject(overrideSchema?.dependentSchemas)) {
-    const mergedDependentSchemas = {
-      ...(baseSchema?.dependentSchemas || {}),
-      ...(overrideSchema?.dependentSchemas || {}),
-    };
-
-    for (const key of Object.keys(baseSchema?.dependentSchemas || {})) {
-      if (isObject(baseSchema.dependentSchemas[key]) && isObject(overrideSchema?.dependentSchemas?.[key])) {
-        mergedDependentSchemas[key] = mergeSchema(baseSchema.dependentSchemas[key], overrideSchema.dependentSchemas[key]);
-      }
-    }
-
-    merged.dependentSchemas = mergedDependentSchemas;
-  }
-
-  if (isObject(baseSchema?.dependentRequired) || isObject(overrideSchema?.dependentRequired)) {
-    const keys = new Set([
-      ...Object.keys(baseSchema?.dependentRequired || {}),
-      ...Object.keys(overrideSchema?.dependentRequired || {}),
-    ]);
-    merged.dependentRequired = {};
-    for (const key of keys) {
-      merged.dependentRequired[key] = mergeUnique(
-        baseSchema?.dependentRequired?.[key] || [],
-        overrideSchema?.dependentRequired?.[key] || [],
-      );
-    }
-  }
-
-  if (isObject(baseSchema?.items) && isObject(overrideSchema?.items)) {
-    merged.items = mergeSchema(baseSchema.items, overrideSchema.items);
-  }
-
-  if (isObject(baseSchema?.additionalProperties) && isObject(overrideSchema?.additionalProperties)) {
-    merged.additionalProperties = mergeSchema(baseSchema.additionalProperties, overrideSchema.additionalProperties);
-  }
-
-  if (isObject(baseSchema?.not) && isObject(overrideSchema?.not)) {
-    merged.not = mergeSchema(baseSchema.not, overrideSchema.not);
-  }
-
-  for (const keyword of ['if', 'then', 'else', 'contains', 'propertyNames', 'unevaluatedProperties']) {
-    if (isObject(baseSchema?.[keyword]) && isObject(overrideSchema?.[keyword])) {
-      merged[keyword] = mergeSchema(baseSchema[keyword], overrideSchema[keyword]);
-    }
-  }
-
-  return merged;
-};
-
-class OpenApiVisitor {
-  constructor(spec, maxDepth) {
-    this.spec = spec;
-    this.maxDepth = maxDepth;
+  constructor(spec: any, maxDepth: number) {
+    super(spec, maxDepth);
     this.traceabilityEntries = [];
   }
 
-  withRefPath(context, ref) {
-    const refPath = context.refPath || [];
-    if (refPath.includes(ref)) {
-      return {
-        context,
-        stop: true,
-        marker: {
-          'x-lazy-ref': ref,
-          'x-circular-ref': true,
-        },
-      };
-    }
-
-    return {
-      context: { ...context, refPath: [...refPath, ref] },
-      stop: false,
-      marker: null,
-    };
-  }
-
-  normalizeSchema(schema, context = { refPath: [] }) {
-    if (!schema || typeof schema !== 'object') {
-      return { schema: null, context };
-    }
-
-    if (schema.$ref) {
-      const pathState = this.withRefPath(context, schema.$ref);
-      if (pathState.stop) {
-        const { $ref, ...overrides } = schema;
-        return { schema: mergeSchema(pathState.marker, overrides), context };
-      }
-
-      const resolved = resolveRefPath(this.spec, schema.$ref);
-      if (!resolved || typeof resolved !== 'object') {
-        return { schema: null, context };
-      }
-
-      const { $ref, ...overrides } = schema;
-      const merged = mergeSchema(resolved, overrides);
-      if (typeof schema.$ref === 'string' && !merged['x-origin-ref']) {
-        // Preserve the originating ref so discriminator.mapping values can be
-        // matched to normalized oneOf/anyOf variants later in visitFormNode.
-        merged['x-origin-ref'] = schema.$ref;
-      }
-      return { schema: this.normalizeSchema(merged, pathState.context).schema, context };
-    }
-
-    if (Array.isArray(schema.allOf) && schema.allOf.length > 0) {
-      let accumulator = {};
-
-      for (const partial of schema.allOf) {
-        const normalized = this.normalizeSchema(partial, context);
-        if (normalized.schema) {
-          accumulator = mergeSchema(accumulator, normalized.schema);
-        }
-      }
-
-      const { allOf, ...rest } = schema;
-      return this.normalizeSchema(mergeSchema(accumulator, rest), context);
-    }
-
-    const normalizedSchema = { ...schema };
-
-    if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
-      normalizedSchema.oneOf = schema.oneOf
-        .map((variant) => this.normalizeSchema(variant, context).schema)
-        .filter((variant) => Boolean(variant));
-    }
-
-    if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
-      normalizedSchema.anyOf = schema.anyOf
-        .map((variant) => this.normalizeSchema(variant, context).schema)
-        .filter((variant) => Boolean(variant));
-    }
-
-    if (isObject(schema.not)) {
-      normalizedSchema.not = this.normalizeSchema(schema.not, context).schema || schema.not;
-    }
-
-    if (isObject(schema.dependentSchemas)) {
-      normalizedSchema.dependentSchemas = Object.entries(schema.dependentSchemas).reduce((acc, [key, dependentSchema]) => {
-        const normalized = this.normalizeSchema(dependentSchema, context).schema;
-        if (normalized) acc[key] = normalized;
-        return acc;
-      }, {});
-    }
-
-    if (isObject(schema.properties)) {
-      normalizedSchema.properties = Object.entries(schema.properties).reduce((acc, [key, value]) => {
-        const normalized = this.normalizeSchema(value, context).schema;
-        acc[key] = normalized || value;
-        return acc;
-      }, {});
-    }
-
-    if (isObject(schema.patternProperties)) {
-      normalizedSchema.patternProperties = Object.entries(schema.patternProperties).reduce((acc, [key, value]) => {
-        const normalized = this.normalizeSchema(value, context).schema;
-        acc[key] = normalized || value;
-        return acc;
-      }, {});
-    }
-
-    if (isObject(schema.items)) {
-      normalizedSchema.items = this.normalizeSchema(schema.items, context).schema || schema.items;
-    } else if (Array.isArray(schema.items)) {
-      normalizedSchema.items = schema.items.map((item) => this.normalizeSchema(item, context).schema || item);
-    }
-
-    for (const keyword of ['if', 'then', 'else', 'contains', 'propertyNames', 'additionalProperties', 'unevaluatedProperties']) {
-      if (isObject(schema[keyword])) {
-        normalizedSchema[keyword] = this.normalizeSchema(schema[keyword], context).schema || schema[keyword];
-      }
-    }
-
-    return { schema: normalizedSchema, context };
-  }
-
-  getValidation(schema) {
+  getValidation(schema: any) {
     if (!schema || typeof schema !== 'object') return undefined;
 
-    const validation = {};
+    const validation: any = {};
     if (schema.minLength !== undefined) validation.minLength = schema.minLength;
     if (schema.maxLength !== undefined) validation.maxLength = schema.maxLength;
     if (schema.minimum !== undefined) validation.minimum = schema.minimum;
@@ -350,7 +79,7 @@ class OpenApiVisitor {
     return Object.keys(validation).length > 0 ? validation : undefined;
   }
 
-  addTraceability(pointer, source, component, status = 'mapped') {
+  addTraceability(pointer: string, source: string, component: string | null, status: string = 'mapped') {
     this.traceabilityEntries.push({
       pointer,
       source,
@@ -359,7 +88,7 @@ class OpenApiVisitor {
     });
   }
 
-  visitFieldNode(name, schema, context = { refPath: [] }, pointer = '#') {
+  visitFieldNode(name: string, schema: any, context: any = { refPath: [] }, pointer: string = '#'): any {
     const normalized = this.normalizeSchema(schema, context);
     const node = normalized.schema;
 
@@ -386,7 +115,7 @@ class OpenApiVisitor {
         return { ...base, kind: 'reference', reference: getReferenceTarget(name) };
       case 'enum':
         this.addTraceability(pointer, name, '<SelectField />');
-        return { ...base, kind: 'enum', choices: node.enum.map((value) => ({ id: String(value), name: String(value) })) };
+        return { ...base, kind: 'enum', choices: node.enum.map((value: any) => ({ id: String(value), name: String(value) })) };
       case 'boolean':
         this.addTraceability(pointer, name, '<BooleanField />');
         return { ...base, kind: 'boolean' };
@@ -405,7 +134,7 @@ class OpenApiVisitor {
     }
   }
 
-  visitFormNode(source, schema, isRequired, context = { refPath: [] }, depth = 0, pointer = '#') {
+  visitFormNode(source: string, schema: any, isRequired: boolean, context: any = { refPath: [] }, depth: number = 0, pointer: string = '#'): any {
     const normalized = this.normalizeSchema(schema, context);
     const node = normalized.schema;
 
@@ -506,30 +235,6 @@ class OpenApiVisitor {
   }
 }
 
-const extractListProperties = (schema, visitor) => {
-  if (!schema || typeof schema !== 'object') return {};
-
-  const normalizedRoot = visitor.normalizeSchema(schema, { refPath: [] }).schema || schema;
-
-  if (normalizedRoot.type === 'array' && normalizedRoot.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.items, { refPath: [] }).schema;
-    if (normalizedItems?.properties) return normalizedItems.properties;
-  }
-
-  if (normalizedRoot.properties?.items?.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.items.items, { refPath: [] }).schema;
-    if (normalizedItems?.properties) return normalizedItems.properties;
-  }
-
-  if (normalizedRoot.properties?.data?.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.data.items, { refPath: [] }).schema;
-    if (normalizedItems?.properties) return normalizedItems.properties;
-  }
-
-  if (normalizedRoot.properties) return normalizedRoot.properties;
-
-  return {};
-};
 
 const listGeneratedClientFiles = (directory) => {
   if (!fs.existsSync(directory)) return [];

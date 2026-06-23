@@ -1,4 +1,5 @@
 import { getSchemaFromContent } from './schema.ts';
+import { HTTP_METHODS } from './constants.ts';
 
 export interface ResourceDefinition {
   name: string;
@@ -38,6 +39,10 @@ export const resolveResourceName = (path: string, pathItem: any, methods: string
   return segments[0];
 };
 
+export const isInstancePath = (path: string): boolean => {
+  return path.includes('{') && path.endsWith('}');
+};
+
 export const discoverResources = (spec: any): ResourceDefinition[] => {
   if (!spec || !spec.paths) return [];
 
@@ -47,7 +52,7 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
     if (!pathItem || typeof pathItem !== 'object') continue;
 
     const methods = Object.keys(pathItem).filter(k =>
-      ['get', 'post', 'put', 'patch', 'delete'].includes(k.toLowerCase())
+      HTTP_METHODS.has(k.toLowerCase())
     );
 
     const resourceName = resolveResourceName(path, pathItem, methods);
@@ -68,7 +73,7 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
 
     const res = resourceMap[resourceName];
 
-    const isInstancePath = path.includes('{') && path.endsWith('}');
+    const isInstance = isInstancePath(path);
 
     for (const method of methods) {
       const operation = (pathItem as any)[method];
@@ -97,7 +102,7 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
       };
 
       if (method === 'get') {
-        if (isInstancePath) {
+        if (isInstance) {
           res.hasShow = true;
           res.showPath = path;
           res.showOperationId = operationKey;
@@ -109,18 +114,18 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
           res.listResponseSchema = getResponseSchema();
           res.listQueryParams = getQueryParams();
         }
-      } else if (method === 'post' && !isInstancePath) {
+      } else if (method === 'post' && !isInstance) {
         res.hasCreate = true;
         res.createPath = path;
         res.createOperationId = operationKey;
         res.createRequestBodySchema = getRequestBodySchema();
-      } else if ((method === 'put' || method === 'patch') && isInstancePath) {
+      } else if ((method === 'put' || method === 'patch') && isInstance) {
         res.hasEdit = true;
         res.editPath = path;
         res.editMethod = method as 'put' | 'patch';
         res.editOperationId = operationKey;
         res.editRequestBodySchema = getRequestBodySchema();
-      } else if (method === 'delete' && isInstancePath) {
+      } else if (method === 'delete' && isInstance) {
         res.hasDelete = true;
         res.deletePath = path;
         res.deleteOperationId = operationKey;

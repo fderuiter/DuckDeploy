@@ -1,6 +1,6 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
-export const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']);
+import { HTTP_METHODS } from './constants.ts';
 
 export const toOperationId = (method: string, route: string): string => {
   const routePart = route

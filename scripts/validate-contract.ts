@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'node:url';
+import { HTTP_METHODS, resolveRefPath, escapeJsonPointer } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -70,16 +71,6 @@ const loadOpenApi = () => {
  * Resolve a JSON Reference ($ref) to the schema node it points to within the
  * given spec object.  Returns null when the ref is invalid or unresolvable.
  */
-const resolveRef = (spec, ref) => {
-  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-  const parts = ref.slice(2).split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) return null;
-    current = current[part];
-  }
-  return current;
-};
 
 /**
  * Recursively collect all schema properties that bear constraints we want to
@@ -93,10 +84,8 @@ const collectConstraintBearingFields = (spec) => {
   const results = [];
   // HEAD and OPTIONS are excluded: they do not carry request bodies or
   // meaningful response payload schemas that drive UI component selection.
-  const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
-
-  const escapeSegment = (s) => String(s).replace(/~/g, '~0').replace(/\//g, '~1');
-
+  
+  
   const walk = (schema, pointer, visitedRefs = new Set()) => {
     if (!schema || typeof schema !== 'object') return;
 
@@ -104,7 +93,7 @@ const collectConstraintBearingFields = (spec) => {
     // the path-level location where the field appears in the API.
     if (typeof schema.$ref === 'string') {
       if (visitedRefs.has(schema.$ref)) return; // prevent infinite loops
-      const resolved = resolveRef(spec, schema.$ref);
+      const resolved = resolveRefPath(spec, schema.$ref);
       if (!resolved) return;
       visitedRefs.add(schema.$ref);
       walk(resolved, pointer, visitedRefs);
@@ -131,7 +120,7 @@ const collectConstraintBearingFields = (spec) => {
 
     if (schema.properties && typeof schema.properties === 'object') {
       for (const [propName, propSchema] of Object.entries(schema.properties)) {
-        walk(propSchema, `${pointer}/properties/${escapeSegment(propName)}`, visitedRefs);
+        walk(propSchema, `${pointer}/properties/${escapeJsonPointer(propName)}`, visitedRefs);
       }
     }
     if (schema.items && typeof schema.items === 'object') {
@@ -149,7 +138,7 @@ const collectConstraintBearingFields = (spec) => {
 
   for (const [apiPath, pathItem] of Object.entries(spec.paths)) {
     if (!pathItem || typeof pathItem !== 'object') continue;
-    const escapedPath = escapeSegment(apiPath);
+    const escapedPath = escapeJsonPointer(apiPath);
 
     for (const [method, operation] of Object.entries(pathItem)) {
       if (!HTTP_METHODS.has(method.toLowerCase())) continue;
@@ -162,7 +151,7 @@ const collectConstraintBearingFields = (spec) => {
           if (mediaObj?.schema) {
             walk(
               mediaObj.schema,
-              `#/paths/${escapedPath}/${method}/requestBody/content/${escapeSegment(mediaType)}/schema`,
+              `#/paths/${escapedPath}/${method}/requestBody/content/${escapeJsonPointer(mediaType)}/schema`,
             );
           }
         }
@@ -176,7 +165,7 @@ const collectConstraintBearingFields = (spec) => {
             if (mediaObj?.schema) {
               walk(
                 mediaObj.schema,
-                `#/paths/${escapedPath}/${method}/responses/${status}/content/${escapeSegment(mediaType)}/schema`,
+                `#/paths/${escapedPath}/${method}/responses/${status}/content/${escapeJsonPointer(mediaType)}/schema`,
               );
             }
           }

@@ -37,7 +37,7 @@ import {
   getWidgetId,
   getWidgetProps,
   resolveFallbackWidgetId,
-} from '../utils/heuristics';
+} from '@duckdeploy/openapi';
 
 type ValidationDescriptor = {
   minLength?: number;
