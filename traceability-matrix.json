@@ -1,0 +1,4403 @@
+{
+  "header": {
+    "standard": "ISO 29148:2018 Compliant V&V Traceability Matrix",
+    "generatedAt": "2026-06-23T14:26:53.697Z",
+    "schemaVersion": "1.0",
+    "certificates": {
+      "pi_struct": "0xcd09e63a24e8a84e1c7abab88d4c24d0a7d5bf94b5e07f673ab7675bf3d2d88c",
+      "pi_sem": "0x4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "pi_logic": "0x4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "verificationSummary": {
+    "totalRequirements": 398,
+    "mapped": 398,
+    "discarded": 0,
+    "contractStatus": "valid",
+    "fuzzTests": {
+      "tests": 145,
+      "failures": 145,
+      "errors": 0
+    }
+  },
+  "traceability": [
+    {
+      "requirement": "#/paths/~1mdr~1suggest/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1search/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1search~1scopes/get/responses/200/content/application~1json/schema/properties/scopes",
+      "source": "scopes",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1search~1implementedBy/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1products/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1about/get/responses/200/content/application~1json/schema/properties/release-notes",
+      "source": "release-notes",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1about/get/responses/200/content/application~1json/schema/properties/api-documentation",
+      "source": "api-documentation",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1about/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/conceptId",
+      "source": "conceptId",
+      "component": "<ReferenceField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/extensible",
+      "source": "extensible",
+      "component": "<BooleanField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/submissionValue",
+      "source": "submissionValue",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/definition",
+      "source": "definition",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/preferredTerm",
+      "source": "preferredTerm",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/synonyms",
+      "source": "synonyms",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1ct~1packages~1{package}~1codelists~1{codelist}~1terms/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/domains",
+      "source": "domains",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/domains",
+      "source": "domains",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdash~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/fields",
+      "source": "fields",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/domain",
+      "source": "domain",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/domainName",
+      "source": "domainName",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/scenario",
+      "source": "scenario",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1cdashig~1{version}~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/datasetStructure",
+      "source": "datasetStructure",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtm~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/datasetStructure",
+      "source": "datasetStructure",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sdtmig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/datasetStructure",
+      "source": "datasetStructure",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1sendig~1{version}~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/class",
+      "source": "class",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/subClass",
+      "source": "subClass",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/class",
+      "source": "class",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/subClass",
+      "source": "subClass",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1adam~1{product}~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1qrs~1instruments~1{instrument}~1versions~1{version}~1responseGroups/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1qrs~1instruments~1{instrument}~1versions~1{version}~1items/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1rules/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1sections/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1sections/get/responses/200/content/application~1json/schema/properties/sections",
+      "source": "sections",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1usecases/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1usecases/get/responses/200/content/application~1json/schema/properties/useCases",
+      "source": "useCases",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1usecases~1{usecase}~1sections/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1usecases~1{usecase}~1sections/get/responses/200/content/application~1json/schema/properties/sections",
+      "source": "sections",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/overall",
+      "source": "overall",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/data-analysis",
+      "source": "data-analysis",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/data-collection",
+      "source": "data-collection",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/data-tabulation",
+      "source": "data-tabulation",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/qrs",
+      "source": "qrs",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/terminology",
+      "source": "terminology",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1lastupdated/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1maintenance/get/responses/200/content/application~1json/schema/properties/maintenanceMode",
+      "source": "maintenanceMode",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1maintenance/get/responses/200/content/application~1json/schema/properties/maintenanceMessage",
+      "source": "maintenanceMessage",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1integrated~1{standard}~1{version}~1{standard_subtype}~1sections/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1integrated~1{standard}~1{version}~1{standard_subtype}~1sections/get/responses/200/content/application~1json/schema/properties/sections",
+      "source": "sections",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam/get/responses/200/content/application~1json/schema/properties/dataStructures",
+      "source": "dataStructures",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/class",
+      "source": "class",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/subClass",
+      "source": "subClass",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1varsets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/class",
+      "source": "class",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/subClass",
+      "source": "subClass",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1adam~1datastructures~1{datastructure}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash/get/responses/200/content/application~1json/schema/properties/classes",
+      "source": "classes",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1domains/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1domains~1{domain}~1fields/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1classes~1{className}~1scenarios/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/domain",
+      "source": "domain",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/domainName",
+      "source": "domainName",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/scenario",
+      "source": "scenario",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1cdash~1scenarios~1{scenario}~1fields/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm/get/responses/200/content/application~1json/schema/properties/classes",
+      "source": "classes",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/datasetStructure",
+      "source": "datasetStructure",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1sdtm~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send/get/responses/200/content/application~1json/schema/properties/classes",
+      "source": "classes",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1classes~1{className}~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/source",
+      "source": "source",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/effectiveDate",
+      "source": "effectiveDate",
+      "component": "<DateField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/registrationStatus",
+      "source": "registrationStatus",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/version",
+      "source": "version",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/ordinal",
+      "source": "ordinal",
+      "component": "<NumberField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/name",
+      "source": "name",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/label",
+      "source": "label",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/description",
+      "source": "description",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/datasetStructure",
+      "source": "datasetStructure",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/status",
+      "source": "status",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1integrated~1{standard}~1{version}~1send~1datasets~1{dataset}~1variables/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1{structure}~1sections/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1{standard}~1{version}~1{structure}~1sections/get/responses/200/content/application~1json/schema/properties/sections",
+      "source": "sections",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1integrated~1{standard}~1{version}~1{standard_subtype}~1{structure}~1sections/get/responses/200/content/application~1json/schema/properties/_links",
+      "source": "_links",
+      "component": "<TextField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    },
+    {
+      "requirement": "#/paths/~1mdr~1documents~1integrated~1{standard}~1{version}~1{standard_subtype}~1{structure}~1sections/get/responses/200/content/application~1json/schema/properties/sections",
+      "source": "sections",
+      "component": "<ArrayField />",
+      "status": "mapped",
+      "verificationMethods": [
+        "Inspection",
+        "Analysis",
+        "Test"
+      ]
+    }
+  ]
+}

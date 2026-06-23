@@ -28,6 +28,7 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
 const MATRIX_PATH = path.join(repoRoot, 'manifest-generation-log.json');
+const REPORT_PATH = path.join(repoRoot, 'contract-validation-report.json');
 const OPENAPI_CANDIDATES = [
   path.join(repoRoot, 'openapi.yaml'),
   path.join(repoRoot, 'openapi.yml'),
@@ -237,7 +238,17 @@ const validate = () => {
   const total = entries.length;
   const mapped = entries.filter((e) => e.status === 'mapped').length;
 
+  const report = {
+    generatedAt: new Date().toISOString(),
+    status: violations.length === 0 ? 'valid' : 'invalid',
+    totalEntries: total,
+    mappedEntries: mapped,
+    violations,
+  };
+
+  fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2), 'utf8');
   console.log(`Manifest mapping validation — ${mapped}/${total} entries mapped.`);
+  console.log(`Generated validation report at ${path.relative(repoRoot, REPORT_PATH)}`);
 
   if (violations.length > 0) {
     console.error(`\nContract violations (${violations.length}):`);
