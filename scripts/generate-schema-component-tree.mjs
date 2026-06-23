@@ -178,28 +178,30 @@ class SchemaAstVisitor {
     const node = normalized.schema;
     if (!node) return null;
 
+    const base = { source: name, description: node.description };
+
     if (name.endsWith('_id') || name.endsWith('Id')) {
       const target = name.replace(/_id$/i, '').replace(/Id$/, '');
-      return { kind: 'reference', source: name, reference: target };
+      return { ...base, kind: 'reference', reference: target };
     }
 
     if (Array.isArray(node.enum) && node.enum.length > 0) {
       return {
+        ...base,
         kind: 'enum',
-        source: name,
         choices: node.enum.map((value) => ({ id: String(value), name: String(value) })),
       };
     }
 
-    if (node.type === 'boolean') return { kind: 'boolean', source: name };
-    if (node.type === 'integer' || node.type === 'number') return { kind: 'number', source: name };
+    if (node.type === 'boolean') return { ...base, kind: 'boolean' };
+    if (node.type === 'integer' || node.type === 'number') return { ...base, kind: 'number' };
     if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
-      return { kind: 'date', source: name };
+      return { ...base, kind: 'date' };
     }
-    if (node.type === 'string') return { kind: 'text', source: name };
-    if (node.type === 'array') return { kind: 'array', source: name };
+    if (node.type === 'string') return { ...base, kind: 'text' };
+    if (node.type === 'array') return { ...base, kind: 'array' };
 
-    return { kind: 'text', source: name };
+    return { ...base, kind: 'text' };
   }
 
   visitFormNode(source, schema, isRequired, context = { refDepthMap: {} }, depth = 0) {
@@ -215,6 +217,7 @@ class SchemaAstVisitor {
       source,
       isRequired,
       title: node.title,
+      description: node.description,
       validation: this.getValidation(node),
       widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
       widgetProps:

@@ -373,6 +373,7 @@ class OpenApiVisitor {
     const hasUiExtensions = Object.keys(uiExtensions).length > 0;
     const base = {
       source: name,
+      description: node.description,
       widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
       widgetProps:
         uiExtensions['x-ui-props'] && typeof uiExtensions['x-ui-props'] === 'object' ? uiExtensions['x-ui-props'] : undefined,
@@ -434,6 +435,7 @@ class OpenApiVisitor {
       source,
       isRequired,
       title: node.title,
+      description: node.description,
       validation: this.getValidation(node),
       widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
       widgetProps:

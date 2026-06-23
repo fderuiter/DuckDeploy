@@ -23,6 +23,7 @@ import { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
+import { LabelWithTooltip } from './LabelWithTooltip';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
 import {
   areShallowObjectsEqual,
@@ -42,6 +43,7 @@ type ValidationDescriptor = {
 export type PrecomputedFieldDescriptor = {
   kind: 'reference' | 'enum' | 'boolean' | 'number' | 'date' | 'text' | 'array';
   source: string;
+  description?: string;
   widgetId?: string;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
@@ -59,6 +61,7 @@ export type PrecomputedInputDescriptor = {
     | 'date'
     | 'text';
   source: string;
+  description?: string;
   isRequired: boolean;
   title?: string;
   widgetId?: string;
@@ -126,6 +129,7 @@ const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) =
 
 type WidgetOverrideInputProps = {
   source: string;
+  description?: string;
   candidateWidgetId?: string;
   fallbackWidgetId?: string;
   widgetProps?: Record<string, unknown>;
@@ -304,11 +308,16 @@ const renderPrecomputedInputDefault = (
 ): React.ReactNode => {
   const validators = buildValidatorsFromDescriptor(node);
   const key = keyPrefix || node.source || 'input';
+  const labelText = node.title || node.source.split('.').pop() || node.source;
+  const descId = `desc-${key.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+
   const commonProps = {
     key,
     source: node.source,
     validate: validators,
     isRequired: node.isRequired,
+    label: <LabelWithTooltip label={labelText} description={node.description} tooltipId={descId} />,
+    inputProps: node.description ? { 'aria-describedby': descId } : undefined,
   };
 
   if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
@@ -318,7 +327,7 @@ const renderPrecomputedInputDefault = (
   if (node.kind === 'object') {
     return (
       <div key={key} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
-        <h4>{node.title || node.source.split('.').pop() || node.source}</h4>
+        <h4><LabelWithTooltip label={node.title || node.source.split('.').pop() || node.source} description={node.description} /></h4>
         {(node.children || []).map((child, index) => renderPrecomputedInput(child, `${key}.${child.source || index}`))}
       </div>
     );
@@ -435,11 +444,16 @@ const mapSchemaToInputDefault = (
   if (depth > 5) return null; // Infinite recursion guard
 
   const validators = buildValidators(property, isRequired);
+  const labelText = property.title || source.split('.').pop() || source;
+  const descId = `desc-${source.replace(/[^a-zA-Z0-9-]/g, '-')}`;
+
   const commonProps = {
     key: source,
     source,
     validate: validators,
     isRequired, // Needed for simple reference/boolean inputs to display asterisk
+    label: <LabelWithTooltip label={labelText} description={property.description} tooltipId={descId} />,
+    inputProps: property.description ? { 'aria-describedby': descId } : undefined,
   };
 
   // Polymorphism
@@ -463,7 +477,7 @@ const mapSchemaToInputDefault = (
   if (property.type === 'object' && property.properties) {
     return (
       <div key={source} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
-        <h4>{property.title || source.split('.').pop() || source}</h4>
+        <h4><LabelWithTooltip label={property.title || source.split('.').pop() || source} description={property.description} /></h4>
         {Object.entries(property.properties).map(([subName, subProp]) => {
           const nestedSource = source ? `${source}.${subName}` : subName;
           return mapSchemaToInput(
