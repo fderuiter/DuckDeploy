@@ -61,6 +61,7 @@ export type PrecomputedInputDescriptor = {
   source: string;
   isRequired: boolean;
   title?: string;
+  description?: string;
   widgetId?: string;
   widgetProps?: Record<string, unknown>;
   uiExtensions?: Record<string, unknown>;
@@ -304,11 +305,21 @@ const renderPrecomputedInputDefault = (
 ): React.ReactNode => {
   const validators = buildValidatorsFromDescriptor(node);
   const key = keyPrefix || node.source || 'input';
+  
+  const accessibilityOverrides = (node.uiExtensions?.['x-ui-accessibility'] as Record<string, unknown>) || {};
+  
+  const ariaProps = {
+    ...(node.title && { 'aria-label': node.title }),
+    ...(node.description && { 'aria-describedby': node.description }),
+    ...accessibilityOverrides,
+  };
+
   const commonProps = {
     key,
     source: node.source,
     validate: validators,
     isRequired: node.isRequired,
+    ...ariaProps,
   };
 
   if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
@@ -435,11 +446,21 @@ const mapSchemaToInputDefault = (
   if (depth > 5) return null; // Infinite recursion guard
 
   const validators = buildValidators(property, isRequired);
+  
+  const accessibilityOverrides = (property['x-ui-accessibility'] as Record<string, unknown>) || {};
+  
+  const ariaProps = {
+    ...(property.title && { 'aria-label': property.title }),
+    ...(property.description && { 'aria-describedby': property.description }),
+    ...accessibilityOverrides,
+  };
+
   const commonProps = {
     key: source,
     source,
     validate: validators,
     isRequired, // Needed for simple reference/boolean inputs to display asterisk
+    ...ariaProps,
   };
 
   // Polymorphism
