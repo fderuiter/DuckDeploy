@@ -2,6 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+import {
+  isReferenceField,
+  getReferenceTarget,
+  extractUiExtensions,
+  getWidgetId,
+  getWidgetProps,
+  determineSchemaKindForField,
+  determineSchemaKindForInput,
+} from '../src/utils/heuristics.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,17 +59,6 @@ const mergeSchemas = (baseSchema, overrideSchema) => {
   }
 
   return merged;
-};
-
-const extractUiExtensions = (node) => {
-  if (!node || typeof node !== 'object') return {};
-
-  return Object.keys(node)
-    .filter((key) => key.startsWith('x-ui-'))
-    .reduce((acc, key) => {
-      acc[key] = node[key];
-      return acc;
-    }, {});
 };
 
 const extractListProperties = (schema, visitor) => {
@@ -178,12 +176,13 @@ class SchemaAstVisitor {
     const node = normalized.schema;
     if (!node) return null;
 
-    if (name.endsWith('_id') || name.endsWith('Id')) {
-      const target = name.replace(/_id$/i, '').replace(/Id$/, '');
-      return { kind: 'reference', source: name, reference: target };
+    const kind = determineSchemaKindForField(name, node);
+
+    if (kind === 'reference') {
+      return { kind: 'reference', source: name, reference: getReferenceTarget(name) };
     }
 
-    if (Array.isArray(node.enum) && node.enum.length > 0) {
+    if (kind === 'enum') {
       return {
         kind: 'enum',
         source: name,
@@ -191,15 +190,7 @@ class SchemaAstVisitor {
       };
     }
 
-    if (node.type === 'boolean') return { kind: 'boolean', source: name };
-    if (node.type === 'integer' || node.type === 'number') return { kind: 'number', source: name };
-    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
-      return { kind: 'date', source: name };
-    }
-    if (node.type === 'string') return { kind: 'text', source: name };
-    if (node.type === 'array') return { kind: 'array', source: name };
-
-    return { kind: 'text', source: name };
+    return { kind, source: name };
   }
 
   visitFormNode(source, schema, isRequired, context = { refDepthMap: {} }, depth = 0) {
@@ -216,13 +207,14 @@ class SchemaAstVisitor {
       isRequired,
       title: node.title,
       validation: this.getValidation(node),
-      widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
-      widgetProps:
-        uiExtensions['x-ui-props'] && typeof uiExtensions['x-ui-props'] === 'object' ? uiExtensions['x-ui-props'] : undefined,
+      widgetId: getWidgetId(node),
+      widgetProps: getWidgetProps(node),
       uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
 
-    if ((Array.isArray(node.oneOf) && node.oneOf.length > 0) || (Array.isArray(node.anyOf) && node.anyOf.length > 0)) {
+    const kind = determineSchemaKindForInput(source, node);
+
+    if (kind === 'polymorphic') {
       const options = (node.oneOf || node.anyOf)
         .map((variant, index) => {
           const variantNode = this.visitFormNode(source, variant, isRequired, normalized.context, depth + 1);
@@ -239,7 +231,7 @@ class SchemaAstVisitor {
       }
     }
 
-    if (node.type === 'object' && node.properties) {
+    if (kind === 'object') {
       const children = Object.entries(node.properties)
         .map(([subName, subSchema]) => {
           const nestedSource = source ? `${source}.${subName}` : subName;
@@ -251,17 +243,16 @@ class SchemaAstVisitor {
       return { ...base, kind: 'object', children };
     }
 
-    if (node.type === 'array' && node.items) {
+    if (kind === 'array') {
       const itemNode = this.visitFormNode('', node.items, false, normalized.context, depth + 1);
       return { ...base, kind: 'array', items: itemNode ? [itemNode] : [] };
     }
 
-    if (source.endsWith('_id') || source.endsWith('Id')) {
-      const target = source.replace(/_id$/i, '').replace(/Id$/, '');
-      return { ...base, kind: 'reference', reference: target };
+    if (kind === 'reference') {
+      return { ...base, kind: 'reference', reference: getReferenceTarget(source) };
     }
 
-    if (Array.isArray(node.enum) && node.enum.length > 0) {
+    if (kind === 'enum') {
       return {
         ...base,
         kind: 'enum',
@@ -269,14 +260,7 @@ class SchemaAstVisitor {
       };
     }
 
-    if (node.type === 'boolean') return { ...base, kind: 'boolean' };
-    if (node.type === 'integer' || node.type === 'number') return { ...base, kind: 'number' };
-    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
-      return { ...base, kind: 'date' };
-    }
-    if (node.type === 'string') return { ...base, kind: 'text' };
-
-    return { ...base, kind: 'text' };
+    return { ...base, kind };
   }
 }
 
