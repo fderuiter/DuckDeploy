@@ -2,6 +2,13 @@
 
 DuckDeploy is a zero-boilerplate, API-first React template built with Vite and TypeScript.
 
+## Documentation
+
+For a detailed understanding of how DuckDeploy works under the hood, please refer to our modular documentation suite:
+- [Tech Stack](./docs/tech-stack.md): Overview of React-Admin, TypeScript, and OpenAPI.
+- [Architecture](./docs/architecture.md): API data flow and custom providers.
+- [Extensibility](./docs/extensibility.md): Customizing UI resources and Auto components.
+
 ## How it works
 
 1. Update `openapi.yaml` with your API specification.
