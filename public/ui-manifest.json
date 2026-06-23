@@ -348,121 +348,469 @@
     }
   },
   "operationFunctionMap": {
-    "api-search-suggest": "apiSearchSuggest",
-    "api-search-search": "apiSearchSearch",
-    "api-search-search_scopes": "apiSearchSearchScopes",
-    "api-search-implemented_by": "apiSearchImplementedBy",
-    "api-search-search_scope": "apiSearchSearchScope",
-    "api-products-products-get_products": "apiProductsProductsGetProducts",
-    "api-about-get": "apiAboutGet",
-    "api-products-ct-get_packages": "apiProductsCtGetPackages",
-    "api-products-cdash-get": "apiProductsCdashGet",
-    "api-products-cdash-get_classes": "apiProductsCdashGetClasses",
-    "api-products-cdash-get_class": "apiProductsCdashGetClass",
-    "api-products-cdash-get_class_domains": "apiProductsCdashGetClassDomains",
-    "api-products-cdash-get_class_field": "apiProductsCdashGetClassField",
-    "api-products-cdash-get_domains": "apiProductsCdashGetDomains",
-    "api-products-cdash-get_domain": "apiProductsCdashGetDomain",
-    "api-products-cdash-get_domain_fields": "apiProductsCdashGetDomainFields",
-    "api-products-cdash-get_domain_field": "apiProductsCdashGetDomainField",
-    "api-products-cdash-get_root_class_field": "apiProductsCdashGetRootClassField",
-    "api-products-cdash-get_root_domain_field": "apiProductsCdashGetRootDomainField",
-    "api-products-cdashig-get": "apiProductsCdashigGet",
-    "api-products-cdashig-get_classes": "apiProductsCdashigGetClasses",
-    "api-products-cdashig-get_class": "apiProductsCdashigGetClass",
-    "api-products-cdashig-get_class_domains": "apiProductsCdashigGetClassDomains",
-    "api-products-cdashig-get_domains": "apiProductsCdashigGetDomains",
-    "api-products-cdashig-get_domain": "apiProductsCdashigGetDomain",
-    "api-products-cdashig-get_domain_fields": "apiProductsCdashigGetDomainFields",
-    "api-products-cdashig-get_domain_field": "apiProductsCdashigGetDomainField",
-    "api-products-cdashig-get_class_scenarios": "apiProductsCdashigGetClassScenarios",
-    "api-products-cdashig-get_scenarios": "apiProductsCdashigGetScenarios",
-    "api-products-cdashig-get_scenario": "apiProductsCdashigGetScenario",
-    "api-products-cdashig-get_scenario_fields": "apiProductsCdashigGetScenarioFields",
-    "api-products-cdashig-get_scenario_field": "apiProductsCdashigGetScenarioField",
-    "api-products-cdashig-get_root_domain_field": "apiProductsCdashigGetRootDomainField",
-    "api-products-cdashig-get_root_scenario_field": "apiProductsCdashigGetRootScenarioField",
-    "api-products-sdtm-get": "apiProductsSdtmGet",
-    "api-products-sdtm-get_classes": "apiProductsSdtmGetClasses",
-    "api-products-sdtm-get_class": "apiProductsSdtmGetClass",
-    "api-products-sdtm-get_class_variables": "apiProductsSdtmGetClassVariables",
-    "api-products-sdtm-get_class_datasets": "apiProductsSdtmGetClassDatasets",
-    "api-products-sdtm-get_datasets": "apiProductsSdtmGetDatasets",
-    "api-products-sdtm-get_dataset": "apiProductsSdtmGetDataset",
-    "api-products-sdtm-get_dataset_variables": "apiProductsSdtmGetDatasetVariables",
-    "api-products-sdtmig-get": "apiProductsSdtmigGet",
-    "api-products-sdtmig-get_classes": "apiProductsSdtmigGetClasses",
-    "api-products-sdtmig-get_class": "apiProductsSdtmigGetClass",
-    "api-products-sdtmig-get_class_datasets": "apiProductsSdtmigGetClassDatasets",
-    "api-products-sdtmig-get_datasets": "apiProductsSdtmigGetDatasets",
-    "api-products-sdtmig-get_dataset": "apiProductsSdtmigGetDataset",
-    "api-products-sdtmig-get_dataset_variables": "apiProductsSdtmigGetDatasetVariables",
-    "api-products-sendig-get": "apiProductsSendigGet",
-    "api-products-sendig-get_classes": "apiProductsSendigGetClasses",
-    "api-products-sendig-get_class": "apiProductsSendigGetClass",
-    "api-products-sendig-get_class_datasets": "apiProductsSendigGetClassDatasets",
-    "api-products-sendig-get_datasets": "apiProductsSendigGetDatasets",
-    "api-products-sendig-get_dataset": "apiProductsSendigGetDataset",
-    "api-products-sendig-get_dataset_variables": "apiProductsSendigGetDatasetVariables",
-    "api-products-adam-get": "apiProductsAdamGet",
-    "api-products-adam-get_datastructures": "apiProductsAdamGetDatastructures",
-    "api-products-adam-get_datastructure": "apiProductsAdamGetDatastructure",
-    "api-products-adam-get_datastructure_varsets": "apiProductsAdamGetDatastructureVarsets",
-    "api-products-adam-get_datastructure_varset": "apiProductsAdamGetDatastructureVarset",
-    "api-products-adam-get_datastructure_variables": "apiProductsAdamGetDatastructureVariables",
-    "api-diff-compare_with_immediate": "apiDiffCompareWithImmediate",
-    "api-diff-compare_arbitrary": "apiDiffCompareArbitrary",
-    "api-products-qrs-get_version": "apiProductsQrsGetVersion",
-    "api-products-qrs-get_responsegroups": "apiProductsQrsGetResponsegroups",
-    "api-products-qrs-get_responsegroup": "apiProductsQrsGetResponsegroup",
-    "api-products-qrs-get_items": "apiProductsQrsGetItems",
-    "api-products-qrs-get_item": "apiProductsQrsGetItem",
-    "api-products-qrs-get_root": "apiProductsQrsGetRoot",
-    "api-products-rule-get": "apiProductsRuleGet",
-    "api-products-rule-get_all_catalogs": "apiProductsRuleGetAllCatalogs",
-    "api-products-ig_documents-get_by_section": "apiProductsIgDocumentsGetBySection",
-    "api-products-ig_documents-get_sections": "apiProductsIgDocumentsGetSections",
-    "api-products-ig_documents-get_use_cases": "apiProductsIgDocumentsGetUseCases",
-    "api-products-ig_documents-get_documents_for_use_case_and_section": "apiProductsIgDocumentsGetDocumentsForUseCaseAndSection",
-    "api-products-ig_documents-get_document_sections_for_use_case": "apiProductsIgDocumentsGetDocumentSectionsForUseCase",
-    "api-about-lastupdated": "apiAboutLastupdated",
-    "api-about-maintenance": "apiAboutMaintenance",
-    "api-products-integrated-get": "apiProductsIntegratedGet",
-    "api-products-integrated-get_adam": "apiProductsIntegratedGetAdam",
-    "api-products-integrated-get_adam_datastructures": "apiProductsIntegratedGetAdamDatastructures",
-    "api-products-integrated-get_adam_datastructure": "apiProductsIntegratedGetAdamDatastructure",
-    "api-products-integrated-get_adam_datastructure_varsets": "apiProductsIntegratedGetAdamDatastructureVarsets",
-    "api-products-integrated-get_adam_datastructure_varset": "apiProductsIntegratedGetAdamDatastructureVarset",
-    "api-products-integrated-get_adam_datastructure_variables": "apiProductsIntegratedGetAdamDatastructureVariables",
-    "api-products-integrated-get_cdash": "apiProductsIntegratedGetCdash",
-    "api-products-integrated-get_cdash_classes": "apiProductsIntegratedGetCdashClasses",
-    "api-products-integrated-get_cdash_class": "apiProductsIntegratedGetCdashClass",
-    "api-products-integrated-get_cdash_class_domains": "apiProductsIntegratedGetCdashClassDomains",
-    "api-products-integrated-get_cdash_domains": "apiProductsIntegratedGetCdashDomains",
-    "api-products-integrated-get_cdash_domain": "apiProductsIntegratedGetCdashDomain",
-    "api-products-integrated-get_cdash_domain_fields": "apiProductsIntegratedGetCdashDomainFields",
-    "api-products-integrated-get_cdash_domain_field": "apiProductsIntegratedGetCdashDomainField",
-    "api-products-integrated-get_cdash_root_domain_field": "apiProductsIntegratedGetCdashRootDomainField",
-    "api-products-integrated-get_cdash_class_scenarios": "apiProductsIntegratedGetCdashClassScenarios",
-    "api-products-integrated-get_cdash_scenarios": "apiProductsIntegratedGetCdashScenarios",
-    "api-products-integrated-get_cdash_scenario": "apiProductsIntegratedGetCdashScenario",
-    "api-products-integrated-get_cdash_scenario_fields": "apiProductsIntegratedGetCdashScenarioFields",
-    "api-products-integrated-get_cdash_scenario_field": "apiProductsIntegratedGetCdashScenarioField",
-    "api-products-integrated-get_cdash_root_scenario_field": "apiProductsIntegratedGetCdashRootScenarioField",
-    "api-products-integrated-get_sdtm": "apiProductsIntegratedGetSdtm",
-    "api-products-integrated-get_sdtm_classes": "apiProductsIntegratedGetSdtmClasses",
-    "api-products-integrated-get_sdtm_class": "apiProductsIntegratedGetSdtmClass",
-    "api-products-integrated-get_sdtm_class_datasets": "apiProductsIntegratedGetSdtmClassDatasets",
-    "api-products-integrated-get_sdtm_datasets": "apiProductsIntegratedGetSdtmDatasets",
-    "api-products-integrated-get_sdtm_dataset": "apiProductsIntegratedGetSdtmDataset",
-    "api-products-integrated-get_sdtm_dataset_variables": "apiProductsIntegratedGetSdtmDatasetVariables",
-    "api-products-integrated-get_send": "apiProductsIntegratedGetSend",
-    "api-products-integrated-get_send_classes": "apiProductsIntegratedGetSendClasses",
-    "api-products-integrated-get_send_class": "apiProductsIntegratedGetSendClass",
-    "api-products-integrated-get_send_class_datasets": "apiProductsIntegratedGetSendClassDatasets",
-    "api-products-integrated-get_send_datasets": "apiProductsIntegratedGetSendDatasets",
-    "api-products-integrated-get_send_dataset": "apiProductsIntegratedGetSendDataset",
-    "api-products-integrated-get_send_dataset_variables": "apiProductsIntegratedGetSendDatasetVariables",
-    "api-products-ig_documents-get_sections_for_structure": "apiProductsIgDocumentsGetSectionsForStructure"
+    "api-search-suggest": {
+      "functionName": "apiSearchSuggest",
+      "modulePath": "../api/generated/searches/searches.ts"
+    },
+    "api-search-search": {
+      "functionName": "apiSearchSearch",
+      "modulePath": "../api/generated/searches/searches.ts"
+    },
+    "api-search-search_scopes": {
+      "functionName": "apiSearchSearchScopes",
+      "modulePath": "../api/generated/searches/searches.ts"
+    },
+    "api-search-implemented_by": {
+      "functionName": "apiSearchImplementedBy",
+      "modulePath": "../api/generated/searches/searches.ts"
+    },
+    "api-search-search_scope": {
+      "functionName": "apiSearchSearchScope",
+      "modulePath": "../api/generated/searches/searches.ts"
+    },
+    "api-products-products-get_products": {
+      "functionName": "apiProductsProductsGetProducts",
+      "modulePath": "../api/generated/default/default.ts"
+    },
+    "api-about-get": {
+      "functionName": "apiAboutGet",
+      "modulePath": "../api/generated/default/default.ts"
+    },
+    "api-products-ct-get_packages": {
+      "functionName": "apiProductsCtGetPackages",
+      "modulePath": "../api/generated/controlled-terminology-ct/controlled-terminology-ct.ts"
+    },
+    "api-products-cdash-get": {
+      "functionName": "apiProductsCdashGet",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_classes": {
+      "functionName": "apiProductsCdashGetClasses",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_class": {
+      "functionName": "apiProductsCdashGetClass",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_class_domains": {
+      "functionName": "apiProductsCdashGetClassDomains",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_class_field": {
+      "functionName": "apiProductsCdashGetClassField",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_domains": {
+      "functionName": "apiProductsCdashGetDomains",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_domain": {
+      "functionName": "apiProductsCdashGetDomain",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_domain_fields": {
+      "functionName": "apiProductsCdashGetDomainFields",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_domain_field": {
+      "functionName": "apiProductsCdashGetDomainField",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_root_class_field": {
+      "functionName": "apiProductsCdashGetRootClassField",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdash-get_root_domain_field": {
+      "functionName": "apiProductsCdashGetRootDomainField",
+      "modulePath": "../api/generated/clinical-data-acquisition-standards-harmonization-cdash/clinical-data-acquisition-standards-harmonization-cdash.ts"
+    },
+    "api-products-cdashig-get": {
+      "functionName": "apiProductsCdashigGet",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_classes": {
+      "functionName": "apiProductsCdashigGetClasses",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_class": {
+      "functionName": "apiProductsCdashigGetClass",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_class_domains": {
+      "functionName": "apiProductsCdashigGetClassDomains",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_domains": {
+      "functionName": "apiProductsCdashigGetDomains",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_domain": {
+      "functionName": "apiProductsCdashigGetDomain",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_domain_fields": {
+      "functionName": "apiProductsCdashigGetDomainFields",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_domain_field": {
+      "functionName": "apiProductsCdashigGetDomainField",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_class_scenarios": {
+      "functionName": "apiProductsCdashigGetClassScenarios",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_scenarios": {
+      "functionName": "apiProductsCdashigGetScenarios",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_scenario": {
+      "functionName": "apiProductsCdashigGetScenario",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_scenario_fields": {
+      "functionName": "apiProductsCdashigGetScenarioFields",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_scenario_field": {
+      "functionName": "apiProductsCdashigGetScenarioField",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_root_domain_field": {
+      "functionName": "apiProductsCdashigGetRootDomainField",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-cdashig-get_root_scenario_field": {
+      "functionName": "apiProductsCdashigGetRootScenarioField",
+      "modulePath": "../api/generated/cdash-implementation-guide-cdashig/cdash-implementation-guide-cdashig.ts"
+    },
+    "api-products-sdtm-get": {
+      "functionName": "apiProductsSdtmGet",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_classes": {
+      "functionName": "apiProductsSdtmGetClasses",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_class": {
+      "functionName": "apiProductsSdtmGetClass",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_class_variables": {
+      "functionName": "apiProductsSdtmGetClassVariables",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_class_datasets": {
+      "functionName": "apiProductsSdtmGetClassDatasets",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_datasets": {
+      "functionName": "apiProductsSdtmGetDatasets",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_dataset": {
+      "functionName": "apiProductsSdtmGetDataset",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtm-get_dataset_variables": {
+      "functionName": "apiProductsSdtmGetDatasetVariables",
+      "modulePath": "../api/generated/study-data-tabulation-model-sdtm/study-data-tabulation-model-sdtm.ts"
+    },
+    "api-products-sdtmig-get": {
+      "functionName": "apiProductsSdtmigGet",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sdtmig-get_classes": {
+      "functionName": "apiProductsSdtmigGetClasses",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sdtmig-get_class": {
+      "functionName": "apiProductsSdtmigGetClass",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sdtmig-get_class_datasets": {
+      "functionName": "apiProductsSdtmigGetClassDatasets",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sdtmig-get_datasets": {
+      "functionName": "apiProductsSdtmigGetDatasets",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sdtmig-get_dataset": {
+      "functionName": "apiProductsSdtmigGetDataset",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sdtmig-get_dataset_variables": {
+      "functionName": "apiProductsSdtmigGetDatasetVariables",
+      "modulePath": "../api/generated/sdtm-implementation-guide-sdtmig/sdtm-implementation-guide-sdtmig.ts"
+    },
+    "api-products-sendig-get": {
+      "functionName": "apiProductsSendigGet",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-sendig-get_classes": {
+      "functionName": "apiProductsSendigGetClasses",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-sendig-get_class": {
+      "functionName": "apiProductsSendigGetClass",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-sendig-get_class_datasets": {
+      "functionName": "apiProductsSendigGetClassDatasets",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-sendig-get_datasets": {
+      "functionName": "apiProductsSendigGetDatasets",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-sendig-get_dataset": {
+      "functionName": "apiProductsSendigGetDataset",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-sendig-get_dataset_variables": {
+      "functionName": "apiProductsSendigGetDatasetVariables",
+      "modulePath": "../api/generated/send-implementation-guide-sendig/send-implementation-guide-sendig.ts"
+    },
+    "api-products-adam-get": {
+      "functionName": "apiProductsAdamGet",
+      "modulePath": "../api/generated/analysis-data-model-adam/analysis-data-model-adam.ts"
+    },
+    "api-products-adam-get_datastructures": {
+      "functionName": "apiProductsAdamGetDatastructures",
+      "modulePath": "../api/generated/analysis-data-model-adam/analysis-data-model-adam.ts"
+    },
+    "api-products-adam-get_datastructure": {
+      "functionName": "apiProductsAdamGetDatastructure",
+      "modulePath": "../api/generated/analysis-data-model-adam/analysis-data-model-adam.ts"
+    },
+    "api-products-adam-get_datastructure_varsets": {
+      "functionName": "apiProductsAdamGetDatastructureVarsets",
+      "modulePath": "../api/generated/analysis-data-model-adam/analysis-data-model-adam.ts"
+    },
+    "api-products-adam-get_datastructure_varset": {
+      "functionName": "apiProductsAdamGetDatastructureVarset",
+      "modulePath": "../api/generated/analysis-data-model-adam/analysis-data-model-adam.ts"
+    },
+    "api-products-adam-get_datastructure_variables": {
+      "functionName": "apiProductsAdamGetDatastructureVariables",
+      "modulePath": "../api/generated/analysis-data-model-adam/analysis-data-model-adam.ts"
+    },
+    "api-diff-compare_with_immediate": {
+      "functionName": "apiDiffCompareWithImmediate",
+      "modulePath": "../api/generated/diff/diff.ts"
+    },
+    "api-diff-compare_arbitrary": {
+      "functionName": "apiDiffCompareArbitrary",
+      "modulePath": "../api/generated/diff/diff.ts"
+    },
+    "api-products-qrs-get_version": {
+      "functionName": "apiProductsQrsGetVersion",
+      "modulePath": "../api/generated/questionnairs-ratings-scales-qrs/questionnairs-ratings-scales-qrs.ts"
+    },
+    "api-products-qrs-get_responsegroups": {
+      "functionName": "apiProductsQrsGetResponsegroups",
+      "modulePath": "../api/generated/questionnairs-ratings-scales-qrs/questionnairs-ratings-scales-qrs.ts"
+    },
+    "api-products-qrs-get_responsegroup": {
+      "functionName": "apiProductsQrsGetResponsegroup",
+      "modulePath": "../api/generated/questionnairs-ratings-scales-qrs/questionnairs-ratings-scales-qrs.ts"
+    },
+    "api-products-qrs-get_items": {
+      "functionName": "apiProductsQrsGetItems",
+      "modulePath": "../api/generated/questionnairs-ratings-scales-qrs/questionnairs-ratings-scales-qrs.ts"
+    },
+    "api-products-qrs-get_item": {
+      "functionName": "apiProductsQrsGetItem",
+      "modulePath": "../api/generated/questionnairs-ratings-scales-qrs/questionnairs-ratings-scales-qrs.ts"
+    },
+    "api-products-qrs-get_root": {
+      "functionName": "apiProductsQrsGetRoot",
+      "modulePath": "../api/generated/questionnairs-ratings-scales-qrs/questionnairs-ratings-scales-qrs.ts"
+    },
+    "api-products-rule-get": {
+      "functionName": "apiProductsRuleGet",
+      "modulePath": "../api/generated/rule/rule.ts"
+    },
+    "api-products-rule-get_all_catalogs": {
+      "functionName": "apiProductsRuleGetAllCatalogs",
+      "modulePath": "../api/generated/rule/rule.ts"
+    },
+    "api-products-ig_documents-get_by_section": {
+      "functionName": "apiProductsIgDocumentsGetBySection",
+      "modulePath": "../api/generated/ig-documents/ig-documents.ts"
+    },
+    "api-products-ig_documents-get_sections": {
+      "functionName": "apiProductsIgDocumentsGetSections",
+      "modulePath": "../api/generated/ig-documents/ig-documents.ts"
+    },
+    "api-products-ig_documents-get_use_cases": {
+      "functionName": "apiProductsIgDocumentsGetUseCases",
+      "modulePath": "../api/generated/ig-documents/ig-documents.ts"
+    },
+    "api-products-ig_documents-get_documents_for_use_case_and_section": {
+      "functionName": "apiProductsIgDocumentsGetDocumentsForUseCaseAndSection",
+      "modulePath": "../api/generated/ig-documents/ig-documents.ts"
+    },
+    "api-products-ig_documents-get_document_sections_for_use_case": {
+      "functionName": "apiProductsIgDocumentsGetDocumentSectionsForUseCase",
+      "modulePath": "../api/generated/ig-documents/ig-documents.ts"
+    },
+    "api-about-lastupdated": {
+      "functionName": "apiAboutLastupdated",
+      "modulePath": "../api/generated/default/default.ts"
+    },
+    "api-about-maintenance": {
+      "functionName": "apiAboutMaintenance",
+      "modulePath": "../api/generated/default/default.ts"
+    },
+    "api-products-integrated-get": {
+      "functionName": "apiProductsIntegratedGet",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_adam": {
+      "functionName": "apiProductsIntegratedGetAdam",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_adam_datastructures": {
+      "functionName": "apiProductsIntegratedGetAdamDatastructures",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_adam_datastructure": {
+      "functionName": "apiProductsIntegratedGetAdamDatastructure",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_adam_datastructure_varsets": {
+      "functionName": "apiProductsIntegratedGetAdamDatastructureVarsets",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_adam_datastructure_varset": {
+      "functionName": "apiProductsIntegratedGetAdamDatastructureVarset",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_adam_datastructure_variables": {
+      "functionName": "apiProductsIntegratedGetAdamDatastructureVariables",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash": {
+      "functionName": "apiProductsIntegratedGetCdash",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_classes": {
+      "functionName": "apiProductsIntegratedGetCdashClasses",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_class": {
+      "functionName": "apiProductsIntegratedGetCdashClass",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_class_domains": {
+      "functionName": "apiProductsIntegratedGetCdashClassDomains",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_domains": {
+      "functionName": "apiProductsIntegratedGetCdashDomains",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_domain": {
+      "functionName": "apiProductsIntegratedGetCdashDomain",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_domain_fields": {
+      "functionName": "apiProductsIntegratedGetCdashDomainFields",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_domain_field": {
+      "functionName": "apiProductsIntegratedGetCdashDomainField",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_root_domain_field": {
+      "functionName": "apiProductsIntegratedGetCdashRootDomainField",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_class_scenarios": {
+      "functionName": "apiProductsIntegratedGetCdashClassScenarios",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_scenarios": {
+      "functionName": "apiProductsIntegratedGetCdashScenarios",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_scenario": {
+      "functionName": "apiProductsIntegratedGetCdashScenario",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_scenario_fields": {
+      "functionName": "apiProductsIntegratedGetCdashScenarioFields",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_scenario_field": {
+      "functionName": "apiProductsIntegratedGetCdashScenarioField",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_cdash_root_scenario_field": {
+      "functionName": "apiProductsIntegratedGetCdashRootScenarioField",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm": {
+      "functionName": "apiProductsIntegratedGetSdtm",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm_classes": {
+      "functionName": "apiProductsIntegratedGetSdtmClasses",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm_class": {
+      "functionName": "apiProductsIntegratedGetSdtmClass",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm_class_datasets": {
+      "functionName": "apiProductsIntegratedGetSdtmClassDatasets",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm_datasets": {
+      "functionName": "apiProductsIntegratedGetSdtmDatasets",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm_dataset": {
+      "functionName": "apiProductsIntegratedGetSdtmDataset",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_sdtm_dataset_variables": {
+      "functionName": "apiProductsIntegratedGetSdtmDatasetVariables",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send": {
+      "functionName": "apiProductsIntegratedGetSend",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send_classes": {
+      "functionName": "apiProductsIntegratedGetSendClasses",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send_class": {
+      "functionName": "apiProductsIntegratedGetSendClass",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send_class_datasets": {
+      "functionName": "apiProductsIntegratedGetSendClassDatasets",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send_datasets": {
+      "functionName": "apiProductsIntegratedGetSendDatasets",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send_dataset": {
+      "functionName": "apiProductsIntegratedGetSendDataset",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-integrated-get_send_dataset_variables": {
+      "functionName": "apiProductsIntegratedGetSendDatasetVariables",
+      "modulePath": "../api/generated/integrated/integrated.ts"
+    },
+    "api-products-ig_documents-get_sections_for_structure": {
+      "functionName": "apiProductsIgDocumentsGetSectionsForStructure",
+      "modulePath": "../api/generated/ig-documents/ig-documents.ts"
+    }
   }
 }

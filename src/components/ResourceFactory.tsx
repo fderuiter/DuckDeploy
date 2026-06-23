@@ -35,9 +35,15 @@ export const resolveAdminResources = (spec: unknown, uiManifest: unknown): Resou
     : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
 };
 
-export const resolveOperationMappings = (uiManifest: unknown): Record<string, string> =>
-  uiManifest && typeof uiManifest === 'object' && (uiManifest as { operationFunctionMap?: unknown }).operationFunctionMap && typeof (uiManifest as { operationFunctionMap?: unknown }).operationFunctionMap === 'object'
-    ? ((uiManifest as { operationFunctionMap: Record<string, string> }).operationFunctionMap)
+export const resolveOperationMappings = (
+  uiManifest: unknown,
+): Record<string, { functionName: string; modulePath: string }> =>
+  uiManifest &&
+  typeof uiManifest === 'object' &&
+  (uiManifest as { operationFunctionMap?: unknown }).operationFunctionMap &&
+  typeof (uiManifest as { operationFunctionMap?: unknown }).operationFunctionMap === 'object'
+    ? (uiManifest as { operationFunctionMap: Record<string, { functionName: string; modulePath: string }> })
+        .operationFunctionMap
     : {};
 
 export const ResourceFactory = ({ resources }: { resources: ResourceDefinition[] }) => {

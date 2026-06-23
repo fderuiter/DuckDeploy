@@ -5,21 +5,31 @@ import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 
 let resourceMap: Record<string, ResourceDefinition> = {};
-let operationFunctionMap: Record<string, string> = {};
+let operationFunctionMap: Record<string, { functionName: string; modulePath: string }> = {};
 const ORVAL_FACTORY_EXPORT_NAME = /^get[A-Z]/;
 
-const generatedModules = import.meta.glob('../api/generated/**/*.ts', { eager: true }) as Record<
+const generatedModules = import.meta.glob('../api/generated/**/*.ts') as Record<
   string,
-  Record<string, unknown>
+  () => Promise<Record<string, unknown>>
 >;
 
-const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unknown>>((acc, [path, moduleExports]) => {
-  if (path.includes('/model/')) {
-    return acc;
+const apiFunctionsCache: Record<string, Record<string, unknown>> = {};
+
+const ensureModuleLoaded = async (modulePath: string): Promise<Record<string, unknown>> => {
+  if (apiFunctionsCache[modulePath]) {
+    return apiFunctionsCache[modulePath];
   }
 
+  const loader = generatedModules[modulePath];
+  if (!loader) {
+    throw new Error(`Generated API module not found at "${modulePath}".`);
+  }
+
+  const moduleExports = await loader();
+  const flattenedExports: Record<string, unknown> = {};
+
   for (const [exportName, exportedValue] of Object.entries(moduleExports)) {
-    acc[exportName] = exportedValue;
+    flattenedExports[exportName] = exportedValue;
 
     // Orval's axios + tags-split output exports `get<Tag>()` factories that return
     // objects containing the actual per-operation functions. Flatten them so the
@@ -30,20 +40,21 @@ const apiFunctions = Object.entries(generatedModules).reduce<Record<string, unkn
         if (groupedFunctions && typeof groupedFunctions === 'object') {
           for (const [groupedName, groupedFunction] of Object.entries(groupedFunctions)) {
             if (typeof groupedFunction === 'function') {
-              acc[groupedName] = groupedFunction;
+              flattenedExports[groupedName] = groupedFunction;
             }
           }
         }
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn(`Failed to inspect generated API export "${exportName}".`, error);
+          console.warn(`Failed to inspect generated API export "${exportName}" in "${modulePath}".`, error);
         }
       }
     }
   }
 
-  return acc;
-}, {});
+  apiFunctionsCache[modulePath] = flattenedExports;
+  return flattenedExports;
+};
 
 const extractErrorMessage = (payload: unknown): string | undefined => {
   if (!payload) {
@@ -234,7 +245,7 @@ installErrorNormalizationInterceptor();
 
 export const setResourceDefinitions = (
   resources: ResourceDefinition[],
-  operationMappings: Record<string, string> = {},
+  operationMappings: Record<string, { functionName: string; modulePath: string }> = {},
 ) => {
   resourceMap = resources.reduce((acc, resourceDefinition) => {
     acc[resourceDefinition.name] = resourceDefinition;
@@ -248,21 +259,24 @@ const callApiFunction = async (operationKey: string | undefined, ...args: unknow
     throw new Error('Operation not supported for this resource.');
   }
 
-  const functionName = operationFunctionMap[operationKey];
-  if (!functionName) {
+  const mapping = operationFunctionMap[operationKey];
+  if (!mapping) {
     throw new Error(
       `Generated API function mapping for operation "${operationKey}" not found. ` +
         'Ensure ui-manifest.json is up to date (run npm run generate).',
     );
   }
 
-  const fn = apiFunctions[functionName];
+  const { functionName, modulePath } = mapping;
+  const moduleFunctions = await ensureModuleLoaded(modulePath);
+  const fn = moduleFunctions[functionName];
+
   if (typeof fn === 'function') {
     return await (fn as (...fnArgs: unknown[]) => Promise<unknown>)(...args);
   }
 
   throw new Error(
-    `Generated API function "${functionName}" for operation "${operationKey}" not found.`,
+    `Generated API function "${functionName}" in module "${modulePath}" for operation "${operationKey}" not found.`,
   );
 };
 
