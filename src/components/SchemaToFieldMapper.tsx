@@ -50,6 +50,7 @@ type ValidationDescriptor = {
 export type PrecomputedFieldDescriptor = {
   kind: 'reference' | 'enum' | 'boolean' | 'number' | 'date' | 'text' | 'array';
   source: string;
+  description?: string;
   widgetId?: string;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
@@ -69,6 +70,7 @@ export type PrecomputedInputDescriptor = {
   source: string;
   isRequired: boolean;
   title?: string;
+  description?: string;
   widgetId?: string;
   widgetProps?: Record<string, unknown>;
   uiExtensions?: Record<string, unknown>;
@@ -312,12 +314,15 @@ const renderPrecomputedInputDefault = (
 ): React.ReactNode => {
   const validators = buildValidatorsFromDescriptor(node);
   const key = keyPrefix || node.source || 'input';
-  const commonProps = {
+  const commonProps: any = {
     key,
     source: node.source,
     validate: validators,
     isRequired: node.isRequired,
   };
+  if (node.description) {
+    commonProps['aria-description'] = node.description;
+  }
 
   if (node.kind === 'polymorphic' && node.options && node.options.length > 0) {
     return <PrecomputedPolymorphicInput node={node} keyPrefix={key} />;
@@ -440,12 +445,15 @@ const mapSchemaToInputDefault = (
   if (depth > 5) return null; // Infinite recursion guard
 
   const validators = buildValidators(property, isRequired);
-  const commonProps = {
+  const commonProps: any = {
     key: source,
     source,
     validate: validators,
     isRequired, // Needed for simple reference/boolean inputs to display asterisk
   };
+  if (property.description) {
+    commonProps['aria-description'] = property.description;
+  }
 
   const kind = determineSchemaKindForInput(source, property);
 

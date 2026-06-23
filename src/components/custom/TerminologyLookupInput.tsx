@@ -8,7 +8,7 @@ const resolveDomain = (widgetProps: Record<string, unknown>): string | undefined
   return typeof domain === 'string' ? domain : undefined;
 };
 
-export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value, setValue, widgetProps }) => {
+export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value, setValue, widgetProps, schemaNode }) => {
   const domain = resolveDomain(widgetProps);
   return (
     <TextInput
@@ -23,6 +23,7 @@ export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value,
         ),
       }}
       helperText={domain ? `Lookup in domain: ${domain}` : undefined}
+      aria-description={(schemaNode as any)?.description}
     />
   );
 };
