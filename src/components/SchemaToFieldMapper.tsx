@@ -31,6 +31,14 @@ import {
   resetPolymorphicValue,
   setPolymorphicDiscriminatorValue,
 } from './polymorphicState';
+import {
+  determineSchemaKindForField,
+  determineSchemaKindForInput,
+  getReferenceTarget,
+  getWidgetId,
+  getWidgetProps,
+  resolveFallbackWidgetId,
+} from '../utils/heuristics';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -148,7 +156,7 @@ const WidgetOverrideInput = ({
   const { getWidget } = useWidgetRegistry();
   const form = useFormContext();
 
-  const widgetId = [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
+  const widgetId = resolveFallbackWidgetId(candidateWidgetId, fallbackWidgetId) && [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
   const Widget = widgetId ? getWidget(widgetId) : undefined;
 
   const value = useWatch({ control: form.control, name: source });
@@ -391,9 +399,10 @@ export const renderPrecomputedInput = (
 };
 
 export const mapSchemaToField = (name: string, property: any) => {
-  // Check for reference
-  if (name.endsWith('_id') || name.endsWith('Id') || property.$ref) {
-    const target = name.replace(/_id$/i, '').replace(/Id$/, '');
+  const kind = determineSchemaKindForField(name, property);
+
+  if (kind === 'reference') {
+    const target = getReferenceTarget(name);
     return (
       <ReferenceField key={name} source={name} reference={target}>
         <TextField source="id" />
@@ -401,27 +410,24 @@ export const mapSchemaToField = (name: string, property: any) => {
     );
   }
 
-  if (property.enum) {
+  if (kind === 'enum') {
     const choices = property.enum.map((val: string) => ({ id: val, name: val }));
     return <SelectField key={name} source={name} choices={choices} />;
   }
 
-  if (property.type === 'boolean') {
+  if (kind === 'boolean') {
     return <BooleanField key={name} source={name} />;
   }
 
-  if (property.type === 'integer' || property.type === 'number') {
+  if (kind === 'number') {
     return <NumberField key={name} source={name} />;
   }
 
-  if (property.type === 'string') {
-    if (property.format === 'date' || property.format === 'date-time') {
-      return <DateField key={name} source={name} />;
-    }
-    return <TextField key={name} source={name} />;
+  if (kind === 'date') {
+    return <DateField key={name} source={name} />;
   }
 
-  if (property.type === 'array') {
+  if (kind === 'array') {
     return (
       <ArrayField key={name} source={name}>
         <SingleFieldList>
@@ -431,7 +437,6 @@ export const mapSchemaToField = (name: string, property: any) => {
     );
   }
 
-  // Fallback
   return <TextField key={name} source={name} />;
 };
 
@@ -456,8 +461,10 @@ const mapSchemaToInputDefault = (
     inputProps: property.description ? { 'aria-describedby': descId } : undefined,
   };
 
+  const kind = determineSchemaKindForInput(source, property);
+
   // Polymorphism
-  if (property.oneOf || property.anyOf) {
+  if (kind === 'polymorphic') {
     const schemas = (property.oneOf || property.anyOf) as OpenAPIV3.SchemaObject[];
     const discriminatorMetadata = resolveDiscriminatorMetadata(property, schemas);
     return (
@@ -474,7 +481,7 @@ const mapSchemaToInputDefault = (
   }
 
   // Nested Objects
-  if (property.type === 'object' && property.properties) {
+  if (kind === 'object' && property.properties) {
     return (
       <div key={source} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
         <h4><LabelWithTooltip label={property.title || source.split('.').pop() || source} description={property.description} /></h4>
@@ -492,7 +499,7 @@ const mapSchemaToInputDefault = (
   }
 
   // Arrays
-  if (property.type === 'array' && property.items) {
+  if (kind === 'array' && property.items) {
     const itemSchema = property.items as OpenAPIV3.SchemaObject;
 
     return (
@@ -513,8 +520,8 @@ const mapSchemaToInputDefault = (
     );
   }
 
-  if (source.endsWith('_id') || source.endsWith('Id') || '$ref' in property) {
-    const target = source.replace(/_id$/i, '').replace(/Id$/, '');
+  if (kind === 'reference') {
+    const target = getReferenceTarget(source);
     return (
       <ReferenceInput {...commonProps} reference={target}>
         <SelectInput optionText="id" />
@@ -522,27 +529,23 @@ const mapSchemaToInputDefault = (
     );
   }
 
-  if (property.enum) {
-    const choices = property.enum.map((val: string) => ({ id: val, name: val }));
+  if (kind === 'enum') {
+    const choices = property.enum!.map((val: string) => ({ id: val, name: val }));
     return <SelectInput {...commonProps} choices={choices} />;
   }
 
-  if (property.type === 'boolean') {
+  if (kind === 'boolean') {
     return <BooleanInput {...commonProps} />;
   }
 
-  if (property.type === 'integer' || property.type === 'number') {
+  if (kind === 'number') {
     return <NumberInput {...commonProps} />;
   }
 
-  if (property.type === 'string') {
-    if (property.format === 'date' || property.format === 'date-time') {
-      return <DateInput {...commonProps} />;
-    }
-    return <TextInput {...commonProps} />;
+  if (kind === 'date') {
+    return <DateInput {...commonProps} />;
   }
 
-  // Fallback
   return <TextInput {...commonProps} />;
 };
 
@@ -553,10 +556,8 @@ export const mapSchemaToInput = (
   depth: number = 0,
 ): React.ReactNode => {
   const fallback = mapSchemaToInputDefault(source, property, isRequired, depth);
-  const explicitWidgetId = typeof property['x-ui-widget'] === 'string' ? property['x-ui-widget'] : undefined;
-  const widgetProps = property['x-ui-props'] && typeof property['x-ui-props'] === 'object'
-    ? (property['x-ui-props'] as Record<string, unknown>)
-    : {};
+  const explicitWidgetId = getWidgetId(property);
+  const widgetProps = getWidgetProps(property) || {};
 
   return (
     <WidgetOverrideInput

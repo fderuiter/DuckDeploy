@@ -3,6 +3,15 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+import {
+  isReferenceField,
+  getReferenceTarget,
+  extractUiExtensions,
+  getWidgetId,
+  getWidgetProps,
+  determineSchemaKindForField,
+  determineSchemaKindForInput,
+} from '../src/utils/heuristics.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,17 +65,6 @@ const escapeJsonPointer = (segment) =>
   String(segment)
     .replace(/~/g, '~0')
     .replace(/\//g, '~1');
-
-const extractUiExtensions = (node) => {
-  if (!node || typeof node !== 'object') return {};
-
-  return Object.keys(node)
-    .filter((key) => key.startsWith('x-ui-'))
-    .reduce((acc, key) => {
-      acc[key] = node[key];
-      return acc;
-    }, {});
-};
 
 const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
@@ -374,46 +372,36 @@ class OpenApiVisitor {
     const base = {
       source: name,
       description: node.description,
-      widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
-      widgetProps:
-        uiExtensions['x-ui-props'] && typeof uiExtensions['x-ui-props'] === 'object' ? uiExtensions['x-ui-props'] : undefined,
+      widgetId: getWidgetId(node),
+      widgetProps: getWidgetProps(node),
       uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
 
-    if (name.endsWith('_id') || name.endsWith('Id')) {
-      const target = name.replace(/_id$/i, '').replace(/Id$/, '');
-      this.addTraceability(pointer, name, '<ReferenceField />');
-      return { ...base, kind: 'reference', reference: target };
-    }
+    const kind = determineSchemaKindForField(name, node);
 
-    if (Array.isArray(node.enum) && node.enum.length > 0) {
-      this.addTraceability(pointer, name, '<SelectField />');
-      return {
-        ...base,
-        kind: 'enum',
-        choices: node.enum.map((value) => ({ id: String(value), name: String(value) })),
-      };
+    switch (kind) {
+      case 'reference':
+        this.addTraceability(pointer, name, '<ReferenceField />');
+        return { ...base, kind: 'reference', reference: getReferenceTarget(name) };
+      case 'enum':
+        this.addTraceability(pointer, name, '<SelectField />');
+        return { ...base, kind: 'enum', choices: node.enum.map((value) => ({ id: String(value), name: String(value) })) };
+      case 'boolean':
+        this.addTraceability(pointer, name, '<BooleanField />');
+        return { ...base, kind: 'boolean' };
+      case 'number':
+        this.addTraceability(pointer, name, '<NumberField />');
+        return { ...base, kind: 'number' };
+      case 'date':
+        this.addTraceability(pointer, name, '<DateField />');
+        return { ...base, kind: 'date' };
+      case 'array':
+        this.addTraceability(pointer, name, '<ArrayField />');
+        return { ...base, kind: 'array' };
+      default:
+        this.addTraceability(pointer, name, '<TextField />');
+        return { ...base, kind: 'text' };
     }
-
-    if (node.type === 'boolean') {
-      this.addTraceability(pointer, name, '<BooleanField />');
-      return { ...base, kind: 'boolean' };
-    }
-    if (node.type === 'integer' || node.type === 'number') {
-      this.addTraceability(pointer, name, '<NumberField />');
-      return { ...base, kind: 'number' };
-    }
-    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
-      this.addTraceability(pointer, name, '<DateField />');
-      return { ...base, kind: 'date' };
-    }
-    if (node.type === 'array') {
-      this.addTraceability(pointer, name, '<ArrayField />');
-      return { ...base, kind: 'array' };
-    }
-
-    this.addTraceability(pointer, name, '<TextField />');
-    return { ...base, kind: 'text' };
   }
 
   visitFormNode(source, schema, isRequired, context = { refPath: [] }, depth = 0, pointer = '#') {
@@ -437,13 +425,14 @@ class OpenApiVisitor {
       title: node.title,
       description: node.description,
       validation: this.getValidation(node),
-      widgetId: typeof uiExtensions['x-ui-widget'] === 'string' ? uiExtensions['x-ui-widget'] : undefined,
-      widgetProps:
-        uiExtensions['x-ui-props'] && typeof uiExtensions['x-ui-props'] === 'object' ? uiExtensions['x-ui-props'] : undefined,
+      widgetId: getWidgetId(node),
+      widgetProps: getWidgetProps(node),
       uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
 
-    if ((Array.isArray(node.oneOf) && node.oneOf.length > 0) || (Array.isArray(node.anyOf) && node.anyOf.length > 0)) {
+    const kind = determineSchemaKindForInput(source, node);
+
+    if (kind === 'polymorphic') {
       const variantSchemas = node.oneOf || node.anyOf;
       const strictDiscriminator = resolveStrictDiscriminator(node, variantSchemas);
       const variants = variantSchemas
@@ -473,7 +462,7 @@ class OpenApiVisitor {
       }
     }
 
-    if (node.type === 'object' && node.properties) {
+    if (kind === 'object') {
       const children = Object.entries(node.properties)
         .map(([subName, subSchema]) => {
           const nestedSource = source ? `${source}.${subName}` : subName;
@@ -487,42 +476,32 @@ class OpenApiVisitor {
       return { ...base, kind: 'object', children };
     }
 
-    if (node.type === 'array' && node.items) {
+    if (kind === 'array') {
       const itemNode = this.visitFormNode('', node.items, false, normalized.context, depth + 1, `${pointer}/items`);
       this.addTraceability(pointer, source, '<ArrayInput />');
       return { ...base, kind: 'array', items: itemNode ? [itemNode] : [] };
     }
 
-    if (source.endsWith('_id') || source.endsWith('Id')) {
-      const target = source.replace(/_id$/i, '').replace(/Id$/, '');
-      this.addTraceability(pointer, source, '<ReferenceInput />');
-      return { ...base, kind: 'reference', reference: target };
+    switch (kind) {
+      case 'reference':
+        this.addTraceability(pointer, source, '<ReferenceInput />');
+        return { ...base, kind: 'reference', reference: getReferenceTarget(source) };
+      case 'enum':
+        this.addTraceability(pointer, source, '<SelectInput />');
+        return { ...base, kind: 'enum', choices: node.enum.map((value) => ({ id: String(value), name: String(value) })) };
+      case 'boolean':
+        this.addTraceability(pointer, source, '<BooleanInput />');
+        return { ...base, kind: 'boolean' };
+      case 'number':
+        this.addTraceability(pointer, source, '<NumberInput />');
+        return { ...base, kind: 'number' };
+      case 'date':
+        this.addTraceability(pointer, source, '<DateInput />');
+        return { ...base, kind: 'date' };
+      default:
+        this.addTraceability(pointer, source, '<TextInput />');
+        return { ...base, kind: 'text' };
     }
-
-    if (Array.isArray(node.enum) && node.enum.length > 0) {
-      this.addTraceability(pointer, source, '<SelectInput />');
-      return {
-        ...base,
-        kind: 'enum',
-        choices: node.enum.map((value) => ({ id: String(value), name: String(value) })),
-      };
-    }
-
-    if (node.type === 'boolean') {
-      this.addTraceability(pointer, source, '<BooleanInput />');
-      return { ...base, kind: 'boolean' };
-    }
-    if (node.type === 'integer' || node.type === 'number') {
-      this.addTraceability(pointer, source, '<NumberInput />');
-      return { ...base, kind: 'number' };
-    }
-    if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
-      this.addTraceability(pointer, source, '<DateInput />');
-      return { ...base, kind: 'date' };
-    }
-
-    this.addTraceability(pointer, source, '<TextInput />');
-    return { ...base, kind: 'text' };
   }
 }
 
