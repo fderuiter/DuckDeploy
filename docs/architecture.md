@@ -12,7 +12,7 @@ DuckDeploy operates strictly on an API-first paradigm. All application logic is 
 
 ## The Custom Data Provider
 
-React-Admin relies on a standard Data Provider interface to map generic CRUD operations (`getList`, `getOne`, `create`, `update`, `delete`) to API requests. 
+React-Admin relies on a standard [Data Provider interface](https://marmelab.com/react-admin/DataProviders.html) to map generic CRUD operations (`getList`, `getOne`, `create`, `update`, `delete`) to API requests. 
 
 In DuckDeploy, `src/providers/openApiDataProvider.ts` implements this custom data provider:
 - It maps React-Admin queries into generated Orval Axios calls.
@@ -21,7 +21,7 @@ In DuckDeploy, `src/providers/openApiDataProvider.ts` implements this custom dat
 
 ## Authentication and Permission Probing
 
-The `AuthProvider` in `src/core/authProvider.ts` manages security. Instead of hardcoding role-based access logic on the frontend, DuckDeploy employs a **dynamic permission probing** approach.
+The `AuthProvider` in `src/core/authProvider.ts` implements the React-Admin [Auth Provider](https://marmelab.com/react-admin/Authentication.html) to manage security. Instead of hardcoding role-based access logic on the frontend, DuckDeploy employs a **dynamic permission probing** approach.
 
 - For each action (`list`, `show`, `create`, `edit`, `delete`), the AuthProvider sends a lightweight probe request to the respective endpoint.
 - Mutating actions (`create`, `edit`, `delete`) are probed using `OPTIONS` requests to avoid side effects.
