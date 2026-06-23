@@ -1,21 +1,22 @@
 /**
  * validate-contract.mjs
  *
- * Static manifest-mapping check.
+ * Static Frontend Generation Fidelity Verification.
  *
- * Reads the manifest-generation-log.json produced by the preprocessor and verifies
- * that every field discovered in the OpenAPI spec is legally mapped to a UI
- * component.  A field is "discarded" when the preprocessor could not determine
- * a component for it (e.g. unsupported schema shape); having such unmapped
- * fields means the generated UI would silently drop backend data.
+ * This script ensures structural bisimilarity between the OpenAPI specification
+ * and the generated React dashboard. Unlike Schemathesis (which tests the backend),
+ * this tool verifies that the frontend correctly interprets and renders the contract.
  *
- * The script also cross-validates that constraint-bearing fields (enum,
- * minLength, pattern) have been emitted with a component that enforces those
- * constraints, so spec changes that introduce new constraints are caught before
- * deployment.
+ * It reads the manifest-generation-log.json produced by the preprocessor and verifies:
+ * 1. Mapping Coverage: Every field discovered in the OpenAPI spec must be legally
+ *    mapped to a UI component. If a field is "discarded" (due to unsupported
+ *    schema shapes or depth limits), the build fails to prevent silent data loss.
+ * 2. Constraint Enforcement: Constraint-bearing fields (enum, minLength, pattern)
+ *    must be mapped to UI components (e.g., <SelectInput />, <TextInput />) that
+ *    actually enforce those constraints.
  *
- * Exit code 0 → contract is valid.
- * Exit code 1 → contract violations detected; deployment should be blocked.
+ * Exit code 0 → UI generation fidelity is verified.
+ * Exit code 1 → Contract violations detected; deployment blocked.
  */
 
 import fs from 'node:fs';

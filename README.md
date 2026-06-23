@@ -17,7 +17,8 @@ DuckDeploy is a zero-boilerplate, API-first React template built with Vite and T
 - `npm run generate` - Regenerates API client code from `openapi.yaml`.
 - `npm run compile:schema` - Compiles `openapi.yaml` into optimized `public/schema.json`.
 - `npm run build` - Generates API client code + UI manifest, compiles schema JSON, builds for production, and verifies no raw OpenAPI artifacts leak into `dist`.
-- `npm run test:fuzz` - Runs Schemathesis property-based fuzz testing against the OpenAPI contract.
+- `npm run validate:contract` - Performs a static check of the UI manifest against the OpenAPI spec to ensure every field is correctly mapped and constraints (enum, minLength, etc.) are enforced by the UI.
+- `npm run test:fuzz` - Runs Schemathesis property-based fuzz testing to verify backend API compliance with the OpenAPI contract.
 - `npm run lint` - Runs ESLint.
 - `npm run proxy` - Starts the local CDISC proxy/backend on `http://localhost:8787/api/cdisc`.
 
@@ -42,6 +43,21 @@ For local development, run the proxy and Vite side by side:
 2. `npm run dev`
 
 Vite proxies `/api/cdisc` to the local backend automatically, so local builds work without exposing CDISC keys in the browser bundle.
+
+## Verification & Testing
+
+DuckDeploy employs a multi-layer verification strategy to ensure the generated dashboard remains synchronized with the API specification:
+
+1.  **Backend Contract Compliance (OAS-to-Backend)**:
+    Using Schemathesis (`npm run test:fuzz`), we perform property-based fuzz testing against the backend API. This verifies that the backend properly handles a wide range of inputs and adheres to the structural constraints defined in `openapi.yaml`. *Note: This tests the backend's robustness, not the frontend's UI components.*
+
+2.  **Frontend Generation Fidelity (OAS-to-UI)**:
+    The `npm run validate:contract` script performs a static "Manifest Fidelity Mapping." It analyzes the generated UI manifest and cross-references it with the OpenAPI AST to prove that:
+    - No fields defined in the spec are silently "discarded" or unmapped in the UI.
+    - Constraint-bearing fields (e.g., those with `enum`, `minLength`, or `pattern`) are assigned to UI widgets capable of enforcing those specific constraints.
+
+3.  **Shadow Build Integrity**:
+    The `npm run verify:shadow` check runs during the build to ensure no intermediate artifacts (like raw OpenAPI YAML) leak into the production `dist` bundle.
 
 ## Deployment
 

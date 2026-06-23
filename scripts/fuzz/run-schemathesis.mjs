@@ -1,3 +1,21 @@
+/**
+ * run-schemathesis.mjs
+ *
+ * Backend API Contract Compliance Verification.
+ *
+ * This script executes Schemathesis, a property-based fuzz testing tool, against
+ * the backend API using the OpenAPI specification as the ground truth.
+ *
+ * Its primary role is to verify that the backend:
+ * 1. Properly handles a wide range of generated request payloads.
+ * 2. Adheres to the structural constraints and response types defined in the OAS.
+ * 3. Does not crash or return 500 errors when receiving unexpected but validly-shaped data.
+ *
+ * IMPORTANT: This script tests the BACKEND's compliance with the contract. It
+ * does NOT verify the frontend's UI generation fidelity or component behavior.
+ * For UI verification, use `npm run validate:contract`.
+ */
+
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
