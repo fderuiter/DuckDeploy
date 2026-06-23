@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
 import yaml from 'js-yaml';
+import { parseAllowedOperations, isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
 
 const PORT = parsePort(process.env.PORT);
 const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdisc');
@@ -19,6 +20,13 @@ const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'tru
 const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_URL);
 
 const OPENAPI_SPEC_URL = new URL('../openapi.yaml', import.meta.url);
+
+async function loadAllowedOperations(specUrl) {
+  const source = await readFile(specUrl, 'utf8');
+  const parsed = yaml.load(source);
+  return parseAllowedOperations(parsed);
+}
+
 const allowedOperations = await loadAllowedOperations(OPENAPI_SPEC_URL);
 
 function normalizePrefix(value) {
@@ -72,28 +80,6 @@ function validateTrustedIngressConfig() {
   }
 }
 
-async function loadAllowedOperations(specUrl) {
-  const source = await readFile(specUrl, 'utf8');
-  const parsed = yaml.load(source);
-  const paths = parsed && typeof parsed === 'object' ? parsed.paths : undefined;
-  if (!paths || typeof paths !== 'object') {
-    throw new Error('Unable to load OpenAPI paths for proxy allow-listing.');
-  }
-
-  return Object.entries(paths).map(([path, pathItem]) => {
-    const methods = new Set(
-      Object.keys(pathItem).filter((method) =>
-        ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'].includes(method.toLowerCase()),
-      ).map((method) => method.toUpperCase()),
-    );
-
-    return {
-      pattern: pathToRegExp(path),
-      methods,
-    };
-  });
-}
-
 function parseUpstreamBaseUrl(rawValue) {
   try {
     return new URL(rawValue ?? 'https://api.library.cdisc.org');
@@ -103,11 +89,6 @@ function parseUpstreamBaseUrl(rawValue) {
       : '(default)';
     throw new Error(`Invalid CDISC_UPSTREAM_BASE_URL: ${configuredValue}`, { cause: error });
   }
-}
-
-function pathToRegExp(pathTemplate) {
-  const escaped = pathTemplate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`^${escaped.replace(/\\\{[^/}]+\\\}/g, '[^/]+')}$`);
 }
 
 function buildUpstreamUrl(upstreamPath, searchParams) {
@@ -232,18 +213,7 @@ function stripHopByHopHeaders(headers) {
 }
 
 function isOperationAllowed(method, pathname) {
-  const normalizedMethod = method.toUpperCase();
-  return allowedOperations.some(({ pattern, methods }) => {
-    if (!pattern.test(pathname)) {
-      return false;
-    }
-
-    if (methods.has(normalizedMethod)) {
-      return true;
-    }
-
-    return normalizedMethod === 'HEAD' && methods.has('GET');
-  });
+  return libIsOperationAllowed(allowedOperations, method, pathname);
 }
 
 async function readRequestBody(request) {
