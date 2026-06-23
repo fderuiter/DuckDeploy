@@ -12,6 +12,7 @@ import {
   determineSchemaKindForField,
   determineSchemaKindForInput,
 } from '../src/utils/heuristics.ts';
+import { resolveResourceName, getSchemaFromContent } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -504,25 +505,6 @@ class OpenApiVisitor {
     }
   }
 }
-
-const resolveResourceName = (apiPath, pathItem, methods) => {
-  for (const method of methods) {
-    if (pathItem[method]?.tags?.length) return pathItem[method].tags[0];
-  }
-
-  const segments = apiPath.split('/').filter(Boolean);
-  return segments.length > 0 ? segments[0] : null;
-};
-
-const getSchemaFromContent = (content) => {
-  if (!content || typeof content !== 'object') return null;
-  if (content['application/json']?.schema) return content['application/json'].schema;
-  const firstMedia = Object.values(content)[0];
-  if (firstMedia && typeof firstMedia === 'object' && 'schema' in firstMedia) {
-    return firstMedia.schema;
-  }
-  return null;
-};
 
 const extractListProperties = (schema, visitor) => {
   if (!schema || typeof schema !== 'object') return {};
