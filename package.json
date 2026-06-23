@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run generate && npm run compile:schema && vite",
-    "build": "npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && vite build && npm run verify:shadow",
+    "build": "npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && npm run test && vite build && npm run verify:shadow",
     "lint": "eslint .",
     "preview": "vite preview",
     "proxy": "node ./server/cdisc-proxy.mjs",
@@ -16,10 +16,13 @@
     "compile:schema": "node ./scripts/compiler/compile-schema.mjs",
     "verify:shadow": "node ./scripts/verify-shadow-build.mjs",
     "validate:contract": "node ./scripts/validate-contract.mjs",
-    "test:fuzz": "node ./scripts/fuzz/run-schemathesis.mjs"
+    "test:fuzz": "node ./scripts/fuzz/run-schemathesis.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^15.3.5",
+    "@duckdeploy/openapi": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.1",
@@ -31,11 +34,14 @@
     "lodash": "^4.17.21",
     "react": "^18.3.1",
     "react-admin": "^5.14.6",
-    "react-dom": "^18.3.1",
-    "@duckdeploy/openapi": "workspace:*"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest-axe": "^3.5.9",
     "@types/lodash": "^4.17.24",
     "@types/node": "^24.12.2",
     "@types/react": "^18.3.28",
@@ -45,12 +51,15 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "jest-axe": "^10.0.0",
+    "jsdom": "^29.1.1",
     "openapi-types": "^12.1.3",
     "orval": "^8.18.0",
     "prettier": "^3.8.3",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.9"
   },
   "workspaces": [
     "packages/*"

@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import path from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -59,5 +60,11 @@ export default defineConfig({
       // `openapi.yaml?raw` are also matched.
       external: [/\.ya?ml(?:[?#]|$)/i, /\/scripts\/(?:[^?#].*)?(?:[?#]|$)/],
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './setupTests.ts',
+    css: false,
   },
 });
