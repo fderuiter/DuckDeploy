@@ -1,3 +1,5 @@
+import { resolveResourceName } from './openapi';
+
 export interface ResourceDefinition {
   name: string;
   hasList: boolean;
@@ -21,26 +23,6 @@ export interface ResourceDefinition {
   createRequestBodySchema?: any;
   editRequestBodySchema?: any;
   listQueryParams?: string[];
-}
-
-const resolveResourceName = (path: string, pathItem: any, methods: string[]): string | null => {
-  // Check for tags first across available methods
-  for (const method of methods) {
-    if (pathItem[method]?.tags && pathItem[method].tags.length > 0) {
-      return pathItem[method].tags[0]; // Prioritize first tag
-    }
-  }
-
-  // Fallback to first path segment
-  const segments = path.split('/').filter(Boolean);
-  if (segments.length === 0) return null;
-
-  const rootPath = segments[0];
-  // Ignore purely structural root paths if needed (e.g. mdr, v1, api)
-  // For duckdeploy, if it has no tags, maybe the first path segment is reasonable.
-  // We can filter out common non-resource roots or let them pass.
-
-  return rootPath;
 }
 
 export const discoverResources = (spec: any): ResourceDefinition[] => {

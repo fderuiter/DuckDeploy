@@ -3,6 +3,7 @@ import type { AuthProvider } from 'react-admin';
 import { AXIOS_INSTANCE } from '../api/custom-instance';
 import { getNormalizedErrorStatus } from '../providers/openApiDataProvider';
 import type { ResourceDefinition } from './discovery';
+import { buildProbeUrl } from './url';
 
 type ResourceAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
 
@@ -24,8 +25,7 @@ const createProbeToken = (pathParam: string) => {
   return `${AUTH_PROBE_ID}_${pathParam}_${fallbackToken}`;
 };
 
-const buildProbeUrl = (path: string) =>
-  path.replace(/\{([^/}]+)\}/g, (_match, pathParam: string) => createProbeToken(pathParam));
+const getProbeUrl = (path: string) => buildProbeUrl(path, createProbeToken);
 
 const isResourceAction = (action: string): action is ResourceAction => resourceActions.includes(action as ResourceAction);
 
@@ -44,20 +44,20 @@ const isAllowedProbeStatus = (action: ResourceAction, status: number) => {
 const buildProbeRequest = (resourceDefinition: ResourceDefinition, action: ResourceAction): AxiosRequestConfig | null => {
   switch (action) {
     case 'list':
-      return resourceDefinition.listPath ? { method: 'get', url: buildProbeUrl(resourceDefinition.listPath) } : null;
+      return resourceDefinition.listPath ? { method: 'get', url: getProbeUrl(resourceDefinition.listPath) } : null;
     case 'show':
-      return resourceDefinition.showPath ? { method: 'get', url: buildProbeUrl(resourceDefinition.showPath) } : null;
+      return resourceDefinition.showPath ? { method: 'get', url: getProbeUrl(resourceDefinition.showPath) } : null;
     case 'create':
       // Use OPTIONS for mutating actions so permission checks don't create, update, or delete data.
       // A 405 response is treated as allowed for mutating probes because it means the endpoint exists,
       // but the server does not implement OPTIONS for it.
-      return resourceDefinition.createPath ? { method: 'options', url: buildProbeUrl(resourceDefinition.createPath) } : null;
+      return resourceDefinition.createPath ? { method: 'options', url: getProbeUrl(resourceDefinition.createPath) } : null;
     case 'edit':
       return resourceDefinition.editPath
-        ? { method: 'options', url: buildProbeUrl(resourceDefinition.editPath) }
+        ? { method: 'options', url: getProbeUrl(resourceDefinition.editPath) }
         : null;
     case 'delete':
-      return resourceDefinition.deletePath ? { method: 'options', url: buildProbeUrl(resourceDefinition.deletePath) } : null;
+      return resourceDefinition.deletePath ? { method: 'options', url: getProbeUrl(resourceDefinition.deletePath) } : null;
     default:
       return null;
   }

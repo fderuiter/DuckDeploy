@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+import { resolveRef, resolveResourceName } from '../src/core/openapi.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,24 +34,7 @@ const parseSpec = (sourcePath, raw) => {
   return yaml.load(raw);
 };
 
-const resolveRefPath = (spec, ref) => {
-  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
 
-  const parts = ref
-    .slice(2)
-    .split('/')
-    .map((part) => part.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
-
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) {
-      return null;
-    }
-    current = current[part];
-  }
-
-  return current;
-};
 
 const escapeJsonPointer = (segment) =>
   String(segment)
@@ -252,7 +236,7 @@ class OpenApiVisitor {
         return { schema: mergeSchema(pathState.marker, overrides), context };
       }
 
-      const resolved = resolveRefPath(this.spec, schema.$ref);
+      const resolved = resolveRef(this.spec, schema.$ref);
       if (!resolved || typeof resolved !== 'object') {
         return { schema: null, context };
       }
@@ -524,14 +508,7 @@ class OpenApiVisitor {
   }
 }
 
-const resolveResourceName = (apiPath, pathItem, methods) => {
-  for (const method of methods) {
-    if (pathItem[method]?.tags?.length) return pathItem[method].tags[0];
-  }
 
-  const segments = apiPath.split('/').filter(Boolean);
-  return segments.length > 0 ? segments[0] : null;
-};
 
 const getSchemaFromContent = (content) => {
   if (!content || typeof content !== 'object') return null;

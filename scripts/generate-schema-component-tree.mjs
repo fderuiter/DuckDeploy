@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+import { resolveRef, resolveResourceName } from '../src/core/openapi.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,17 +12,7 @@ const OPENAPI_PATH = path.join(repoRoot, 'openapi.yaml');
 const OUTPUT_PATH = path.join(repoRoot, 'src', 'generated', 'schemaComponentTree.ts');
 const MAX_CIRCULAR_REF_DEPTH = 3;
 
-const resolveResourceName = (apiPath, pathItem, methods) => {
-  for (const method of methods) {
-    if (pathItem[method]?.tags?.length) {
-      return pathItem[method].tags[0];
-    }
-  }
 
-  const segments = apiPath.split('/').filter(Boolean);
-  if (!segments.length) return null;
-  return segments[0];
-};
 
 const getSchemaFromContent = (content) => {
   if (!content || typeof content !== 'object') return null;
@@ -116,20 +107,7 @@ class SchemaAstVisitor {
     return Object.keys(validation).length ? validation : undefined;
   }
 
-  resolveRef(ref) {
-    if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-    const pathParts = ref.slice(2).split('/');
-    let current = this.spec;
 
-    for (const segment of pathParts) {
-      if (!current || typeof current !== 'object' || !(segment in current)) {
-        return null;
-      }
-      current = current[segment];
-    }
-
-    return current;
-  }
 
   withRefDepth(context, ref) {
     const refDepthMap = { ...(context.refDepthMap || {}) };
@@ -149,7 +127,7 @@ class SchemaAstVisitor {
       const nextContext = this.withRefDepth(context, schema.$ref);
       if (!nextContext) return { schema: null, context };
 
-      const resolved = this.resolveRef(schema.$ref);
+      const resolved = resolveRef(this.spec, schema.$ref);
       if (!resolved || typeof resolved !== 'object') return { schema: null, context: nextContext };
 
       const { $ref, ...refOverrides } = schema;

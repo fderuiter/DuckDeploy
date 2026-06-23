@@ -22,6 +22,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
+import { resolveRef } from '../src/core/openapi.ts';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -66,20 +67,7 @@ const loadOpenApi = () => {
   return candidate.endsWith('.json') ? JSON.parse(raw) : yaml.load(raw);
 };
 
-/**
- * Resolve a JSON Reference ($ref) to the schema node it points to within the
- * given spec object.  Returns null when the ref is invalid or unresolvable.
- */
-const resolveRef = (spec, ref) => {
-  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-  const parts = ref.slice(2).split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) return null;
-    current = current[part];
-  }
-  return current;
-};
+
 
 /**
  * Recursively collect all schema properties that bear constraints we want to

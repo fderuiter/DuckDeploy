@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
 import yaml from 'js-yaml';
+import { normalizePrefix, pathToRegExp, buildUpstreamUrl } from '../src/core/url.ts';
 
 const PORT = parsePort(process.env.PORT);
 const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdisc');
@@ -21,15 +22,7 @@ const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_U
 const OPENAPI_SPEC_URL = new URL('../openapi.yaml', import.meta.url);
 const allowedOperations = await loadAllowedOperations(OPENAPI_SPEC_URL);
 
-function normalizePrefix(value) {
-  const trimmed = typeof value === 'string' ? value.trim() : '';
-  if (!trimmed) {
-    return '/api/cdisc';
-  }
 
-  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  return withLeadingSlash.replace(/\/+$/, '');
-}
 
 function normalizeHeaderName(value) {
   if (typeof value !== 'string' || value.trim().length === 0) {
@@ -105,20 +98,9 @@ function parseUpstreamBaseUrl(rawValue) {
   }
 }
 
-function pathToRegExp(pathTemplate) {
-  const escaped = pathTemplate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`^${escaped.replace(/\\\{[^/}]+\\\}/g, '[^/]+')}$`);
-}
 
-function buildUpstreamUrl(upstreamPath, searchParams) {
-  const upstreamUrl = new URL(UPSTREAM_BASE_URL);
-  const basePath = upstreamUrl.pathname.replace(/\/+$/, '');
-  const relativePath = upstreamPath.replace(/^\/+/, '');
-  const joinedPath = [basePath, relativePath].filter(Boolean).join('/');
-  upstreamUrl.pathname = joinedPath.startsWith('/') ? joinedPath : `/${joinedPath}`;
-  upstreamUrl.search = searchParams.toString();
-  return upstreamUrl;
-}
+
+
 
 function getKeyChain() {
   const entries = [
@@ -307,7 +289,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     queryParams.delete(keyName);
   }
 
-  const upstreamUrl = buildUpstreamUrl(upstreamPath, queryParams);
+  const upstreamUrl = buildUpstreamUrl(UPSTREAM_BASE_URL, upstreamPath, queryParams);
 
   const baseHeaders = stripHopByHopHeaders(request.headers);
   let upstreamResponse;

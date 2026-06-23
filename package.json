@@ -8,15 +8,15 @@
     "build": "npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && vite build && npm run verify:shadow",
     "lint": "eslint .",
     "preview": "vite preview",
-    "proxy": "node ./server/cdisc-proxy.mjs",
+    "proxy": "tsx ./server/cdisc-proxy.mjs",
     "generate:api": "orval --config ./orval.config.ts",
-    "build:manifest": "node ./scripts/preprocessor.mjs",
-    "generate:traceability": "node ./scripts/generate-traceability.mjs",
+    "build:manifest": "tsx ./scripts/preprocessor.mjs",
+    "generate:traceability": "tsx ./scripts/generate-traceability.mjs",
     "generate": "npm run generate:api && npm run build:manifest && npm run generate:traceability",
-    "compile:schema": "node ./scripts/compiler/compile-schema.mjs",
-    "verify:shadow": "node ./scripts/verify-shadow-build.mjs",
-    "validate:contract": "node ./scripts/validate-contract.mjs",
-    "test:fuzz": "node ./scripts/fuzz/run-schemathesis.mjs"
+    "compile:schema": "tsx ./scripts/compiler/compile-schema.mjs",
+    "verify:shadow": "tsx ./scripts/verify-shadow-build.mjs",
+    "validate:contract": "tsx ./scripts/validate-contract.mjs",
+    "test:fuzz": "tsx ./scripts/fuzz/run-schemathesis.mjs"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^15.3.5",
@@ -47,6 +47,7 @@
     "openapi-types": "^12.1.3",
     "orval": "^8.18.0",
     "prettier": "^3.8.3",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.16"

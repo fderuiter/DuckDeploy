@@ -1,7 +1,7 @@
+import { trimTrailingSlashes, joinRelativeUrl } from './url';
+
 const DEFAULT_LOCAL_PROXY_BASE_URL = '/api/cdisc';
 const LOCALHOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
-const trimTrailingSlashes = (value: string) => value.replace(/\/+$/, '');
 
 const normalizeConfiguredBaseUrl = (value: string | undefined): string | null => {
   if (typeof value !== 'string') {
@@ -18,9 +18,6 @@ const normalizeConfiguredBaseUrl = (value: string | undefined): string | null =>
 
 const isLocalRuntime = () =>
   typeof window !== 'undefined' && LOCALHOSTS.has(window.location.hostname);
-
-const joinRelativeUrl = (baseUrl: string, suffix: string) =>
-  `${trimTrailingSlashes(baseUrl)}${suffix.startsWith('/') ? suffix : `/${suffix}`}`;
 
 export interface RuntimeApiConfig {
   apiBaseUrl: string | null;
