@@ -1,7 +1,7 @@
 import { TextInput } from 'react-admin';
 import type { EngineContext } from '../../core/WidgetRegistry';
 
-export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setValue }) => {
+export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setValue, schemaNode }) => {
   return (
     <div style={{ border: '1px solid #89a', borderRadius: 4, padding: 12 }}>
       <h4 style={{ marginTop: 0 }}>Custom Map Widget</h4>
@@ -11,6 +11,7 @@ export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setVal
         helperText="Sample override widget (lat,lng)."
         defaultValue={typeof value === 'string' ? value : undefined}
         onChange={(event) => setValue(event.target.value)}
+        aria-description={(schemaNode as any)?.description}
       />
     </div>
   );

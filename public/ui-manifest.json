@@ -18,10 +18,12 @@
       "listFields": [
         {
           "source": "maintenanceMode",
+          "description": "Maintenance mode",
           "kind": "text"
         },
         {
           "source": "maintenanceMessage",
+          "description": "Maintenance message",
           "kind": "text"
         }
       ]
@@ -32,31 +34,38 @@
       "listFields": [
         {
           "source": "conceptId",
+          "description": "NCI Thesaurus Concept Identifier",
           "kind": "reference",
           "reference": "concept"
         },
         {
           "source": "extensible",
+          "description": "Extensible",
           "kind": "boolean"
         },
         {
           "source": "name",
+          "description": "Codelist Name",
           "kind": "text"
         },
         {
           "source": "submissionValue",
+          "description": "Codelist Submission Value",
           "kind": "text"
         },
         {
           "source": "definition",
+          "description": "Codelist Definition",
           "kind": "text"
         },
         {
           "source": "preferredTerm",
+          "description": "Codelist Preferred Term",
           "kind": "text"
         },
         {
           "source": "synonyms",
+          "description": "Codelist Synonyms",
           "kind": "array"
         },
         {
@@ -71,30 +80,37 @@
       "listFields": [
         {
           "source": "name",
+          "description": "Product Name",
           "kind": "text"
         },
         {
           "source": "label",
+          "description": "Product Label",
           "kind": "text"
         },
         {
           "source": "description",
+          "description": "Product Description",
           "kind": "text"
         },
         {
           "source": "source",
+          "description": "Product Source",
           "kind": "text"
         },
         {
           "source": "effectiveDate",
+          "description": "Effective Date",
           "kind": "date"
         },
         {
           "source": "registrationStatus",
+          "description": "Registration Status",
           "kind": "text"
         },
         {
           "source": "version",
+          "description": "Version",
           "kind": "text"
         },
         {
@@ -103,6 +119,7 @@
         },
         {
           "source": "fields",
+          "description": "Field Reference List",
           "kind": "array"
         }
       ]
@@ -113,18 +130,22 @@
       "listFields": [
         {
           "source": "ordinal",
+          "description": "Ordinal",
           "kind": "number"
         },
         {
           "source": "domain",
+          "description": "Domain",
           "kind": "text"
         },
         {
           "source": "domainName",
+          "description": "Two character domain name",
           "kind": "text"
         },
         {
           "source": "scenario",
+          "description": "Scenario",
           "kind": "text"
         },
         {
@@ -139,26 +160,32 @@
       "listFields": [
         {
           "source": "ordinal",
+          "description": "Ordinal",
           "kind": "number"
         },
         {
           "source": "name",
+          "description": "Dataset Name",
           "kind": "text"
         },
         {
           "source": "label",
+          "description": "Dataset Label",
           "kind": "text"
         },
         {
           "source": "description",
+          "description": "Dataset Description",
           "kind": "text"
         },
         {
           "source": "datasetStructure",
+          "description": "Dataset Structure",
           "kind": "text"
         },
         {
           "source": "status",
+          "description": "Dataset Status",
           "kind": "text"
         },
         {
@@ -173,26 +200,32 @@
       "listFields": [
         {
           "source": "ordinal",
+          "description": "Ordinal",
           "kind": "number"
         },
         {
           "source": "name",
+          "description": "Dataset Name",
           "kind": "text"
         },
         {
           "source": "label",
+          "description": "Dataset Label",
           "kind": "text"
         },
         {
           "source": "description",
+          "description": "Dataset Description",
           "kind": "text"
         },
         {
           "source": "datasetStructure",
+          "description": "Dataset Structure",
           "kind": "text"
         },
         {
           "source": "status",
+          "description": "Dataset Status",
           "kind": "text"
         },
         {
@@ -207,26 +240,32 @@
       "listFields": [
         {
           "source": "ordinal",
+          "description": "Ordinal",
           "kind": "number"
         },
         {
           "source": "name",
+          "description": "Dataset Name",
           "kind": "text"
         },
         {
           "source": "label",
+          "description": "Dataset Label",
           "kind": "text"
         },
         {
           "source": "description",
+          "description": "Dataset Description",
           "kind": "text"
         },
         {
           "source": "datasetStructure",
+          "description": "Dataset Structure",
           "kind": "text"
         },
         {
           "source": "status",
+          "description": "Dataset Status",
           "kind": "text"
         },
         {
@@ -241,30 +280,37 @@
       "listFields": [
         {
           "source": "ordinal",
+          "description": "Ordinal",
           "kind": "number"
         },
         {
           "source": "name",
+          "description": "Datastructure Name",
           "kind": "text"
         },
         {
           "source": "label",
+          "description": "Datastructure Label",
           "kind": "text"
         },
         {
           "source": "description",
+          "description": "Datastructure Description",
           "kind": "text"
         },
         {
           "source": "class",
+          "description": "Datastructure Class",
           "kind": "text"
         },
         {
           "source": "subClass",
+          "description": "Datastructure Sub class",
           "kind": "text"
         },
         {
           "source": "status",
+          "description": "Datastructure Status",
           "kind": "text"
         },
         {
@@ -318,26 +364,32 @@
       "listFields": [
         {
           "source": "ordinal",
+          "description": "Ordinal",
           "kind": "number"
         },
         {
           "source": "name",
+          "description": "Dataset Name",
           "kind": "text"
         },
         {
           "source": "label",
+          "description": "Dataset Label",
           "kind": "text"
         },
         {
           "source": "description",
+          "description": "Dataset Description",
           "kind": "text"
         },
         {
           "source": "datasetStructure",
+          "description": "Dataset Structure",
           "kind": "text"
         },
         {
           "source": "status",
+          "description": "Dataset Status",
           "kind": "text"
         },
         {
