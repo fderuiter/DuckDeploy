@@ -1,5 +1,5 @@
 import { SelectInput, required } from 'react-admin';
-import { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 } from 'openapi-types';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { mapSchemaToInput } from './SchemaToFieldMapper';

@@ -12,7 +12,7 @@ import {
   determineSchemaKindForField,
   determineSchemaKindForInput,
 } from '../src/utils/heuristics.ts';
-import { resolveResourceName, getSchemaFromContent } from '@duckdeploy/openapi';
+import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -607,6 +607,12 @@ const buildUiManifest = (spec) => {
 
   const visitor = new OpenApiVisitor(spec, MAX_REF_DEPTH);
   const resources = {};
+  const discovered = discoverResources(spec);
+  const discoveredByName = new Map(discovered.map(d => [d.name, d]));
+  const allowedOperations = parseAllowedOperations(spec).map(op => ({
+    pattern: op.pattern.source,
+    methods: Array.from(op.methods),
+  }));
   const generatedOperationMap = buildGeneratedOperationMap();
   const operationFunctionMap = {};
 
@@ -623,7 +629,26 @@ const buildUiManifest = (spec) => {
     if (!resourceName) continue;
 
     if (!resources[resourceName]) {
+      const discoveredResource = discoveredByName.get(resourceName);
       resources[resourceName] = {
+        name: resourceName,
+        hasList: discoveredResource?.hasList ?? false,
+        hasCreate: discoveredResource?.hasCreate ?? false,
+        hasShow: discoveredResource?.hasShow ?? false,
+        hasEdit: discoveredResource?.hasEdit ?? false,
+        hasDelete: discoveredResource?.hasDelete ?? false,
+        listPath: discoveredResource?.listPath,
+        createPath: discoveredResource?.createPath,
+        showPath: discoveredResource?.showPath,
+        editPath: discoveredResource?.editPath,
+        editMethod: discoveredResource?.editMethod,
+        deletePath: discoveredResource?.deletePath,
+        listOperationId: discoveredResource?.listOperationId,
+        createOperationId: discoveredResource?.createOperationId,
+        showOperationId: discoveredResource?.showOperationId,
+        editOperationId: discoveredResource?.editOperationId,
+        deleteOperationId: discoveredResource?.deleteOperationId,
+        listQueryParams: discoveredResource?.listQueryParams ?? [],
         createForm: [],
         editForm: [],
         listFields: [],
@@ -715,6 +740,7 @@ const buildUiManifest = (spec) => {
       version: 1,
       depthLimit: MAX_REF_DEPTH,
       resources,
+      allowedOperations,
       operationFunctionMap,
     },
     traceabilityEntries: visitor.traceabilityEntries,

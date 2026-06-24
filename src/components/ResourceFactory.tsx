@@ -1,11 +1,8 @@
 import { Resource } from 'react-admin';
-import { discoverResources, type ResourceDefinition } from '../core/discovery';
 import { AutoList } from './AutoList';
 import { AutoCreate, AutoEdit } from './AutoForm';
 
-export const resolveAdminResources = (spec: unknown, uiManifest: unknown): ResourceDefinition[] => {
-  const discovered = discoverResources(spec);
-  const discoveredByName = new Map(discovered.map((resourceDefinition) => [resourceDefinition.name, resourceDefinition]));
+export const resolveAdminResources = (_spec: unknown, uiManifest: unknown): any[] => {
   const manifestResourceMap =
     uiManifest &&
     typeof uiManifest === 'object' &&
@@ -13,26 +10,9 @@ export const resolveAdminResources = (spec: unknown, uiManifest: unknown): Resou
     typeof (uiManifest as { resources?: unknown }).resources === 'object'
       ? ((uiManifest as { resources: Record<string, unknown> }).resources)
       : null;
-  const manifestResources = manifestResourceMap ? Object.entries(manifestResourceMap) : [];
+  const manifestResources = manifestResourceMap ? Object.values(manifestResourceMap) : [];
 
-  const fromManifest = manifestResources
-    .map(([resourceName, mapping]) => {
-      const discoveredResource = discoveredByName.get(resourceName);
-      const listFields = Array.isArray((mapping as { listFields?: unknown }).listFields)
-        ? (mapping as { listFields: unknown[] }).listFields
-        : [];
-
-      if (!discoveredResource || !discoveredResource.hasList || listFields.length === 0) {
-        return null;
-      }
-
-      return discoveredResource;
-    })
-    .filter((resource): resource is ResourceDefinition => Boolean(resource));
-
-  return fromManifest.length > 0
-    ? fromManifest
-    : discovered.filter((resourceDefinition) => resourceDefinition.hasList);
+  return manifestResources.filter((resource: any) => resource && resource.hasList);
 };
 
 export const resolveOperationMappings = (
@@ -46,7 +26,7 @@ export const resolveOperationMappings = (
         .operationFunctionMap
     : {};
 
-export const ResourceFactory = ({ resources }: { resources: ResourceDefinition[] }) => {
+export const ResourceFactory = ({ resources }: { resources: any[] }) => {
   return (
     <>
       {resources.map((resource) => (
