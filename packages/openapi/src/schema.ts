@@ -1,4 +1,5 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser';
+import { injectOriginRefs } from './normalization.ts';
 
 export const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']);
 
@@ -90,6 +91,9 @@ export const compileSpec = async (parsed: any): Promise<any> => {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('Invalid OpenAPI document: expected an object at root.');
   }
+
+  // Inject origin refs before dereferencing so we can resolve discriminators later
+  injectOriginRefs(parsed);
 
   const dereferenced = await $RefParser.dereference(parsed, {
     dereference: {
