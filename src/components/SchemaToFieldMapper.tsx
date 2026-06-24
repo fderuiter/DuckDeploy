@@ -23,6 +23,7 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';
+import { useAccessibility } from '../core/AccessibilityContext';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
 import {
   areShallowObjectsEqual,
@@ -191,6 +192,7 @@ const PrecomputedPolymorphicInput = ({
   keyPrefix: string;
 }) => {
   const form = useFormContext();
+  const { announce } = useAccessibility();
   const { control, unregister, setValue } = form;
   const typeSource = `${node.source}__schemaIndex`;
   const selectedIndexRaw = useWatch({ control, name: typeSource });
@@ -208,6 +210,7 @@ const PrecomputedPolymorphicInput = ({
     const previousSelectedIndex = previousSelectedIndexRef.current;
     if (previousSelectedIndex !== undefined && previousSelectedIndex !== selectedIndex) {
       resetPolymorphicValue(unregister, setValue, node.source, node.discriminatorProperty, selectedDiscriminatorValue);
+      announce(`Form structure updated for ${choices[selectedIndex]?.name || 'new selection'}.`);
       previousSelectedIndexRef.current = selectedIndex;
       return;
     }

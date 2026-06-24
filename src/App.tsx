@@ -9,6 +9,7 @@ import {
   resolveOperationMappings,
 } from './components/ResourceFactory';
 import { WidgetRegistryProvider, registerWidget } from './core/WidgetRegistry';
+import { AccessibilityProvider } from './core/AccessibilityContext';
 import { CustomMapWidget } from './components/custom/CustomMapWidget';
 import { TerminologyLookupInput } from './components/custom/TerminologyLookupInput';
 import { BootstrapScreen } from './components/BootstrapScreen';
@@ -174,11 +175,13 @@ const AdminApp = () => {
 };
 
 export const App = () => (
-  <WidgetRegistryProvider>
-    <SpecProvider>
-      <AdminApp />
-    </SpecProvider>
-  </WidgetRegistryProvider>
+  <AccessibilityProvider>
+    <WidgetRegistryProvider>
+      <SpecProvider>
+        <AdminApp />
+      </SpecProvider>
+    </WidgetRegistryProvider>
+  </AccessibilityProvider>
 );
 
 export default App;
