@@ -13,6 +13,7 @@ import { CustomMapWidget } from './components/custom/CustomMapWidget';
 import { TerminologyLookupInput } from './components/custom/TerminologyLookupInput';
 import { BootstrapScreen } from './components/BootstrapScreen';
 import { getRuntimeApiConfig } from './core/runtimeConfig';
+import { customInstance } from './api/custom-instance';
 import type { ResourceDefinition } from './core/discovery';
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
@@ -34,11 +35,7 @@ interface ProxyHealthResponse {
 
 const runtimeConfig = getRuntimeApiConfig();
 
-const createSpecIssue = (error: Error): BootstrapIssue => ({
-  title: 'Application bootstrap failed',
-  message: 'DuckDeploy could not load the compiled schema or UI manifest required to start.',
-  details: [error.message],
-});
+
 
 const createRuntimeConfigIssue = (): BootstrapIssue => ({
   title: 'API proxy is not configured',
@@ -49,41 +46,9 @@ const createRuntimeConfigIssue = (): BootstrapIssue => ({
   ],
 });
 
-const createProxyHealthIssue = (status: number, payload: ProxyHealthResponse | null, fallbackMessage: string): BootstrapIssue => {
-  if (payload?.code === 'PROXY_MISSING_API_KEY') {
-    return {
-      title: 'Proxy is missing CDISC credentials',
-      message: payload.message ?? fallbackMessage,
-      details: [
-        'Set CDISC_PRIMARY_KEY and/or CDISC_SECONDARY_KEY on the proxy deployment.',
-        'The GitHub Pages frontend should only receive VITE_API_BASE_URL, not the CDISC keys themselves.',
-      ],
-    };
-  }
 
-  return {
-    title: 'API proxy health check failed',
-    message: payload?.message ?? fallbackMessage,
-    details: [
-      `HTTP status: ${status}`,
-      payload?.upstreamBaseUrl ? `Configured upstream: ${payload.upstreamBaseUrl}` : 'Verify the proxy can reach the CDISC upstream API.',
-    ],
-  };
-};
 
-const createProxyUnavailableIssue = (error: Error): BootstrapIssue => ({
-  title: 'API proxy is unreachable',
-  message:
-    error.name === 'TypeError'
-      ? 'DuckDeploy could not connect to the configured backend proxy.'
-      : 'DuckDeploy could not reach the configured backend proxy.',
-  details: [
-    error.name === 'TypeError'
-      ? 'The proxy may be stopped, deployed at a different URL, or blocked by CORS/origin policy.'
-      : error.message,
-    'Start the local proxy with `npm run proxy`, or deploy the backend proxy and set VITE_API_BASE_URL to its public base URL.',
-  ],
-});
+
 
 const createNoResourcesIssue = (): BootstrapIssue => ({
   title: 'No resources were discovered',
@@ -129,22 +94,14 @@ const AdminApp = () => {
       setIsProxyLoading(true);
 
       try {
-        const response = await fetch(healthUrl, {
-          headers: { Accept: 'application/json' },
-          signal: controller.signal,
-        });
-        const payload = (await response.json().catch(() => null)) as ProxyHealthResponse | null;
-
-        if (!response.ok || payload?.ok === false) {
-          throw createProxyHealthIssue(
-            response.status,
-            payload,
-            `Proxy health check returned ${response.status} ${response.statusText}.`,
-          );
-        }
+                const payload = await customInstance<ProxyHealthResponse>({
+          url: healthUrl,
+          method: 'GET',
+          headers: { Accept: 'application/json' }
+        }, { signal: controller.signal });
 
         setProxyIssue(null);
-      } catch (issue) {
+            } catch (issue) {
         if (controller.signal.aborted) {
           return;
         }
@@ -157,9 +114,11 @@ const AdminApp = () => {
         ) {
           setProxyIssue(issue as BootstrapIssue);
         } else {
-          const normalizedError =
-            issue instanceof Error ? issue : new Error(String(issue));
-          setProxyIssue(createProxyUnavailableIssue(normalizedError));
+          setProxyIssue({
+            title: 'API proxy is unreachable',
+            message: 'DuckDeploy could not reach the configured backend proxy.',
+            details: [String(issue)]
+          });
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -189,8 +148,12 @@ const AdminApp = () => {
     );
   }
 
-  if (error) {
-    const issue = createSpecIssue(error);
+    if (error) {
+    const issue = (error as any).title ? (error as BootstrapIssue) : {
+      title: 'Application bootstrap failed',
+      message: 'DuckDeploy could not load the compiled schema or UI manifest required to start.',
+      details: [error.message],
+    };
     return <BootstrapScreen title={issue.title} message={issue.message} details={issue.details} />;
   }
 

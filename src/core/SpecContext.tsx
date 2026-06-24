@@ -3,6 +3,7 @@ import type { ManifestWorkerResponse } from '../workers/manifest.worker';
 // Vite processes the `?worker` suffix at build time and bundles the worker
 // as a separate chunk — must be a static import at the top level.
 import ManifestWorkerConstructor from '../workers/manifest.worker?worker';
+import { customInstance } from '../api/custom-instance';
 
 export interface SpecContextType {
   spec: any | null;
@@ -34,6 +35,10 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const worker = new ManifestWorkerConstructor();
 
           worker.onmessage = (event: MessageEvent<ManifestWorkerResponse>) => {
+            if (event.data.type === "auth_violation") {
+              window.dispatchEvent(new CustomEvent("duckdeploy:auth_violation", { detail: event.data.detail }));
+              return;
+            }
             worker.terminate();
 
             if (event.data.type === 'error') {
@@ -74,18 +79,12 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           worker.postMessage({ url: manifestUrl });
         });
 
-        // ── 1. Schema fetch (main thread) ─────────────────────────────────────
-        const schemaResponse = await fetch(schemaUrl, {
-          headers: { Accept: 'application/json' },
+                // ── 1. Schema fetch (main thread) ─────────────────────────────────────
+        const parsedJson = await customInstance<any>({
+          url: schemaUrl,
+          method: 'GET',
+          headers: { Accept: 'application/json' }
         });
-
-        if (!schemaResponse.ok) {
-          throw new Error(
-            `Failed to load compiled schema: ${schemaResponse.status} ${schemaResponse.statusText}`,
-          );
-        }
-
-        const parsedJson = await schemaResponse.json();
         if (!parsedJson || typeof parsedJson !== 'object') {
           throw new Error('Failed to parse compiled OpenAPI schema');
         }
