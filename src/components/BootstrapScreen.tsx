@@ -25,8 +25,15 @@ export const BootstrapScreen = ({
     }}
   >
     <Stack spacing={3} sx={{ width: '100%', maxWidth: 720 }}>
-      <Stack spacing={1} alignItems="center" textAlign="center">
-        {loading ? <CircularProgress size={40} /> : null}
+      <Stack spacing={1} alignItems="center" textAlign="center" role={loading ? "status" : undefined}>
+        {loading ? (
+          <Box position="relative">
+            <CircularProgress size={40} aria-hidden="true" />
+            <Box sx={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clipPath: 'inset(100%)', whiteSpace: 'nowrap', border: 0 }}>
+              Loading
+            </Box>
+          </Box>
+        ) : null}
         <Typography variant="h4" component="h1">
           {title}
         </Typography>
@@ -36,7 +43,7 @@ export const BootstrapScreen = ({
       </Stack>
 
       {details.length > 0 ? (
-        <Alert severity={loading ? 'info' : 'error'}>
+        <Alert severity={loading ? 'info' : 'error'} role={!loading ? "alert" : undefined}>
           <Stack component="ul" spacing={1} sx={{ m: 0, pl: 3 }}>
             {details.map((detail) => (
               <Typography key={detail} component="li" variant="body2">
