@@ -19,10 +19,8 @@ import {
   required,
 } from 'react-admin';
 import { createElement, useEffect, useRef } from 'react';
-import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
-import { PolymorphicInput } from './PolymorphicInput';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
 import {
   areShallowObjectsEqual,
@@ -31,11 +29,6 @@ import {
   setPolymorphicDiscriminatorValue,
 } from './polymorphicState';
 import {
-  determineSchemaKindForField,
-  determineSchemaKindForInput,
-  getReferenceTarget,
-  getWidgetId,
-  getWidgetProps,
   resolveFallbackWidgetId,
 } from '../utils/heuristics';
 
@@ -83,44 +76,6 @@ export type PrecomputedInputDescriptor = {
   validation?: ValidationDescriptor;
 };
 
-const toDiscriminatorValue = (value: unknown): string | undefined =>
-  typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : undefined;
-
-const resolveDiscriminatorMetadata = (
-  property: OpenAPIV3.SchemaObject,
-  schemas: OpenAPIV3.SchemaObject[],
-): { propertyName: string; values: Array<string | undefined> } | undefined => {
-  const discriminator = property.discriminator;
-  const propertyName =
-    typeof discriminator?.propertyName === 'string' && discriminator.propertyName.trim().length > 0
-      ? discriminator.propertyName
-      : undefined;
-
-  if (!propertyName) {
-    return undefined;
-  }
-
-  const values = schemas.map((schema) => {
-    const discriminatorProperty = schema.properties?.[propertyName];
-    if (!discriminatorProperty || '$ref' in discriminatorProperty) {
-      return undefined;
-    }
-
-    const constValue = toDiscriminatorValue(discriminatorProperty.const);
-    if (constValue !== undefined) {
-      return constValue;
-    }
-
-    if (Array.isArray(discriminatorProperty.enum) && discriminatorProperty.enum.length === 1) {
-      return toDiscriminatorValue(discriminatorProperty.enum[0]);
-    }
-
-    return undefined;
-  });
-
-  return { propertyName, values };
-};
-
 const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) => {
   const validation = descriptor.validation || {};
   const schemaForValidation = {
@@ -129,7 +84,7 @@ const buildValidatorsFromDescriptor = (descriptor: PrecomputedInputDescriptor) =
     minimum: validation.minimum,
     maximum: validation.maximum,
     pattern: validation.pattern,
-  } as OpenAPIV3.SchemaObject;
+  } as any;
 
   return buildValidators(schemaForValidation, descriptor.isRequired);
 };
@@ -394,173 +349,3 @@ export const renderPrecomputedInput = (
   );
 };
 
-export const mapSchemaToField = (name: string, property: any) => {
-  const kind = determineSchemaKindForField(name, property);
-
-  if (kind === 'reference') {
-    const target = getReferenceTarget(name);
-    return (
-      <ReferenceField key={name} source={name} reference={target}>
-        <TextField source="id" />
-      </ReferenceField>
-    );
-  }
-
-  if (kind === 'enum') {
-    const choices = property.enum.map((val: string) => ({ id: val, name: val }));
-    return <SelectField key={name} source={name} choices={choices} />;
-  }
-
-  if (kind === 'boolean') {
-    return <BooleanField key={name} source={name} />;
-  }
-
-  if (kind === 'number') {
-    return <NumberField key={name} source={name} />;
-  }
-
-  if (kind === 'date') {
-    return <DateField key={name} source={name} />;
-  }
-
-  if (kind === 'array') {
-    return (
-      <ArrayField key={name} source={name}>
-        <SingleFieldList>
-          <ChipField source="id" />
-        </SingleFieldList>
-      </ArrayField>
-    );
-  }
-
-  return <TextField key={name} source={name} />;
-};
-
-const mapSchemaToInputDefault = (
-  source: string,
-  property: OpenAPIV3.SchemaObject,
-  isRequired: boolean,
-  depth: number = 0,
-): React.ReactNode => {
-  if (depth > 5) return null; // Infinite recursion guard
-
-  const validators = buildValidators(property, isRequired);
-  const commonProps: any = {
-    key: source,
-    source,
-    validate: validators,
-    isRequired, // Needed for simple reference/boolean inputs to display asterisk
-  };
-  if (property.description) {
-    commonProps['aria-description'] = property.description;
-  }
-
-  const kind = determineSchemaKindForInput(source, property);
-
-  // Polymorphism
-  if (kind === 'polymorphic') {
-    const schemas = (property.oneOf || property.anyOf) as OpenAPIV3.SchemaObject[];
-    const discriminatorMetadata = resolveDiscriminatorMetadata(property, schemas);
-    return (
-      <PolymorphicInput
-        key={source}
-        source={source}
-        schemas={schemas}
-        isRequired={isRequired}
-        depth={depth + 1}
-        discriminatorProperty={discriminatorMetadata?.propertyName}
-        discriminatorValues={discriminatorMetadata?.values}
-      />
-    );
-  }
-
-  // Nested Objects
-  if (kind === 'object' && property.properties) {
-    return (
-      <div key={source} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
-        <h4>{property.title || source.split('.').pop() || source}</h4>
-        {Object.entries(property.properties).map(([subName, subProp]) => {
-          const nestedSource = source ? `${source}.${subName}` : subName;
-          return mapSchemaToInput(
-            nestedSource,
-            subProp as OpenAPIV3.SchemaObject,
-            (property.required || []).includes(subName),
-            depth + 1,
-          );
-        })}
-      </div>
-    );
-  }
-
-  // Arrays
-  if (kind === 'array' && property.items) {
-    const itemSchema = property.items as OpenAPIV3.SchemaObject;
-
-    return (
-      <ArrayInput {...commonProps}>
-        <SimpleFormIterator inline>
-          {itemSchema.type === 'object' && itemSchema.properties
-            ? Object.entries(itemSchema.properties).map(([subName, subProp]) =>
-                mapSchemaToInput(
-                  subName,
-                  subProp as OpenAPIV3.SchemaObject,
-                  (itemSchema.required || []).includes(subName),
-                  depth + 1,
-                ),
-              )
-            : mapSchemaToInput('', itemSchema, false, depth + 1)}
-        </SimpleFormIterator>
-      </ArrayInput>
-    );
-  }
-
-  if (kind === 'reference') {
-    const target = getReferenceTarget(source);
-    return (
-      <ReferenceInput {...commonProps} reference={target}>
-        <SelectInput optionText="id" />
-      </ReferenceInput>
-    );
-  }
-
-  if (kind === 'enum') {
-    const choices = property.enum!.map((val: string) => ({ id: val, name: val }));
-    return <SelectInput {...commonProps} choices={choices} />;
-  }
-
-  if (kind === 'boolean') {
-    return <BooleanInput {...commonProps} />;
-  }
-
-  if (kind === 'number') {
-    return <NumberInput {...commonProps} />;
-  }
-
-  if (kind === 'date') {
-    return <DateInput {...commonProps} />;
-  }
-
-  return <TextInput {...commonProps} />;
-};
-
-export const mapSchemaToInput = (
-  source: string,
-  property: OpenAPIV3.SchemaObject,
-  isRequired: boolean,
-  depth: number = 0,
-): React.ReactNode => {
-  const fallback = mapSchemaToInputDefault(source, property, isRequired, depth);
-  const explicitWidgetId = getWidgetId(property);
-  const widgetProps = getWidgetProps(property) || {};
-
-  return (
-    <WidgetOverrideInput
-      source={source}
-      candidateWidgetId={explicitWidgetId}
-      fallbackWidgetId={source}
-      widgetProps={widgetProps}
-      schemaNode={property}
-      fallback={fallback}
-    />
-  );
-};

@@ -272,7 +272,7 @@ export const openApiDataProvider: DataProvider = {
     const resourceDefinition = resourceMap[resource];
     if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.editRequestBodySchema);
+    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.editForm);
     const response = await callApiFunction(resourceDefinition.editOperationId, String(params.id), outboundData);
     const transformed = transformResponse(response);
 
@@ -294,7 +294,7 @@ export const openApiDataProvider: DataProvider = {
     const resourceDefinition = resourceMap[resource];
     if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.createRequestBodySchema);
+    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.createForm);
     const response = await callApiFunction(resourceDefinition.createOperationId, outboundData);
     const transformed = transformResponse(response);
     const payload = transformed.data ?? outboundData;

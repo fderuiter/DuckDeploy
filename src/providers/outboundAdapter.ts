@@ -1,4 +1,4 @@
-import type { OpenAPIV3 } from 'openapi-types';
+import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 
 /**
  * Outbound Adapter – sanitizes UI payloads before dispatch via Orval/Axios.
@@ -40,24 +40,15 @@ const coerceBoolean = (value: unknown): boolean | null => {
 };
 
 /**
- * Recursively sanitize a payload object against an optional OpenAPI schema.
+ * Recursively sanitize a payload object against precomputed form nodes.
  *
  * @param payload - Raw UI form data to sanitize.
- * @param schema  - OpenAPI SchemaObject for type-aware coercion (optional).
+ * @param formNodes - Precomputed input descriptors from UI manifest.
  * @returns A new, sanitized payload ready for serialization and dispatch.
  */
-/**
- * Type guard to distinguish a resolved SchemaObject from a ReferenceObject.
- * `$ref` properties are not dereferenced at runtime; we skip them for coercion.
- */
-const isSchemaObject = (
-  obj: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined,
-): obj is OpenAPIV3.SchemaObject =>
-  typeof obj === 'object' && obj !== null && !('$ref' in obj);
-
 export const adaptOutboundPayload = (
   payload: Record<string, unknown>,
-  schema?: OpenAPIV3.SchemaObject | null,
+  formNodes?: PrecomputedInputDescriptor[] | null,
 ): Record<string, unknown> => {
   // Guard: only process plain objects.
   // Non-objects (null, arrays, primitives) are not valid payload containers;
@@ -65,8 +56,6 @@ export const adaptOutboundPayload = (
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     return {};
   }
-
-  const properties = schema?.properties;
 
   const result: Record<string, unknown> = {};
 
@@ -78,10 +67,8 @@ export const adaptOutboundPayload = (
     // Strip undefined – undefined is not valid JSON and pollutes downstream payloads
     if (value === undefined) continue;
 
-    const rawFieldSchema = properties?.[key];
-    // Only use the schema entry if it is a fully resolved SchemaObject;
-    // unresolved $ref objects cannot be introspected for type information.
-    const fieldSchema = isSchemaObject(rawFieldSchema) ? rawFieldSchema : undefined;
+    // Find corresponding node from precomputed manifest by last path segment
+    const node = formNodes?.find((n) => n.source.split('.').pop() === key);
 
     // Empty UI string → mathematical null (SDTM: absence of data is null, not "")
     if (value === '') {
@@ -90,18 +77,38 @@ export const adaptOutboundPayload = (
     }
 
     // Boolean coercion based on schema declaration
-    if (fieldSchema?.type === 'boolean') {
+    if (node?.kind === 'boolean') {
       result[key] = coerceBoolean(value);
       continue;
     }
 
+    // Handle nested polymorphic options
+    if (node?.kind === 'polymorphic' && node.options) {
+      const schemaIndexRaw = payload[`${key}__schemaIndex`];
+      const schemaIndex =
+        schemaIndexRaw === undefined || schemaIndexRaw === null
+          ? undefined
+          : Number.parseInt(String(schemaIndexRaw), 10);
+      const selectedOption =
+        schemaIndex !== undefined && !Number.isNaN(schemaIndex)
+          ? node.options[schemaIndex]
+          : undefined;
+      
+      if (value !== null && typeof value === 'object' && !Array.isArray(value) && selectedOption?.node?.kind === 'object') {
+        result[key] = adaptOutboundPayload(
+          value as Record<string, unknown>,
+          selectedOption.node.children,
+        );
+        continue;
+      }
+    }
+
     // Recurse into nested objects, forwarding nested schema when available
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      const nestedSchema =
-        fieldSchema?.type === 'object' ? fieldSchema : undefined;
+      const nestedNodes = node?.kind === 'object' ? node.children : undefined;
       result[key] = adaptOutboundPayload(
         value as Record<string, unknown>,
-        nestedSchema,
+        nestedNodes,
       );
       continue;
     }

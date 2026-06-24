@@ -21,4 +21,6 @@ export interface ResourceDefinition {
   createRequestBodySchema?: any;
   editRequestBodySchema?: any;
   listQueryParams?: string[];
+  createForm?: any[];
+  editForm?: any[];
 }
