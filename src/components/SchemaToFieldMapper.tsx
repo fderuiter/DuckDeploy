@@ -19,7 +19,7 @@ import {
   required,
 } from 'react-admin';
 import { createElement, useEffect, useRef } from 'react';
-import { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { PolymorphicInput } from './PolymorphicInput';

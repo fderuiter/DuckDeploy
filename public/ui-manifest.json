@@ -3,6 +3,21 @@
   "depthLimit": 3,
   "resources": {
     "Searches": {
+      "name": "Searches",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/search/implementedBy",
+      "showPath": "/mdr/search/scopes/{scope}",
+      "listOperationId": "api-search-implemented_by",
+      "showOperationId": "api-search-search_scope",
+      "listQueryParams": [
+        "href",
+        "start",
+        "pageSize"
+      ],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -13,6 +28,17 @@
       ]
     },
     "mdr": {
+      "name": "mdr",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/maintenance",
+      "showPath": "/mdr/products/{product-group}",
+      "listOperationId": "api-about-maintenance",
+      "showOperationId": "api-products-products-get_product_group",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -29,6 +55,17 @@
       ]
     },
     "Controlled Terminology (CT)": {
+      "name": "Controlled Terminology (CT)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/ct/packages/{package}/codelists/{codelist}/terms",
+      "showPath": "/mdr/root/ct/{package-type}/codelists/{codelist}/terms/{term}",
+      "listOperationId": "api-products-ct-get_package_codelist_terms",
+      "showOperationId": "api-products-ct-get_root_package_codelist_term",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -75,6 +112,17 @@
       ]
     },
     "Clinical Data Acquisition Standards Harmonization (CDASH)": {
+      "name": "Clinical Data Acquisition Standards Harmonization (CDASH)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/cdash/{version}/domains/{domain}/fields",
+      "showPath": "/mdr/root/cdash/domains/{domain}/fields/{field}",
+      "listOperationId": "api-products-cdash-get_domain_fields",
+      "showOperationId": "api-products-cdash-get_root_domain_field",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -125,6 +173,17 @@
       ]
     },
     "CDASH Implementation Guide (CDASHIG)": {
+      "name": "CDASH Implementation Guide (CDASHIG)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/cdashig/{version}/scenarios/{scenario}/fields",
+      "showPath": "/mdr/root/cdashig/scenarios/{scenario}/fields/{field}",
+      "listOperationId": "api-products-cdashig-get_scenario_fields",
+      "showOperationId": "api-products-cdashig-get_root_scenario_field",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -155,6 +214,17 @@
       ]
     },
     "Study Data Tabulation Model (SDTM)": {
+      "name": "Study Data Tabulation Model (SDTM)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/sdtm/{version}/datasets/{dataset}/variables",
+      "showPath": "/mdr/root/sdtm/datasets/{dataset}/variables/{var}",
+      "listOperationId": "api-products-sdtm-get_dataset_variables",
+      "showOperationId": "api-products-sdtm-get_root_dataset_variable",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -195,6 +265,17 @@
       ]
     },
     "SDTM Implementation Guide (SDTMIG)": {
+      "name": "SDTM Implementation Guide (SDTMIG)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/sdtmig/{version}/datasets/{dataset}/variables",
+      "showPath": "/mdr/root/sdtmig/datasets/{dataset}/variables/{var}",
+      "listOperationId": "api-products-sdtmig-get_dataset_variables",
+      "showOperationId": "api-products-sdtmig-get_root_dataset_variable",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -235,6 +316,17 @@
       ]
     },
     "SEND Implementation Guide (SENDIG)": {
+      "name": "SEND Implementation Guide (SENDIG)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/sendig/{version}/datasets/{dataset}/variables",
+      "showPath": "/mdr/root/sendig/datasets/{dataset}/variables/{var}",
+      "listOperationId": "api-products-sendig-get_dataset_variables",
+      "showOperationId": "api-products-sendig-get_root_dataset_variable",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -275,6 +367,19 @@
       ]
     },
     "Analysis Data Model (ADaM)": {
+      "name": "Analysis Data Model (ADaM)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/adam/{product}/datastructures/{datastructure}/variables",
+      "showPath": "/mdr/adam/{product}/datastructures/{datastructure}/variables/{var}",
+      "listOperationId": "api-products-adam-get_datastructure_variables",
+      "showOperationId": "api-products-adam-get_datastructure_variable",
+      "listQueryParams": [
+        "expand"
+      ],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -320,11 +425,33 @@
       ]
     },
     "Diff": {
+      "name": "Diff",
+      "hasList": false,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "showPath": "/mdr/diff/{product}/{version}/{previous}",
+      "showOperationId": "api-diff-compare_arbitrary",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": []
     },
     "Questionnairs, Ratings & Scales (QRS)": {
+      "name": "Questionnairs, Ratings & Scales (QRS)",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/qrs/instruments/{instrument}/versions/{version}/items",
+      "showPath": "/mdr/root/qrs/instruments/{instrument}",
+      "listOperationId": "api-products-qrs-get_items",
+      "showOperationId": "api-products-qrs-get_root",
+      "listQueryParams": [
+        "expand"
+      ],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -335,6 +462,19 @@
       ]
     },
     "Rule": {
+      "name": "Rule",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/rules",
+      "showPath": "/mdr/rules/{standard}/{version}/rule/{rule_id}",
+      "listOperationId": "api-products-rule-get_all_catalogs",
+      "showOperationId": "api-products-rule-get_rule",
+      "listQueryParams": [
+        "expand"
+      ],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -345,6 +485,17 @@
       ]
     },
     "IG Documents": {
+      "name": "IG Documents",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/documents/integrated/{standard}/{version}/{standard_subtype}/{structure}/sections",
+      "showPath": "/mdr/documents/integrated/{standard}/{version}/{standard_subtype}/usecases/{usecase}/sections/{section}",
+      "listOperationId": "api-products-ig_documents-get_sections_for_subtype_and_structure",
+      "showOperationId": "api-products-ig_documents-get_documents_for_subtype_use_case_and_section",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -359,6 +510,17 @@
       ]
     },
     "Integrated": {
+      "name": "Integrated",
+      "hasList": true,
+      "hasCreate": false,
+      "hasShow": true,
+      "hasEdit": false,
+      "hasDelete": false,
+      "listPath": "/mdr/integrated/{standard}/{version}/send/datasets/{dataset}/variables",
+      "showPath": "/mdr/root/integrated/{standard}/send/datasets/{dataset}/variables/{var}",
+      "listOperationId": "api-products-integrated-get_send_dataset_variables",
+      "showOperationId": "api-products-integrated-get_send_root_dataset_variable",
+      "listQueryParams": [],
       "createForm": [],
       "editForm": [],
       "listFields": [
@@ -399,6 +561,872 @@
       ]
     }
   },
+  "allowedOperations": [
+    {
+      "pattern": "^\\/mdr\\/suggest$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/search$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/search\\/scopes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/search\\/implementedBy$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/search\\/scopes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/products$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/about$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/ct\\/packages$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/ct\\/packages\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/ct\\/packages\\/[^/]+\\/codelists$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/ct\\/packages\\/[^/]+\\/codelists\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/ct\\/packages\\/[^/]+\\/codelists\\/[^/]+\\/terms$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/ct\\/packages\\/[^/]+\\/codelists\\/[^/]+\\/terms\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/ct\\/[^/]+\\/codelists\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/ct\\/[^/]+\\/codelists\\/[^/]+\\/terms\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/classes\\/[^/]+\\/domains$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/classes\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/domains$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/domains\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/domains\\/[^/]+\\/fields$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdash\\/[^/]+\\/domains\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/cdash\\/classes\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/cdash\\/domains\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/classes\\/[^/]+\\/domains$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/domains$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/domains\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/domains\\/[^/]+\\/fields$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/domains\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/classes\\/[^/]+\\/scenarios$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/scenarios$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/scenarios\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/scenarios\\/[^/]+\\/fields$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/cdashig\\/[^/]+\\/scenarios\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/cdashig\\/domains\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/cdashig\\/scenarios\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/classes\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/classes\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/classes\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/datasets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/datasets\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtm\\/[^/]+\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/sdtm\\/classes\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/sdtm\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/classes\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/datasets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/datasets\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sdtmig\\/[^/]+\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/sdtmig\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/classes\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/datasets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/datasets\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/sendig\\/[^/]+\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/sendig\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+\\/datastructures$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+\\/datastructures\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+\\/datastructures\\/[^/]+\\/varsets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+\\/datastructures\\/[^/]+\\/varsets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+\\/datastructures\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/adam\\/[^/]+\\/datastructures\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/diff\\/[^/]+\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/diff\\/[^/]+\\/[^/]+\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/qrs\\/instruments\\/[^/]+\\/versions\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/qrs\\/instruments\\/[^/]+\\/versions\\/[^/]+\\/responseGroups$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/qrs\\/instruments\\/[^/]+\\/versions\\/[^/]+\\/responseGroups\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/qrs\\/instruments\\/[^/]+\\/versions\\/[^/]+\\/items$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/qrs\\/instruments\\/[^/]+\\/versions\\/[^/]+\\/items\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/qrs\\/instruments\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/rules\\/[^/]+\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/rules\\/[^/]+\\/[^/]+\\/rule\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/rules$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+\\/[^/]+\\/[^/]+\\/sections\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+\\/[^/]+\\/sections$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+\\/[^/]+\\/usecases$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+\\/[^/]+\\/usecases\\/[^/]+\\/sections\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+\\/[^/]+\\/usecases\\/[^/]+\\/sections$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/products\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/lastupdated$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/maintenance$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/integrated\\/[^/]+\\/[^/]+\\/[^/]+\\/[^/]+\\/sections\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/integrated\\/[^/]+\\/[^/]+\\/[^/]+\\/sections$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/integrated\\/[^/]+\\/[^/]+\\/[^/]+\\/usecases\\/[^/]+\\/sections\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam\\/datastructures$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam\\/datastructures\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam\\/datastructures\\/[^/]+\\/varsets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam\\/datastructures\\/[^/]+\\/varsets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam\\/datastructures\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/adam\\/datastructures\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/classes\\/[^/]+\\/domains$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/domains$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/domains\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/domains\\/[^/]+\\/fields$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/domains\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/integrated\\/[^/]+\\/cdash\\/domains\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/classes\\/[^/]+\\/scenarios$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/scenarios$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/scenarios\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/scenarios\\/[^/]+\\/fields$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/cdash\\/scenarios\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/integrated\\/[^/]+\\/cdash\\/scenarios\\/[^/]+\\/fields\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/classes\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/datasets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/datasets\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/sdtm\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/integrated\\/[^/]+\\/sdtm\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/classes$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/classes\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/classes\\/[^/]+\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/datasets$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/datasets\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/datasets\\/[^/]+\\/variables$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/integrated\\/[^/]+\\/[^/]+\\/send\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/root\\/integrated\\/[^/]+\\/send\\/datasets\\/[^/]+\\/variables\\/[^/]+$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/[^/]+\\/[^/]+\\/[^/]+\\/sections$",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "pattern": "^\\/mdr\\/documents\\/integrated\\/[^/]+\\/[^/]+\\/[^/]+\\/[^/]+\\/sections$",
+      "methods": [
+        "GET"
+      ]
+    }
+  ],
   "operationFunctionMap": {
     "api-search-suggest": {
       "functionName": "apiSearchSuggest",

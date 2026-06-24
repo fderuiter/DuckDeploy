@@ -1,8 +1,7 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
-import yaml from 'js-yaml';
-import { parseAllowedOperations, isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
+import { isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
 
 const PORT = parsePort(process.env.PORT);
 const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdisc');
@@ -19,15 +18,18 @@ const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS)
 const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'true';
 const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_URL);
 
-const OPENAPI_SPEC_URL = new URL('../openapi.yaml', import.meta.url);
+const MANIFEST_URL = new URL('../public/ui-manifest.json', import.meta.url);
 
-async function loadAllowedOperations(specUrl) {
-  const source = await readFile(specUrl, 'utf8');
-  const parsed = yaml.load(source);
-  return parseAllowedOperations(parsed);
+async function loadAllowedOperations(manifestUrl) {
+  const source = await readFile(manifestUrl, 'utf8');
+  const parsed = JSON.parse(source);
+  return parsed.allowedOperations.map((op) => ({
+    pattern: new RegExp(op.pattern),
+    methods: new Set(op.methods)
+  }));
 }
 
-const allowedOperations = await loadAllowedOperations(OPENAPI_SPEC_URL);
+const allowedOperations = await loadAllowedOperations(MANIFEST_URL);
 
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';

@@ -1,5 +1,5 @@
 import { required, minLength, maxLength, minValue, maxValue, regex } from 'react-admin';
-import { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 } from 'openapi-types';
 
 export const buildValidators = (property: OpenAPIV3.SchemaObject, isRequired: boolean): any[] => {
   const validators: any[] = [];
