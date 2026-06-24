@@ -12,13 +12,12 @@ import {
   determineSchemaKindForField,
   determineSchemaKindForInput,
 } from '../src/utils/heuristics.ts';
-import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations } from '@duckdeploy/openapi';
+import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
-const MAX_REF_DEPTH = 3;
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
 const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
 
@@ -36,30 +35,11 @@ const STABLE_JSON_EOL = '\n';
 
 const resolveInputPath = () => INPUT_CANDIDATES.find((candidate) => fs.existsSync(candidate));
 
-const parseSpec = (sourcePath, raw) => {
+const parseSpecRaw = (sourcePath, raw) => {
   if (sourcePath.endsWith('.json')) {
     return JSON.parse(raw);
   }
   return yaml.load(raw);
-};
-
-const resolveRefPath = (spec, ref) => {
-  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-
-  const parts = ref
-    .slice(2)
-    .split('/')
-    .map((part) => part.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
-
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) {
-      return null;
-    }
-    current = current[part];
-  }
-
-  return current;
 };
 
 const escapeJsonPointer = (segment) =>
@@ -67,274 +47,10 @@ const escapeJsonPointer = (segment) =>
     .replace(/~/g, '~0')
     .replace(/\//g, '~1');
 
-const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-
-const mergeUnique = (base = [], override = []) => Array.from(new Set([...(base || []), ...(override || [])]));
-const toDiscriminatorValue = (value) =>
-  typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : undefined;
-
-const resolveStrictDiscriminator = (schema, variants) => {
-  const discriminator = isObject(schema?.discriminator) ? schema.discriminator : null;
-  const propertyName =
-    typeof discriminator?.propertyName === 'string' && discriminator.propertyName.trim().length > 0
-      ? discriminator.propertyName
-      : null;
-
-  if (!propertyName || !Array.isArray(variants) || variants.length === 0) {
-    return null;
-  }
-
-  const mappingByRef = new Map();
-  if (isObject(discriminator.mapping)) {
-    for (const [value, ref] of Object.entries(discriminator.mapping)) {
-      if (typeof ref === 'string' && ref.trim().length > 0) {
-        mappingByRef.set(ref, value);
-      }
-    }
-  }
-
-  const values = variants.map((variant) => {
-    const variantRef = typeof variant?.['x-origin-ref'] === 'string' ? variant['x-origin-ref'] : null;
-    if (variantRef && mappingByRef.has(variantRef)) {
-      return mappingByRef.get(variantRef);
-    }
-
-    const discriminatorProperty = isObject(variant?.properties?.[propertyName]) ? variant.properties[propertyName] : null;
-    const constValue = toDiscriminatorValue(discriminatorProperty?.const);
-    if (constValue !== undefined) {
-      return constValue;
-    }
-
-    if (Array.isArray(discriminatorProperty?.enum) && discriminatorProperty.enum.length === 1) {
-      const enumValue = toDiscriminatorValue(discriminatorProperty.enum[0]);
-      if (enumValue !== undefined) {
-        return enumValue;
-      }
-    }
-
-    return undefined;
-  });
-
-  if (values.some((value) => value === undefined || value === '')) {
-    return null;
-  }
-
-  return { propertyName, values };
-};
-
-const mergeSchema = (baseSchema, overrideSchema) => {
-  if (!isObject(baseSchema) || !isObject(overrideSchema)) {
-    if (overrideSchema !== undefined) return overrideSchema;
-    if (baseSchema !== undefined) return baseSchema;
-    return {};
-  }
-
-  const merged = { ...(baseSchema || {}), ...(overrideSchema || {}) };
-
-  if (baseSchema?.properties || overrideSchema?.properties) {
-    const baseProperties = baseSchema?.properties || {};
-    const overrideProperties = overrideSchema?.properties || {};
-    const propertyNames = new Set([...Object.keys(baseProperties), ...Object.keys(overrideProperties)]);
-    merged.properties = {};
-    for (const propertyName of propertyNames) {
-      const baseProperty = baseProperties[propertyName];
-      const overrideProperty = overrideProperties[propertyName];
-      merged.properties[propertyName] =
-        baseProperty !== undefined && overrideProperty !== undefined
-          ? mergeSchema(baseProperty, overrideProperty)
-          : (baseProperty ?? overrideProperty);
-    }
-  }
-
-  if (baseSchema?.required || overrideSchema?.required) {
-    merged.required = mergeUnique(baseSchema?.required || [], overrideSchema?.required || []);
-  }
-
-  if (baseSchema?.allOf || overrideSchema?.allOf) {
-    merged.allOf = [...(baseSchema?.allOf || []), ...(overrideSchema?.allOf || [])];
-  }
-
-  if (baseSchema?.anyOf || overrideSchema?.anyOf) {
-    merged.anyOf = [...(baseSchema?.anyOf || []), ...(overrideSchema?.anyOf || [])];
-  }
-
-  if (baseSchema?.oneOf || overrideSchema?.oneOf) {
-    merged.oneOf = [...(baseSchema?.oneOf || []), ...(overrideSchema?.oneOf || [])];
-  }
-
-  if (isObject(baseSchema?.dependentSchemas) || isObject(overrideSchema?.dependentSchemas)) {
-    const mergedDependentSchemas = {
-      ...(baseSchema?.dependentSchemas || {}),
-      ...(overrideSchema?.dependentSchemas || {}),
-    };
-
-    for (const key of Object.keys(baseSchema?.dependentSchemas || {})) {
-      if (isObject(baseSchema.dependentSchemas[key]) && isObject(overrideSchema?.dependentSchemas?.[key])) {
-        mergedDependentSchemas[key] = mergeSchema(baseSchema.dependentSchemas[key], overrideSchema.dependentSchemas[key]);
-      }
-    }
-
-    merged.dependentSchemas = mergedDependentSchemas;
-  }
-
-  if (isObject(baseSchema?.dependentRequired) || isObject(overrideSchema?.dependentRequired)) {
-    const keys = new Set([
-      ...Object.keys(baseSchema?.dependentRequired || {}),
-      ...Object.keys(overrideSchema?.dependentRequired || {}),
-    ]);
-    merged.dependentRequired = {};
-    for (const key of keys) {
-      merged.dependentRequired[key] = mergeUnique(
-        baseSchema?.dependentRequired?.[key] || [],
-        overrideSchema?.dependentRequired?.[key] || [],
-      );
-    }
-  }
-
-  if (isObject(baseSchema?.items) && isObject(overrideSchema?.items)) {
-    merged.items = mergeSchema(baseSchema.items, overrideSchema.items);
-  }
-
-  if (isObject(baseSchema?.additionalProperties) && isObject(overrideSchema?.additionalProperties)) {
-    merged.additionalProperties = mergeSchema(baseSchema.additionalProperties, overrideSchema.additionalProperties);
-  }
-
-  if (isObject(baseSchema?.not) && isObject(overrideSchema?.not)) {
-    merged.not = mergeSchema(baseSchema.not, overrideSchema.not);
-  }
-
-  for (const keyword of ['if', 'then', 'else', 'contains', 'propertyNames', 'unevaluatedProperties']) {
-    if (isObject(baseSchema?.[keyword]) && isObject(overrideSchema?.[keyword])) {
-      merged[keyword] = mergeSchema(baseSchema[keyword], overrideSchema[keyword]);
-    }
-  }
-
-  return merged;
-};
-
 class OpenApiVisitor {
-  constructor(spec, maxDepth) {
+  constructor(spec) {
     this.spec = spec;
-    this.maxDepth = maxDepth;
     this.traceabilityEntries = [];
-  }
-
-  withRefPath(context, ref) {
-    const refPath = context.refPath || [];
-    if (refPath.includes(ref)) {
-      return {
-        context,
-        stop: true,
-        marker: {
-          'x-lazy-ref': ref,
-          'x-circular-ref': true,
-        },
-      };
-    }
-
-    return {
-      context: { ...context, refPath: [...refPath, ref] },
-      stop: false,
-      marker: null,
-    };
-  }
-
-  normalizeSchema(schema, context = { refPath: [] }) {
-    if (!schema || typeof schema !== 'object') {
-      return { schema: null, context };
-    }
-
-    if (schema.$ref) {
-      const pathState = this.withRefPath(context, schema.$ref);
-      if (pathState.stop) {
-        const { $ref, ...overrides } = schema;
-        return { schema: mergeSchema(pathState.marker, overrides), context };
-      }
-
-      const resolved = resolveRefPath(this.spec, schema.$ref);
-      if (!resolved || typeof resolved !== 'object') {
-        return { schema: null, context };
-      }
-
-      const { $ref, ...overrides } = schema;
-      const merged = mergeSchema(resolved, overrides);
-      if (typeof schema.$ref === 'string' && !merged['x-origin-ref']) {
-        // Preserve the originating ref so discriminator.mapping values can be
-        // matched to normalized oneOf/anyOf variants later in visitFormNode.
-        merged['x-origin-ref'] = schema.$ref;
-      }
-      return { schema: this.normalizeSchema(merged, pathState.context).schema, context };
-    }
-
-    if (Array.isArray(schema.allOf) && schema.allOf.length > 0) {
-      let accumulator = {};
-
-      for (const partial of schema.allOf) {
-        const normalized = this.normalizeSchema(partial, context);
-        if (normalized.schema) {
-          accumulator = mergeSchema(accumulator, normalized.schema);
-        }
-      }
-
-      const { allOf, ...rest } = schema;
-      return this.normalizeSchema(mergeSchema(accumulator, rest), context);
-    }
-
-    const normalizedSchema = { ...schema };
-
-    if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
-      normalizedSchema.oneOf = schema.oneOf
-        .map((variant) => this.normalizeSchema(variant, context).schema)
-        .filter((variant) => Boolean(variant));
-    }
-
-    if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
-      normalizedSchema.anyOf = schema.anyOf
-        .map((variant) => this.normalizeSchema(variant, context).schema)
-        .filter((variant) => Boolean(variant));
-    }
-
-    if (isObject(schema.not)) {
-      normalizedSchema.not = this.normalizeSchema(schema.not, context).schema || schema.not;
-    }
-
-    if (isObject(schema.dependentSchemas)) {
-      normalizedSchema.dependentSchemas = Object.entries(schema.dependentSchemas).reduce((acc, [key, dependentSchema]) => {
-        const normalized = this.normalizeSchema(dependentSchema, context).schema;
-        if (normalized) acc[key] = normalized;
-        return acc;
-      }, {});
-    }
-
-    if (isObject(schema.properties)) {
-      normalizedSchema.properties = Object.entries(schema.properties).reduce((acc, [key, value]) => {
-        const normalized = this.normalizeSchema(value, context).schema;
-        acc[key] = normalized || value;
-        return acc;
-      }, {});
-    }
-
-    if (isObject(schema.patternProperties)) {
-      normalizedSchema.patternProperties = Object.entries(schema.patternProperties).reduce((acc, [key, value]) => {
-        const normalized = this.normalizeSchema(value, context).schema;
-        acc[key] = normalized || value;
-        return acc;
-      }, {});
-    }
-
-    if (isObject(schema.items)) {
-      normalizedSchema.items = this.normalizeSchema(schema.items, context).schema || schema.items;
-    } else if (Array.isArray(schema.items)) {
-      normalizedSchema.items = schema.items.map((item) => this.normalizeSchema(item, context).schema || item);
-    }
-
-    for (const keyword of ['if', 'then', 'else', 'contains', 'propertyNames', 'additionalProperties', 'unevaluatedProperties']) {
-      if (isObject(schema[keyword])) {
-        normalizedSchema[keyword] = this.normalizeSchema(schema[keyword], context).schema || schema[keyword];
-      }
-    }
-
-    return { schema: normalizedSchema, context };
   }
 
   getValidation(schema) {
@@ -359,9 +75,8 @@ class OpenApiVisitor {
     });
   }
 
-  visitFieldNode(name, schema, context = { refPath: [] }, pointer = '#') {
-    const normalized = this.normalizeSchema(schema, context);
-    const node = normalized.schema;
+  visitFieldNode(name, schema, pointer = '#') {
+    const node = normalizeSchema(schema);
 
     if (!node || typeof node !== 'object') {
       this.addTraceability(pointer, name, null, 'discarded');
@@ -405,15 +120,10 @@ class OpenApiVisitor {
     }
   }
 
-  visitFormNode(source, schema, isRequired, context = { refPath: [] }, depth = 0, pointer = '#') {
-    const normalized = this.normalizeSchema(schema, context);
-    const node = normalized.schema;
+  visitFormNode(source, schema, isRequired, pointer = '#') {
+    const node = normalizeSchema(schema);
 
     if (!node || typeof node !== 'object') {
-      this.addTraceability(pointer, source, null, 'discarded');
-      return null;
-    }
-    if (depth > this.maxDepth) {
       this.addTraceability(pointer, source, null, 'discarded');
       return null;
     }
@@ -435,41 +145,52 @@ class OpenApiVisitor {
 
     if (kind === 'polymorphic') {
       const variantSchemas = node.oneOf || node.anyOf;
-      const strictDiscriminator = resolveStrictDiscriminator(node, variantSchemas);
-      const variants = variantSchemas
+      const strictDiscriminator = node.discriminator ? { propertyName: node.discriminator.propertyName } : null; // resolveDiscriminator(node);
+      const options = variantSchemas
         .map((variant, index) => {
           const variantPointer = `${pointer}/${node.oneOf ? 'oneOf' : 'anyOf'}/${index}`;
-          const variantNode = this.visitFormNode(source, variant, isRequired, normalized.context, depth + 1, variantPointer);
+          const variantNode = this.visitFormNode(source, variant, isRequired, variantPointer);
           if (!variantNode) return null;
+          
           const resolvedVariant = {
             label: variantNode.title || `Option ${index + 1}`,
             node: variantNode,
           };
-          if (strictDiscriminator) {
-            resolvedVariant.discriminatorValue = strictDiscriminator.values[index];
+          
+          const disc = resolveDiscriminator(node, variant['x-origin-ref']);
+          if (disc && disc.values.length > 0) {
+            resolvedVariant.discriminatorValue = disc.values[0];
           }
+
           return resolvedVariant;
         })
         .filter(Boolean);
 
-      if (variants.length > 0) {
+      if (options.length > 0) {
         this.addTraceability(pointer, source, '<PolymorphicInput />');
+        
+        let discriminatorProperty;
+        if (strictDiscriminator) discriminatorProperty = strictDiscriminator.propertyName;
+        else if (options[0].discriminatorValue) {
+            discriminatorProperty = resolveDiscriminator(node, variantSchemas[0]['x-origin-ref'])?.propertyName;
+        }
+
         return {
           ...base,
           kind: 'polymorphic',
-          discriminatorProperty: strictDiscriminator?.propertyName,
-          options: variants,
+          discriminatorProperty,
+          options,
         };
       }
     }
 
     if (kind === 'object') {
-      const children = Object.entries(node.properties)
+      const children = Object.entries(node.properties || {})
         .map(([subName, subSchema]) => {
           const nestedSource = source ? `${source}.${subName}` : subName;
           const childRequired = (node.required || []).includes(subName);
           const childPointer = `${pointer}/properties/${escapeJsonPointer(subName)}`;
-          return this.visitFormNode(nestedSource, subSchema, childRequired, normalized.context, depth + 1, childPointer);
+          return this.visitFormNode(nestedSource, subSchema, childRequired, childPointer);
         })
         .filter(Boolean);
 
@@ -478,7 +199,7 @@ class OpenApiVisitor {
     }
 
     if (kind === 'array') {
-      const itemNode = this.visitFormNode('', node.items, false, normalized.context, depth + 1, `${pointer}/items`);
+      const itemNode = this.visitFormNode('', node.items, false, `${pointer}/items`);
       this.addTraceability(pointer, source, '<ArrayInput />');
       return { ...base, kind: 'array', items: itemNode ? [itemNode] : [] };
     }
@@ -506,23 +227,23 @@ class OpenApiVisitor {
   }
 }
 
-const extractListProperties = (schema, visitor) => {
+const extractListProperties = (schema) => {
   if (!schema || typeof schema !== 'object') return {};
 
-  const normalizedRoot = visitor.normalizeSchema(schema, { refPath: [] }).schema || schema;
+  const normalizedRoot = normalizeSchema(schema) || schema;
 
   if (normalizedRoot.type === 'array' && normalizedRoot.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.items, { refPath: [] }).schema;
+    const normalizedItems = normalizeSchema(normalizedRoot.items);
     if (normalizedItems?.properties) return normalizedItems.properties;
   }
 
   if (normalizedRoot.properties?.items?.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.items.items, { refPath: [] }).schema;
+    const normalizedItems = normalizeSchema(normalizedRoot.properties.items.items);
     if (normalizedItems?.properties) return normalizedItems.properties;
   }
 
   if (normalizedRoot.properties?.data?.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.properties.data.items, { refPath: [] }).schema;
+    const normalizedItems = normalizeSchema(normalizedRoot.properties.data.items);
     if (normalizedItems?.properties) return normalizedItems.properties;
   }
 
@@ -564,10 +285,6 @@ const buildGeneratedOperationMap = () => {
   }
 
   let operationCount = 0;
-  // Parse Orval's generated arrow-function operations and extract HTTP method + URL.
-  // Expected format (orval v8 axios + tags-split):
-  //   const operationName = (...) => { return customInstance(... {url: `/path`, method: 'GET' ...}) }
-  // Keep this regex in sync with generated output if Orval generation templates change.
   const operationRegex =
     /(?:^|\n)\s*const\s+([A-Za-z0-9_$]+)\s*=\s*\([\s\S]*?\)\s*=>\s*\{\s*return\s+customInstance<[\s\S]*?>\(\s*\{url:\s*`([^`]+)`\s*,\s*method:\s*'([A-Z]+)'/gm;
 
@@ -580,7 +297,6 @@ const buildGeneratedOperationMap = () => {
 
     while ((match = operationRegex.exec(source)) !== null) {
       const [, functionName, url, method] = match;
-      // Orval emits template placeholders as `${id}`, while OpenAPI paths use `{id}`.
       const normalizedUrl = url.replace(/\$\{([^}]+)\}/g, '{$1}');
       clients[`${method} ${normalizedUrl}`] = {
         functionName,
@@ -600,12 +316,12 @@ const buildGeneratedOperationMap = () => {
 const buildUiManifest = (spec) => {
   if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
     return {
-      manifest: { version: 1, depthLimit: MAX_REF_DEPTH, resources: {} },
+      manifest: { version: 1, depthLimit: 0, resources: {} },
       traceabilityEntries: [],
     };
   }
 
-  const visitor = new OpenApiVisitor(spec, MAX_REF_DEPTH);
+  const visitor = new OpenApiVisitor(spec);
   const resources = {};
   const discovered = discoverResources(spec);
   const discoveredByName = new Map(discovered.map(d => [d.name, d]));
@@ -680,13 +396,12 @@ const buildUiManifest = (spec) => {
           ? getSchemaFromContent(operation.responses?.[listResponseStatus]?.content)
           : null;
 
-        const properties = extractListProperties(listSchema, visitor);
+        const properties = extractListProperties(listSchema);
         resources[resourceName].listFields = Object.entries(properties)
           .map(([fieldName, propertySchema]) =>
             visitor.visitFieldNode(
               fieldName,
               propertySchema,
-              { refPath: [] },
               `#/paths/${escapeJsonPointer(apiPath)}/${method}/responses/${listResponseStatus || '200'}/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
           )
@@ -695,7 +410,7 @@ const buildUiManifest = (spec) => {
 
       if (method === 'post' && !isInstancePath) {
         const createSchema = getSchemaFromContent(operation.requestBody?.content);
-        const normalized = visitor.normalizeSchema(createSchema, { refPath: [] }).schema || createSchema;
+        const normalized = normalizeSchema(createSchema) || createSchema;
         const properties = normalized?.properties || {};
         const required = normalized?.required || [];
 
@@ -705,8 +420,6 @@ const buildUiManifest = (spec) => {
               fieldName,
               propertySchema,
               required.includes(fieldName),
-              { refPath: [] },
-              0,
               `#/paths/${escapeJsonPointer(apiPath)}/${method}/requestBody/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
           )
@@ -715,7 +428,7 @@ const buildUiManifest = (spec) => {
 
       if ((method === 'put' || method === 'patch') && isInstancePath) {
         const editSchema = getSchemaFromContent(operation.requestBody?.content);
-        const normalized = visitor.normalizeSchema(editSchema, { refPath: [] }).schema || editSchema;
+        const normalized = normalizeSchema(editSchema) || editSchema;
         const properties = normalized?.properties || {};
         const required = normalized?.required || [];
 
@@ -725,8 +438,6 @@ const buildUiManifest = (spec) => {
               fieldName,
               propertySchema,
               required.includes(fieldName),
-              { refPath: [] },
-              0,
               `#/paths/${escapeJsonPointer(apiPath)}/${method}/requestBody/content/application~1json/schema/properties/${escapeJsonPointer(fieldName)}`,
             ),
           )
@@ -738,7 +449,7 @@ const buildUiManifest = (spec) => {
   return {
     manifest: {
       version: 1,
-      depthLimit: MAX_REF_DEPTH,
+      depthLimit: 0,
       resources,
       allowedOperations,
       operationFunctionMap,
@@ -747,18 +458,20 @@ const buildUiManifest = (spec) => {
   };
 };
 
-const compile = () => {
+const compile = async () => {
   const inputPath = resolveInputPath();
   if (!inputPath) {
     throw new Error('No OpenAPI input file found. Expected openapi.yaml, openapi.yml, or openapi.json.');
   }
 
   const raw = fs.readFileSync(inputPath, 'utf8');
-  const parsed = parseSpec(inputPath, raw);
+  const parsedRaw = parseSpecRaw(inputPath, raw);
 
-  if (!parsed || typeof parsed !== 'object') {
+  if (!parsedRaw || typeof parsedRaw !== 'object') {
     throw new Error('Invalid OpenAPI document: expected an object root.');
   }
+
+  const parsed = await compileSpec(parsedRaw);
 
   const { manifest, traceabilityEntries } = buildUiManifest(parsed);
   const manifestGenerationLog = {
@@ -766,8 +479,6 @@ const compile = () => {
     entries: traceabilityEntries,
   };
   const serializedManifest = `${JSON.stringify(manifest, null, 2)}${STABLE_JSON_EOL}`;
-  // STABLE_JSON_EOL is intentional and must stay stable for deterministic hashing.
-  // This hash is emitted as build metadata (ui-manifest.sha256) for CI/artifact traceability.
   const manifestHash = crypto.createHash('sha256').update(serializedManifest, 'utf8').digest('hex');
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
@@ -778,14 +489,12 @@ const compile = () => {
   fs.writeFileSync(MANIFEST_GENERATION_LOG_PATH, `${JSON.stringify(manifestGenerationLog, null, 2)}\n`, 'utf8');
   fs.writeFileSync(HASH_OUTPUT_PATH, `${manifestHash}\n`, 'utf8');
 
-  console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)} (depth limit: ${MAX_REF_DEPTH})`);
+  console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)} (depth limit removed)`);
   console.log(`Generated ${path.relative(repoRoot, MANIFEST_GENERATION_LOG_PATH)}`);
   console.log(`Generated ${path.relative(repoRoot, HASH_OUTPUT_PATH)}`);
 };
 
-try {
-  compile();
-} catch (error) {
+compile().catch((error) => {
   console.error(error);
   process.exitCode = 1;
-}
+});

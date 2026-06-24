@@ -11,6 +11,7 @@ import {
   determineSchemaKindForField,
   determineSchemaKindForInput,
 } from '../src/utils/heuristics.ts';
+import { resolveResourceName, compileSpec, normalizeSchema } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,19 +19,6 @@ const repoRoot = path.resolve(__dirname, '..');
 
 const OPENAPI_PATH = path.join(repoRoot, 'openapi.yaml');
 const OUTPUT_PATH = path.join(repoRoot, 'src', 'generated', 'schemaComponentTree.ts');
-const MAX_CIRCULAR_REF_DEPTH = 3;
-
-const resolveResourceName = (apiPath, pathItem, methods) => {
-  for (const method of methods) {
-    if (pathItem[method]?.tags?.length) {
-      return pathItem[method].tags[0];
-    }
-  }
-
-  const segments = apiPath.split('/').filter(Boolean);
-  if (!segments.length) return null;
-  return segments[0];
-};
 
 const getSchemaFromContent = (content) => {
   if (!content || typeof content !== 'object') return null;
@@ -42,31 +30,12 @@ const getSchemaFromContent = (content) => {
   return null;
 };
 
-const mergeSchemas = (baseSchema, overrideSchema) => {
-  const merged = { ...(baseSchema || {}), ...(overrideSchema || {}) };
-
-  if (baseSchema?.properties || overrideSchema?.properties) {
-    merged.properties = {
-      ...(baseSchema?.properties || {}),
-      ...(overrideSchema?.properties || {}),
-    };
-  }
-
-  if (baseSchema?.required || overrideSchema?.required) {
-    merged.required = Array.from(
-      new Set([...(baseSchema?.required || []), ...(overrideSchema?.required || [])]),
-    );
-  }
-
-  return merged;
-};
-
-const extractListProperties = (schema, visitor) => {
+const extractListProperties = (schema) => {
   if (!schema || typeof schema !== 'object') return {};
-  const normalizedRoot = visitor.normalizeSchema(schema, { refDepthMap: {} }).schema || schema;
+  const normalizedRoot = normalizeSchema(schema) || schema;
 
   if (normalizedRoot.type === 'array' && normalizedRoot.items) {
-    const normalizedItems = visitor.normalizeSchema(normalizedRoot.items, { refDepthMap: {} }).schema;
+    const normalizedItems = normalizeSchema(normalizedRoot.items);
     if (normalizedItems?.properties) {
       return normalizedItems.properties;
     }
@@ -74,7 +43,7 @@ const extractListProperties = (schema, visitor) => {
 
   const wrapperItems = normalizedRoot.properties?.items?.items;
   if (wrapperItems) {
-    const normalizedWrapperItems = visitor.normalizeSchema(wrapperItems, { refDepthMap: {} }).schema;
+    const normalizedWrapperItems = normalizeSchema(wrapperItems);
     if (normalizedWrapperItems?.properties) {
       return normalizedWrapperItems.properties;
     }
@@ -82,7 +51,7 @@ const extractListProperties = (schema, visitor) => {
 
   const wrapperData = normalizedRoot.properties?.data?.items;
   if (wrapperData) {
-    const normalizedWrapperData = visitor.normalizeSchema(wrapperData, { refDepthMap: {} }).schema;
+    const normalizedWrapperData = normalizeSchema(wrapperData);
     if (normalizedWrapperData?.properties) {
       return normalizedWrapperData.properties;
     }
@@ -96,9 +65,8 @@ const extractListProperties = (schema, visitor) => {
 };
 
 class SchemaAstVisitor {
-  constructor(spec, maxCircularRefDepth) {
+  constructor(spec) {
     this.spec = spec;
-    this.maxCircularRefDepth = maxCircularRefDepth;
   }
 
   getValidation(schema) {
@@ -114,66 +82,8 @@ class SchemaAstVisitor {
     return Object.keys(validation).length ? validation : undefined;
   }
 
-  resolveRef(ref) {
-    if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-    const pathParts = ref.slice(2).split('/');
-    let current = this.spec;
-
-    for (const segment of pathParts) {
-      if (!current || typeof current !== 'object' || !(segment in current)) {
-        return null;
-      }
-      current = current[segment];
-    }
-
-    return current;
-  }
-
-  withRefDepth(context, ref) {
-    const refDepthMap = { ...(context.refDepthMap || {}) };
-    const currentDepth = (refDepthMap[ref] || 0) + 1;
-    if (currentDepth > this.maxCircularRefDepth) {
-      return null;
-    }
-
-    refDepthMap[ref] = currentDepth;
-    return { ...context, refDepthMap };
-  }
-
-  normalizeSchema(schema, context) {
-    if (!schema || typeof schema !== 'object') return { schema: null, context };
-
-    if (schema.$ref) {
-      const nextContext = this.withRefDepth(context, schema.$ref);
-      if (!nextContext) return { schema: null, context };
-
-      const resolved = this.resolveRef(schema.$ref);
-      if (!resolved || typeof resolved !== 'object') return { schema: null, context: nextContext };
-
-      const { $ref, ...refOverrides } = schema;
-      const merged = mergeSchemas(resolved, refOverrides);
-      return this.normalizeSchema(merged, nextContext);
-    }
-
-    if (Array.isArray(schema.allOf) && schema.allOf.length > 0) {
-      const base = {};
-      for (const partial of schema.allOf) {
-        const normalized = this.normalizeSchema(partial, context);
-        if (normalized.schema) {
-          Object.assign(base, mergeSchemas(base, normalized.schema));
-          context = normalized.context;
-        }
-      }
-      const { allOf, ...rest } = schema;
-      return { schema: mergeSchemas(base, rest), context };
-    }
-
-    return { schema, context };
-  }
-
-  visitFieldNode(name, schema, context = { refDepthMap: {} }) {
-    const normalized = this.normalizeSchema(schema, context);
-    const node = normalized.schema;
+  visitFieldNode(name, schema) {
+    const node = normalizeSchema(schema);
     if (!node) return null;
 
     const kind = determineSchemaKindForField(name, node);
@@ -193,12 +103,9 @@ class SchemaAstVisitor {
     return { kind, source: name };
   }
 
-  visitFormNode(source, schema, isRequired, context = { refDepthMap: {} }, depth = 0) {
-    const normalized = this.normalizeSchema(schema, context);
-    const node = normalized.schema;
+  visitFormNode(source, schema, isRequired) {
+    const node = normalizeSchema(schema);
     if (!node) return null;
-
-    if (depth > this.maxCircularRefDepth) return null;
 
     const uiExtensions = extractUiExtensions(node);
     const hasUiExtensions = Object.keys(uiExtensions).length > 0;
@@ -217,7 +124,7 @@ class SchemaAstVisitor {
     if (kind === 'polymorphic') {
       const options = (node.oneOf || node.anyOf)
         .map((variant, index) => {
-          const variantNode = this.visitFormNode(source, variant, isRequired, normalized.context, depth + 1);
+          const variantNode = this.visitFormNode(source, variant, isRequired);
           if (!variantNode) return null;
           return {
             label: variantNode.title || `Option ${index + 1}`,
@@ -232,11 +139,11 @@ class SchemaAstVisitor {
     }
 
     if (kind === 'object') {
-      const children = Object.entries(node.properties)
+      const children = Object.entries(node.properties || {})
         .map(([subName, subSchema]) => {
           const nestedSource = source ? `${source}.${subName}` : subName;
           const childIsRequired = (node.required || []).includes(subName);
-          return this.visitFormNode(nestedSource, subSchema, childIsRequired, normalized.context, depth + 1);
+          return this.visitFormNode(nestedSource, subSchema, childIsRequired);
         })
         .filter(Boolean);
 
@@ -244,7 +151,7 @@ class SchemaAstVisitor {
     }
 
     if (kind === 'array') {
-      const itemNode = this.visitFormNode('', node.items, false, normalized.context, depth + 1);
+      const itemNode = this.visitFormNode('', node.items, false);
       return { ...base, kind: 'array', items: itemNode ? [itemNode] : [] };
     }
 
@@ -267,7 +174,7 @@ class SchemaAstVisitor {
 const buildPrecomputedResourceTrees = (spec) => {
   if (!spec || !spec.paths) return {};
 
-  const visitor = new SchemaAstVisitor(spec, MAX_CIRCULAR_REF_DEPTH);
+  const visitor = new SchemaAstVisitor(spec);
   const resourceTrees = {};
 
   for (const [apiPath, pathItem] of Object.entries(spec.paths)) {
@@ -297,7 +204,7 @@ const buildPrecomputedResourceTrees = (spec) => {
       if (method === 'get' && !isInstancePath) {
         const listSchema = getSchemaFromContent(operation.responses?.['200']?.content)
           || getSchemaFromContent(operation.responses?.['201']?.content);
-        const properties = extractListProperties(listSchema, visitor);
+        const properties = extractListProperties(listSchema);
 
         resourceTrees[resourceName].listFields = Object.entries(properties)
           .map(([name, propertySchema]) => visitor.visitFieldNode(name, propertySchema))
@@ -306,7 +213,7 @@ const buildPrecomputedResourceTrees = (spec) => {
 
       if (method === 'post' && !isInstancePath) {
         const createSchema = getSchemaFromContent(operation.requestBody?.content);
-        const normalizedCreateSchema = visitor.normalizeSchema(createSchema, { refDepthMap: {} }).schema || createSchema;
+        const normalizedCreateSchema = normalizeSchema(createSchema) || createSchema;
         const properties = normalizedCreateSchema?.properties || {};
         const required = normalizedCreateSchema?.required || [];
 
@@ -319,7 +226,7 @@ const buildPrecomputedResourceTrees = (spec) => {
 
       if ((method === 'put' || method === 'patch') && isInstancePath) {
         const editSchema = getSchemaFromContent(operation.requestBody?.content);
-        const normalizedEditSchema = visitor.normalizeSchema(editSchema, { refDepthMap: {} }).schema || editSchema;
+        const normalizedEditSchema = normalizeSchema(editSchema) || editSchema;
         const properties = normalizedEditSchema?.properties || {};
         const required = normalizedEditSchema?.required || [];
 
@@ -335,18 +242,26 @@ const buildPrecomputedResourceTrees = (spec) => {
   return resourceTrees;
 };
 
-const openApiRaw = fs.readFileSync(OPENAPI_PATH, 'utf8');
-const parsedSpec = yaml.load(openApiRaw);
-const precomputedTree = buildPrecomputedResourceTrees(parsedSpec);
+const compile = async () => {
+  const openApiRaw = fs.readFileSync(OPENAPI_PATH, 'utf8');
+  const parsedSpecRaw = yaml.load(openApiRaw);
+  const parsedSpec = await compileSpec(parsedSpecRaw);
+  const precomputedTree = buildPrecomputedResourceTrees(parsedSpec);
 
-const generatedSource = `// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.
+  const generatedSource = `// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.
 // Generated by scripts/generate-schema-component-tree.mjs
 // This precomputes schema traversal at build time via a strict AST visitor.
-// Circular $ref pointers are capped at depth ${MAX_CIRCULAR_REF_DEPTH}.
+// Circular $ref pointers are ignored.
 
 export const precomputedSchemaComponentTree = ${JSON.stringify(precomputedTree, null, 2)} as const;
 `;
 
-fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
-fs.writeFileSync(OUTPUT_PATH, generatedSource, 'utf8');
-console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)}`);
+  fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
+  fs.writeFileSync(OUTPUT_PATH, generatedSource, 'utf8');
+  console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)}`);
+};
+
+compile().catch((err) => {
+  console.error(err);
+  process.exitCode = 1;
+});
