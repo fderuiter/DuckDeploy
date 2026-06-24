@@ -1,4 +1,5 @@
 import type { OpenAPIV3 } from 'openapi-types';
+import { isSchemaObject, resolvePolymorphicSchema } from '../utils/schemaHelpers';
 
 /**
  * Outbound Adapter – sanitizes UI payloads before dispatch via Orval/Axios.
@@ -39,22 +40,6 @@ const coerceBoolean = (value: unknown): boolean | null => {
   return null;
 };
 
-/**
- * Recursively sanitize a payload object against an optional OpenAPI schema.
- *
- * @param payload - Raw UI form data to sanitize.
- * @param schema  - OpenAPI SchemaObject for type-aware coercion (optional).
- * @returns A new, sanitized payload ready for serialization and dispatch.
- */
-/**
- * Type guard to distinguish a resolved SchemaObject from a ReferenceObject.
- * `$ref` properties are not dereferenced at runtime; we skip them for coercion.
- */
-const isSchemaObject = (
-  obj: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined,
-): obj is OpenAPIV3.SchemaObject =>
-  typeof obj === 'object' && obj !== null && !('$ref' in obj);
-
 export const adaptOutboundPayload = (
   payload: Record<string, unknown>,
   schema?: OpenAPIV3.SchemaObject | null,
@@ -66,7 +51,9 @@ export const adaptOutboundPayload = (
     return {};
   }
 
-  const properties = schema?.properties;
+  // Ensure we have a flattened representation of the schema (resolving allOf)
+  const resolvedSchema = resolvePolymorphicSchema(schema ?? undefined);
+  const properties = resolvedSchema?.properties;
 
   const result: Record<string, unknown> = {};
 
@@ -97,8 +84,17 @@ export const adaptOutboundPayload = (
 
     // Recurse into nested objects, forwarding nested schema when available
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      const nestedSchema =
-        fieldSchema?.type === 'object' ? fieldSchema : undefined;
+      // Determine if there's a polymorphic branch selected
+      const rawIndex = payload[`${key}__schemaIndex`];
+      const activeIndex = rawIndex !== undefined && rawIndex !== null ? Number(rawIndex) : undefined;
+      
+      let nestedSchema = fieldSchema;
+      if (nestedSchema && (nestedSchema.oneOf || nestedSchema.anyOf || nestedSchema.allOf)) {
+        nestedSchema = resolvePolymorphicSchema(nestedSchema, activeIndex);
+      } else if (nestedSchema?.type !== 'object') {
+        nestedSchema = undefined;
+      }
+
       result[key] = adaptOutboundPayload(
         value as Record<string, unknown>,
         nestedSchema,
