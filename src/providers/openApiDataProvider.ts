@@ -8,7 +8,10 @@ let resourceMap: Record<string, ResourceDefinition> = {};
 let operationFunctionMap: Record<string, { functionName: string; modulePath: string }> = {};
 const ORVAL_FACTORY_EXPORT_NAME = /^get[A-Z]/;
 
-const generatedModules = import.meta.glob('../api/generated/**/*.ts') as Record<
+const generatedModules = import.meta.glob([
+  '../api/generated/*/*.ts',
+  '!../api/generated/model/*'
+]) as Record<
   string,
   () => Promise<Record<string, unknown>>
 >;
