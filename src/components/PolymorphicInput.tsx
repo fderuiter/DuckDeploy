@@ -2,6 +2,7 @@ import { SelectInput, required } from 'react-admin';
 import type { OpenAPIV3 } from 'openapi-types';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
+import { useAccessibility } from '../core/AccessibilityContext';
 import { mapSchemaToInput } from './SchemaToFieldMapper';
 import {
   areShallowObjectsEqual,
@@ -26,6 +27,7 @@ export const PolymorphicInput = ({
   discriminatorValues?: Array<string | undefined>
 }) => {
   const form = useFormContext();
+  const { announce } = useAccessibility();
   const { control, getValues, unregister, setValue } = form;
   // Create dropdown choices based on schema titles or types
   const choices = schemas.map((s, index) => ({
@@ -49,6 +51,7 @@ export const PolymorphicInput = ({
     const previousSelectedIndex = previousSelectedIndexRef.current;
     if (previousSelectedIndex !== undefined && previousSelectedIndex !== selectedIndex) {
       resetPolymorphicValue(unregister, setValue, source, discriminatorProperty, selectedDiscriminatorValue);
+      announce(`Form structure updated for ${choices[selectedIndex]?.name || 'new selection'}.`);
       previousSelectedIndexRef.current = selectedIndex;
       return;
     }

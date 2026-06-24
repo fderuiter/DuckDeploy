@@ -34,8 +34,8 @@ export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value,
             endAdornment: (
               <>
                 {params.InputProps?.endAdornment}
-                <InputAdornment position="end">
-                  <SearchIcon />
+                <InputAdornment position="end" aria-hidden="true">
+                  <SearchIcon aria-hidden="true" />
                 </InputAdornment>
               </>
             ),
