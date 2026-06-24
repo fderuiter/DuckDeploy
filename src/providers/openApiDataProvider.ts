@@ -1,3 +1,4 @@
+import { normalizeProviderError, NormalizedHttpError } from "../api/custom-instance";
 import { isAxiosError, type AxiosError } from 'axios';
 import { HttpError, type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
 import { AXIOS_INSTANCE } from '../api/custom-instance';
@@ -59,192 +60,19 @@ const ensureModuleLoaded = async (modulePath: string): Promise<Record<string, un
   return flattenedExports;
 };
 
-const extractErrorMessage = (payload: unknown): string | undefined => {
-  if (!payload) {
-    return undefined;
-  }
 
-  if (typeof payload === 'string' && payload.trim().length > 0) {
-    return payload;
-  }
-
-  if (Array.isArray(payload)) {
-    for (const entry of payload) {
-      const message = extractErrorMessage(entry);
-      if (message) {
-        return message;
-      }
-    }
-    return undefined;
-  }
-
-  if (typeof payload === 'object') {
-    const source = payload as Record<string, unknown>;
-    for (const candidate of ['message', 'detail', 'title', 'error', 'error_description']) {
-      const value = source[candidate];
-      if (typeof value === 'string' && value.trim().length > 0) {
-        return value;
-      }
-    }
-  }
-
-  return undefined;
-};
-
-const extractErrorCode = (payload: unknown): string | undefined => {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return undefined;
-  }
-
-  const source = payload as Record<string, unknown>;
-  for (const candidate of ['code', 'errorCode', 'type', 'reason']) {
-    const value = source[candidate];
-    if (typeof value === 'string' && value.trim().length > 0) {
-      return value;
-    }
-  }
-
-  return undefined;
-};
-
-const AUTH_HINT_PATTERN =
-  /\b(unauthori[sz]ed|authentication required|not authenticated|invalid token|token expired|missing credentials)\b/i;
-const FORBIDDEN_HINT_PATTERN = /\b(forbidden|insufficient permissions?|not allowed|access denied)\b/i;
-
-const getHeaderValue = (headers: unknown, headerName: string): string | undefined => {
-  if (!headers || typeof headers !== 'object') {
-    return undefined;
-  }
-
-  const normalizedHeaderName = headerName.toLowerCase();
-  for (const [key, value] of Object.entries(headers as Record<string, unknown>)) {
-    if (key.toLowerCase() !== normalizedHeaderName) {
-      continue;
-    }
-
-    if (typeof value === 'string') {
-      return value;
-    }
-
-    if (Array.isArray(value)) {
-      const firstString = value.find((entry): entry is string => typeof entry === 'string');
-      if (firstString) {
-        return firstString;
-      }
-    }
-  }
-
-  return undefined;
-};
-
-const normalizeErrorStatus = (status: number, message: string, responseData: unknown, responseHeaders: unknown): number => {
-  if (status === 401 || status === 403) {
-    return status;
-  }
-
-  if (status !== 404 && (status < 500 || status > 599)) {
-    return status;
-  }
-
-  const errorCode = extractErrorCode(responseData);
-  const hasWwwAuthenticateHeader = typeof getHeaderValue(responseHeaders, 'www-authenticate') === 'string';
-  const hasAuthHint =
-    AUTH_HINT_PATTERN.test(message) ||
-    (typeof errorCode === 'string' && AUTH_HINT_PATTERN.test(errorCode)) ||
-    hasWwwAuthenticateHeader;
-
-  if (!hasAuthHint) {
-    return status;
-  }
-
-  const isForbiddenHint =
-    FORBIDDEN_HINT_PATTERN.test(message) ||
-    (typeof errorCode === 'string' && FORBIDDEN_HINT_PATTERN.test(errorCode));
-
-  return isForbiddenHint ? 403 : 401;
-};
-
-const dispatchNormalizedAuthViolation = (error: AxiosError, status: number) => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  const requestConfig = error?.response?.config ?? error?.config;
-  const event = new CustomEvent('duckdeploy:auth_violation', {
-    detail: {
-      method: requestConfig?.method?.toUpperCase(),
-      url: requestConfig?.url,
-      status,
-    },
-  });
-  window.dispatchEvent(event);
-};
-
-const normalizeProviderError = (error: unknown): unknown => {
-  if (error instanceof HttpError) {
-    return error;
-  }
-
-  if (!isAxiosError(error)) {
-    return error;
-  }
-
-  const status = typeof error.response?.status === 'number' ? error.response.status : 0;
-  const responseData = error.response?.data;
-  const message =
-    extractErrorMessage(responseData) ??
-    error.message ??
-    'An unexpected error occurred while communicating with the API.';
-  const normalizedStatus = normalizeErrorStatus(status, message, responseData, error.response?.headers);
-
-  if ((normalizedStatus === 401 || normalizedStatus === 403) && normalizedStatus !== status) {
-    dispatchNormalizedAuthViolation(error, normalizedStatus);
-  }
-
-  const body =
-    responseData && typeof responseData === 'object' && !Array.isArray(responseData)
-      ? {
-        ...(responseData as Record<string, unknown>),
-        message,
-        _normalizedStatus: normalizedStatus,
-        _originalStatus: status,
-      }
-      : { message, detail: responseData ?? null, _normalizedStatus: normalizedStatus, _originalStatus: status };
-
-  return new HttpError(message, normalizedStatus, body);
-};
 
 export const getNormalizedErrorStatus = (error: unknown): number | undefined => {
   const normalizedError = normalizeProviderError(error);
-  return normalizedError instanceof HttpError ? normalizedError.status : undefined;
-};
-
-const ERROR_INTERCEPTOR_ID_KEY = '__errorInterceptorId';
-type InterceptorAwareAxiosInstance = typeof AXIOS_INSTANCE & { [ERROR_INTERCEPTOR_ID_KEY]?: number };
-const interceptorAwareAxiosInstance = AXIOS_INSTANCE as InterceptorAwareAxiosInstance;
-
-const installErrorNormalizationInterceptor = () => {
-  if (typeof interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY] === 'number') {
-    return;
+  if (normalizedError instanceof NormalizedHttpError || (normalizedError instanceof Error && normalizedError.name === "HttpError")) {
+    return (normalizedError as any).status;
   }
-
-  interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY] = AXIOS_INSTANCE.interceptors.response.use(
-    (response) => response,
-    (error) => Promise.reject(normalizeProviderError(error)),
-  );
+  return undefined;
 };
 
 export const resetErrorInterceptor = () => {
-  const interceptorId = interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY];
-  if (typeof interceptorId !== 'number') {
-    return;
-  }
-
-  AXIOS_INSTANCE.interceptors.response.eject(interceptorId);
-  delete interceptorAwareAxiosInstance[ERROR_INTERCEPTOR_ID_KEY];
+  // No-op since interceptor is now managed in custom-instance.ts
 };
-
-installErrorNormalizationInterceptor();
 
 export const setResourceDefinitions = (
   resources: ResourceDefinition[],
