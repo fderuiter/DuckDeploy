@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "npm run generate && npm run compile:schema && vite",
     "build": "npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && npm run test && vite build && npm run verify:shadow",
@@ -11,8 +14,9 @@
     "proxy": "node ./server/cdisc-proxy.mjs",
     "generate:api": "orval --config ./orval.config.ts",
     "build:manifest": "node ./scripts/preprocessor.mjs",
+    "build:env": "node ./scripts/config/build.mjs",
     "generate:traceability": "node ./scripts/generate-traceability.mjs",
-    "generate": "npm run generate:api && npm run build:manifest && npm run generate:traceability",
+    "generate": "npm run build:env && npm run generate:api && npm run build:manifest && npm run generate:traceability",
     "compile:schema": "node ./scripts/compiler/compile-schema.mjs",
     "verify:shadow": "node ./scripts/verify-shadow-build.mjs",
     "validate:contract": "node ./scripts/validate-contract.mjs",

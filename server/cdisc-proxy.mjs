@@ -1,3 +1,5 @@
+import { validateEnv } from '../scripts/config/validate.mjs';
+validateEnv('backend');
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';

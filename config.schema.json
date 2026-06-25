@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Environment Configuration Schema",
+  "type": "object",
+  "properties": {
+    "PORT": {
+      "type": "number",
+      "default": 8787,
+      "description": "Port for the proxy server to listen on.",
+      "public": false
+    },
+    "CDISC_PRIMARY_KEY": {
+      "type": "string",
+      "description": "Primary API key for CDISC Library.",
+      "public": false,
+      "secret": true
+    },
+    "CDISC_SECONDARY_KEY": {
+      "type": "string",
+      "description": "Secondary API key for CDISC Library.",
+      "public": false,
+      "secret": true
+    },
+    "CDISC_PROXY_PREFIX": {
+      "type": "string",
+      "default": "/api/cdisc",
+      "description": "Path prefix for the CDISC proxy.",
+      "public": false
+    },
+    "CDISC_PROXY_MAX_BODY_BYTES": {
+      "type": "number",
+      "default": 1048576,
+      "description": "Maximum allowed request body size in bytes.",
+      "public": false
+    },
+    "CDISC_PROXY_TIMEOUT_MS": {
+      "type": "number",
+      "default": 15000,
+      "description": "Upstream request timeout in milliseconds.",
+      "public": false
+    },
+    "CDISC_TRUSTED_INGRESS_HEADER_NAME": {
+      "type": "string",
+      "description": "Header name for trusted ingress assertion.",
+      "public": false
+    },
+    "CDISC_TRUSTED_INGRESS_HEADER_VALUE": {
+      "type": "string",
+      "description": "Header value for trusted ingress assertion.",
+      "public": false,
+      "secret": true
+    },
+    "CDISC_ALLOWED_ORIGINS": {
+      "type": "string",
+      "description": "Comma-separated list of allowed CORS origins.",
+      "public": false
+    },
+    "CDISC_ALLOW_UNTRUSTED_ORIGINS": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set to true to allow unrestricted CORS access.",
+      "public": false
+    },
+    "CDISC_UPSTREAM_BASE_URL": {
+      "type": "string",
+      "default": "https://api.library.cdisc.org",
+      "description": "The base URL of the upstream CDISC API.",
+      "public": false
+    },
+    "VITE_TOTAL_COUNT_HEADER": {
+      "type": "string",
+      "description": "Header to read total count from (frontend).",
+      "public": true
+    },
+    "VITE_API_BASE_URL": {
+      "type": "string",
+      "description": "Deployed CDISC proxy base URL for frontend.",
+      "public": true
+    },
+    "SCHEMATHESIS_BASE_URL": {
+      "type": "string",
+      "description": "Base URL for fuzz testing.",
+      "public": false
+    },
+    "SCHEMATHESIS_MAX_EXAMPLES": {
+      "type": "number",
+      "default": 1000,
+      "description": "Max examples per endpoint for fuzz testing.",
+      "public": false
+    },
+    "SCHEMATHESIS_STRICT": {
+      "type": "boolean",
+      "default": false,
+      "description": "Fail fuzz testing if Schemathesis returns non-zero.",
+      "public": false
+    }
+  },
+  "required": ["CDISC_PRIMARY_KEY"]
+}
