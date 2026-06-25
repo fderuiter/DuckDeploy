@@ -22,7 +22,7 @@ export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setVal
         helperText="Sample override widget (lat,lng)."
         defaultValue={typeof value === 'string' ? value : undefined}
         onChange={(event) => setValue(event.target.value)}
-        aria-description={(schemaNode as any)?.description}
+        aria-description={schemaNode?.description}
       />
     </div>
   );

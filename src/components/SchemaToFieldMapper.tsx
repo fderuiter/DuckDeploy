@@ -125,7 +125,7 @@ type WidgetOverrideInputProps = {
   candidateWidgetId?: string;
   fallbackWidgetId?: string;
   widgetProps?: Record<string, unknown>;
-  schemaNode: unknown;
+  schemaNode: PrecomputedInputDescriptor;
   fallback: React.ReactNode;
 };
 
@@ -408,7 +408,7 @@ export const renderInput = (
       candidateWidgetId={candidateWidgetId}
       fallbackWidgetId={source}
       widgetProps={widgetProps}
-      schemaNode={node}
+      schemaNode={node as PrecomputedInputDescriptor}
       fallback={fallback}
     />
   );

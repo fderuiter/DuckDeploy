@@ -42,7 +42,7 @@ export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value,
           }}
           inputProps={{
             ...params.inputProps,
-            'aria-description': (schemaNode as any)?.description,
+            'aria-description': schemaNode?.description,
           }}
         />
       )}
