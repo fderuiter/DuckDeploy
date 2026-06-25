@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "npm run generate && npm run compile:schema && vite",
-    "build": "npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && npm run test && vite build && npm run verify:shadow",
+    "build": "npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && npm run test && vite build && npm run verify:shadow && node ./scripts/publish-compliance.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "proxy": "node ./server/cdisc-proxy.mjs",
@@ -21,7 +21,7 @@
     "verify:shadow": "node ./scripts/verify-shadow-build.mjs",
     "validate:contract": "node ./scripts/validate-contract.mjs",
     "test:fuzz": "node ./scripts/fuzz/run-schemathesis.mjs",
-    "test": "vitest run",
+    "test": "vitest run --reporter=default --reporter=junit --outputFile.junit=junit.xml",
     "test:watch": "vitest"
   },
   "dependencies": {

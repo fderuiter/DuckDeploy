@@ -8,6 +8,7 @@ For a detailed understanding of how DuckDeploy works under the hood, please refe
 - [Tech Stack](./docs/tech-stack.md): Overview of React-Admin, TypeScript, and OpenAPI.
 - [Architecture](./docs/architecture.md): API data flow and custom providers.
 - [Extensibility](./docs/extensibility.md): Customizing UI resources and Auto components.
+- [Audit Guide](./docs/audit-guide.md): ISO 29148 Traceability & Compliance and integrity hashes.
 
 ## How it works
 

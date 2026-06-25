@@ -32,3 +32,4 @@ schemathesis-junit.xml
 manifest-generation-log.json
 contract-validation-report.json
 traceability-matrix.json
+junit.xml
