@@ -48,38 +48,12 @@ export type SchemaKind =
   | 'polymorphic'
   | 'unknown';
 
-export const determineSchemaKindForField = (name: string, node: any): SchemaKind => {
+export const determineSchemaKind = (name: string, node: any): SchemaKind => {
   if (!node || typeof node !== 'object') return 'unknown';
 
-  if (isReferenceField(name) || node.$ref) {
-    return 'reference';
+  if (node.kind) {
+    return node.kind as SchemaKind;
   }
-
-  if (Array.isArray(node.enum) && node.enum.length > 0) {
-    return 'enum';
-  }
-
-  if (node.type === 'boolean') {
-    return 'boolean';
-  }
-
-  if (node.type === 'integer' || node.type === 'number') {
-    return 'number';
-  }
-
-  if (node.type === 'string' && (node.format === 'date' || node.format === 'date-time')) {
-    return 'date';
-  }
-
-  if (node.type === 'array') {
-    return 'array';
-  }
-
-  return 'text';
-};
-
-export const determineSchemaKindForInput = (name: string, node: any): SchemaKind => {
-  if (!node || typeof node !== 'object') return 'unknown';
 
   if ((Array.isArray(node.oneOf) && node.oneOf.length > 0) || (Array.isArray(node.anyOf) && node.anyOf.length > 0)) {
     return 'polymorphic';
@@ -89,7 +63,7 @@ export const determineSchemaKindForInput = (name: string, node: any): SchemaKind
     return 'object';
   }
 
-  if (node.type === 'array' && node.items) {
+  if (node.type === 'array') {
     return 'array';
   }
 

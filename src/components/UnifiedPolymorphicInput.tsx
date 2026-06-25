@@ -1,49 +1,51 @@
 import { SelectInput, required } from 'react-admin';
-import type { OpenAPIV3 } from 'openapi-types';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useAccessibility } from '../core/AccessibilityContext';
-import { mapSchemaToInput } from './SchemaToFieldMapper';
+import { renderInput } from './SchemaToFieldMapper';
 import {
   areShallowObjectsEqual,
   cleanupPolymorphicObjectValue,
   resetPolymorphicValue,
   setPolymorphicDiscriminatorValue,
 } from './polymorphicState';
+import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
+import type { OpenAPIV3 } from 'openapi-types';
 
-export const PolymorphicInput = ({
+export const UnifiedPolymorphicInput = ({
   source,
-  schemas,
+  options,
+  discriminatorProperty,
   isRequired,
   depth = 0,
-  discriminatorProperty,
-  discriminatorValues
+  keyPrefix,
 }: {
   source: string,
-  schemas: OpenAPIV3.SchemaObject[],
+  options: Array<{ label: string; discriminatorValue?: string; node: any }>,
+  discriminatorProperty?: string,
   isRequired: boolean,
   depth?: number,
-  discriminatorProperty?: string,
-  discriminatorValues?: Array<string | undefined>
+  keyPrefix: string,
 }) => {
   const form = useFormContext();
   const { announce } = useAccessibility();
   const { control, getValues, unregister, setValue } = form;
-  // Create dropdown choices based on schema titles or types
-  const choices = schemas.map((s, index) => ({
+  
+  const choices = options.map((opt, index) => ({
     id: index,
-    name: s.title || `Option ${index + 1} (${s.type})`
+    name: opt.label || `Option ${index + 1}`
   }));
 
-  // We use a hidden meta-field to track which schema the user selected
   const typeSource = `${source}__schemaIndex`;
   const selectedIndexRaw = useWatch({ control, name: typeSource });
   const selectedIndex =
     selectedIndexRaw === undefined || selectedIndexRaw === null
       ? undefined
       : Number.parseInt(String(selectedIndexRaw), 10);
+      
   const selectedDiscriminatorValue =
-    selectedIndex === undefined || Number.isNaN(selectedIndex) ? undefined : discriminatorValues?.[selectedIndex];
+    selectedIndex === undefined || Number.isNaN(selectedIndex) ? undefined : options[selectedIndex]?.discriminatorValue;
+    
   const previousSelectedIndexRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -56,11 +58,27 @@ export const PolymorphicInput = ({
       return;
     }
 
-    const selectedSchema = schemas[selectedIndex];
-    const allowedKeys =
-      selectedSchema?.type === 'object' && selectedSchema.properties
-        ? new Set(Object.keys(selectedSchema.properties))
-        : null;
+    const selectedNode = options[selectedIndex]?.node;
+    const isPrecomputed = selectedNode && 'kind' in selectedNode && 'source' in selectedNode;
+    
+    let allowedKeys: Set<string> | null = null;
+    
+    if (isPrecomputed) {
+      const pNode = selectedNode as PrecomputedInputDescriptor;
+      if (pNode.kind === 'object') {
+        allowedKeys = new Set(
+          (pNode.children || [])
+            .map((child) => child.source.split('.').pop())
+            .filter((key): key is string => Boolean(key))
+        );
+      }
+    } else {
+      const sNode = selectedNode as OpenAPIV3.SchemaObject;
+      if (sNode?.type === 'object' && sNode.properties) {
+        allowedKeys = new Set(Object.keys(sNode.properties));
+      }
+    }
+    
     const currentValue = getValues(source);
     if (currentValue !== null && typeof currentValue === 'object' && !Array.isArray(currentValue)) {
       const cleanedValue = cleanupPolymorphicObjectValue(
@@ -82,10 +100,10 @@ export const PolymorphicInput = ({
     }
 
     previousSelectedIndexRef.current = selectedIndex;
-  }, [discriminatorProperty, getValues, schemas, selectedDiscriminatorValue, selectedIndex, source, unregister, setValue]);
+  }, [discriminatorProperty, getValues, options, selectedDiscriminatorValue, selectedIndex, source, unregister, setValue, announce]);
 
   return (
-    <div style={{ padding: '1rem', border: '1px dashed #ccc' }}>
+    <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
       <SelectInput
         source={typeSource}
         choices={choices}
@@ -94,7 +112,7 @@ export const PolymorphicInput = ({
       />
       {selectedIndex === undefined || Number.isNaN(selectedIndex)
         ? null
-        : mapSchemaToInput(source, schemas[selectedIndex], isRequired, depth)}
+        : renderInput(options[selectedIndex].node, source, isRequired, depth, `${keyPrefix}.${selectedIndex}`)}
     </div>
   );
 };
