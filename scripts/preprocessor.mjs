@@ -9,8 +9,7 @@ import {
   extractUiExtensions,
   getWidgetId,
   getWidgetProps,
-  determineSchemaKindForField,
-  determineSchemaKindForInput,
+  determineSchemaKind,
 } from '../src/utils/heuristics.ts';
 import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator } from '@duckdeploy/openapi';
 
@@ -93,7 +92,7 @@ class OpenApiVisitor {
       uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
 
-    const kind = determineSchemaKindForField(name, node);
+    const kind = determineSchemaKind(name, node);
 
     switch (kind) {
       case 'reference':
@@ -141,7 +140,7 @@ class OpenApiVisitor {
       uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
 
-    const kind = determineSchemaKindForInput(source, node);
+    const kind = determineSchemaKind(source, node);
 
     if (kind === 'polymorphic') {
       const variantSchemas = node.oneOf || node.anyOf;
