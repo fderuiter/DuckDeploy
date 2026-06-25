@@ -29,17 +29,37 @@ For a detailed understanding of how DuckDeploy works under the hood, please refe
 - `npm run lint` - Runs ESLint.
 - `npm run proxy` - Starts the local CDISC proxy/backend on `http://localhost:8787/api/cdisc`.
 
-## Proxy / backend configuration
+## Configuration
+
+The environment variables required for frontend, proxy, and testing are described below.
+
+<!-- CONFIG_START -->
+
+| Variable | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| `PORT` | `number` | No | `8787` | Port for the proxy server to listen on. |
+| `CDISC_PRIMARY_KEY` | `string` | Yes |  | Primary API key for CDISC Library. |
+| `CDISC_SECONDARY_KEY` | `string` | No |  | Secondary API key for CDISC Library. |
+| `CDISC_PROXY_PREFIX` | `string` | No | `/api/cdisc` | Path prefix for the CDISC proxy. |
+| `CDISC_PROXY_MAX_BODY_BYTES` | `number` | No | `1048576` | Maximum allowed request body size in bytes. |
+| `CDISC_PROXY_TIMEOUT_MS` | `number` | No | `15000` | Upstream request timeout in milliseconds. |
+| `CDISC_TRUSTED_INGRESS_HEADER_NAME` | `string` | No |  | Header name for trusted ingress assertion. |
+| `CDISC_TRUSTED_INGRESS_HEADER_VALUE` | `string` | No |  | Header value for trusted ingress assertion. |
+| `CDISC_ALLOWED_ORIGINS` | `string` | No |  | Comma-separated list of allowed CORS origins. |
+| `CDISC_ALLOW_UNTRUSTED_ORIGINS` | `boolean` | No | `false` | Set to true to allow unrestricted CORS access. |
+| `CDISC_UPSTREAM_BASE_URL` | `string` | No | `https://api.library.cdisc.org` | The base URL of the upstream CDISC API. |
+| `VITE_TOTAL_COUNT_HEADER` | `string` | No |  | Header to read total count from (frontend). |
+| `VITE_API_BASE_URL` | `string` | No |  | Deployed CDISC proxy base URL for frontend. |
+| `SCHEMATHESIS_BASE_URL` | `string` | No |  | Base URL for fuzz testing. |
+| `SCHEMATHESIS_MAX_EXAMPLES` | `number` | No | `1000` | Max examples per endpoint for fuzz testing. |
+| `SCHEMATHESIS_STRICT` | `boolean` | No | `false` | Fail fuzz testing if Schemathesis returns non-zero. |
+
+<!-- CONFIG_END -->
 
 The frontend is static, so `CDISC_PRIMARY_KEY` and `CDISC_SECONDARY_KEY` must **not** be injected into the Vite build. Instead:
 
 1. Deploy the backend proxy from `server/cdisc-proxy.mjs`.
-2. Configure these environment variables on the proxy host:
-   - `CDISC_PRIMARY_KEY`
-   - `CDISC_SECONDARY_KEY`
-   - `CDISC_ALLOWED_ORIGINS` (comma-separated frontend origins for CORS; defaults to local Vite origins only)
-   - `CDISC_UPSTREAM_BASE_URL` (optional, defaults to `https://api.library.cdisc.org`; base paths are preserved)
-   - `CDISC_TRUSTED_INGRESS_HEADER_NAME` and `CDISC_TRUSTED_INGRESS_HEADER_VALUE` (optional for local loopback-only usage, required when the proxy is exposed behind a reverse proxy)
+2. Configure the required environment variables on the proxy host.
 3. Configure the frontend build with `VITE_API_BASE_URL`, pointing at the deployed proxy base URL such as `https://proxy.example.com/api/cdisc`.
 
 For public deployments, do not rely on `Origin`/`Referer` as an access-control boundary. Instead, place the proxy behind infrastructure that injects the configured trusted ingress header (or an equivalent network control such as IP allow-listing) before requests reach `server/cdisc-proxy.mjs`.

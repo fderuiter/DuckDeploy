@@ -1,4 +1,6 @@
 /// <reference types="vitest" />
+import { validateEnv } from './scripts/config/validate.mjs';
+validateEnv('frontend');
 import path from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
