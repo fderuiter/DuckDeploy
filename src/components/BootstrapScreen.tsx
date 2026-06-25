@@ -1,4 +1,5 @@
 import { Alert, Box, CircularProgress, Stack, Typography } from '@mui/material';
+import { VisuallyHidden, getStatusMessage } from './AccessibilityUtils';
 
 interface BootstrapScreenProps {
   title: string;
@@ -29,9 +30,9 @@ export const BootstrapScreen = ({
         {loading ? (
           <Box position="relative">
             <CircularProgress size={40} aria-hidden="true" />
-            <Box sx={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clipPath: 'inset(100%)', whiteSpace: 'nowrap', border: 0 }}>
-              Loading
-            </Box>
+            <VisuallyHidden>
+              {getStatusMessage('loading')}
+            </VisuallyHidden>
           </Box>
         ) : null}
         <Typography variant="h4" component="h1">
