@@ -1,22 +1,22 @@
 import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 
 interface AccessibilityContextType {
-  announce: (message: string) => void;
+  announce: (message: string, mode?: 'polite' | 'assertive') => void;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
 
 export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [announcement, setAnnouncement] = useState<string>('');
+  const [announcement, setAnnouncement] = useState<{ message: string, mode: 'polite' | 'assertive' }>({ message: '', mode: 'polite' });
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const announce = useCallback((message: string) => {
-    setAnnouncement(message);
+  const announce = useCallback((message: string, mode: 'polite' | 'assertive' = 'polite') => {
+    setAnnouncement({ message, mode });
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
-      setAnnouncement('');
+      setAnnouncement({ message: '', mode: 'polite' });
     }, 3000);
   }, []);
 
@@ -24,7 +24,7 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
     <AccessibilityContext.Provider value={{ announce }}>
       {children}
       <div 
-        aria-live="polite" 
+        aria-live={announcement.mode} 
         aria-atomic="true" 
         style={{ 
           position: 'absolute', 
@@ -38,7 +38,7 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
           border: 0 
         }}
       >
-        {announcement}
+        {announcement.message}
       </div>
     </AccessibilityContext.Provider>
   );

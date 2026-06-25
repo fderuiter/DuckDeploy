@@ -2,40 +2,79 @@
 import { Create, Edit, SimpleForm, TextInput, useCreateContext, useEditContext } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
-import { Box } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
+import { useAccessibility } from '../core/AccessibilityContext';
 
 const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () => any, children: React.ReactNode }) => {
   const context = contextHook();
   const isLoading = context?.isLoading;
   const isSaving = context?.isSaving;
-  const [announcement, setAnnouncement] = useState('');
+  const registerMutationMiddleware = context?.registerMutationMiddleware;
+  const unregisterMutationMiddleware = context?.unregisterMutationMiddleware;
+  
+  const { announce } = useAccessibility();
   const [wasSaving, setWasSaving] = useState(false);
+  
+  const saveErrorRef = useRef<any>(null);
+  const saveSuccessRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (isLoading) {
-      setAnnouncement('Loading record');
+      announce('Loading record');
     }
-  }, [isLoading]);
+  }, [isLoading, announce]);
+
+  useEffect(() => {
+    if (registerMutationMiddleware && unregisterMutationMiddleware) {
+      const middleware = async (...args: any[]) => {
+        saveErrorRef.current = null;
+        saveSuccessRef.current = false;
+        const next = args[args.length - 1];
+        const newArgs = args.slice(0, -1);
+        try {
+          const result = await next(...newArgs);
+          saveSuccessRef.current = true;
+          return result;
+        } catch (error: any) {
+          saveErrorRef.current = error;
+          throw error;
+        }
+      };
+      registerMutationMiddleware(middleware);
+      return () => unregisterMutationMiddleware(middleware);
+    }
+  }, [registerMutationMiddleware, unregisterMutationMiddleware]);
 
   useEffect(() => {
     if (isSaving) {
-      setAnnouncement('Saving');
+      announce('Saving');
       setWasSaving(true);
+      saveErrorRef.current = null;
+      saveSuccessRef.current = false;
     } else if (wasSaving && !isSaving) {
-      setAnnouncement('Save complete');
+      const error = saveErrorRef.current;
+      const success = saveSuccessRef.current;
+      
+      if (error) {
+        const errorMsg = error?.body?.message || error?.message || (typeof error === 'string' ? error : '');
+        if (errorMsg) {
+          announce(`Save failed: ${errorMsg}`, 'assertive');
+        } else {
+          announce('Save failed', 'assertive');
+        }
+      } else if (success) {
+        announce('Save complete');
+      }
+      
       setWasSaving(false);
+      saveErrorRef.current = null;
+      saveSuccessRef.current = false;
     }
-  }, [isSaving, wasSaving]);
+  }, [isSaving, wasSaving, announce]);
 
   return (
     <>
-      <Box 
-        aria-live="polite" 
-        sx={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clipPath: 'inset(100%)', whiteSpace: 'nowrap', border: 0 }}
-      >
-        {announcement}
-      </Box>
       {children}
     </>
   );
