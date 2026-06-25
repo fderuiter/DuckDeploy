@@ -9,7 +9,7 @@ export const JsonEditorInput: React.FC<EngineContext> = ({ source, value, setVal
       onChange={(event) => setValue(event.target.value)}
       multiline
       fullWidth
-      aria-description={(schemaNode as any)?.description}
+      aria-description={schemaNode?.description}
     />
   );
 };

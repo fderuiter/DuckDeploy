@@ -1,8 +1,9 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 
 export interface EngineContext {
   record: Record<string, unknown>;
-  schemaNode: unknown;
+  schemaNode: PrecomputedInputDescriptor;
   source: string;
   value: unknown;
   widgetProps: Record<string, unknown>;
