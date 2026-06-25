@@ -1,31 +1,27 @@
-
 import { List, Datagrid, TextField, useListContext } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
-import { Box } from '@mui/material';
+import { VisuallyHidden, getStatusMessage } from './AccessibilityUtils';
 
 const ListAccessibilityWrapper = ({ children }: { children: React.ReactNode }) => {
   const { isLoading, data, total } = useListContext();
   
   let announcement = '';
   if (isLoading) {
-    announcement = 'Loading list data';
+    announcement = getStatusMessage('loading');
   } else if (data) {
     if (data.length === 0 || total === 0) {
-      announcement = 'Empty list';
+      announcement = getStatusMessage('empty');
     } else {
-      announcement = `Loaded ${total || data.length} items`;
+      announcement = getStatusMessage('loaded', total || data.length);
     }
   }
 
   return (
     <>
-      <Box 
-        aria-live="polite" 
-        sx={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clipPath: 'inset(100%)', whiteSpace: 'nowrap', border: 0 }}
-      >
+      <VisuallyHidden aria-live="polite">
         {announcement}
-      </Box>
+      </VisuallyHidden>
       {children}
     </>
   );

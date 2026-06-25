@@ -4,7 +4,7 @@ import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { useEffect, useState, useRef } from 'react';
 
-import { useAccessibility } from '../core/AccessibilityContext';
+import { VisuallyHidden, getStatusMessage } from './AccessibilityUtils';
 
 const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () => any, children: React.ReactNode }) => {
   const context = contextHook();
@@ -13,17 +13,21 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
   const registerMutationMiddleware = context?.registerMutationMiddleware;
   const unregisterMutationMiddleware = context?.unregisterMutationMiddleware;
   
-  const { announce } = useAccessibility();
   const [wasSaving, setWasSaving] = useState(false);
+  const [statusText, setStatusText] = useState('');
+  const [statusMode, setStatusMode] = useState<'polite' | 'assertive'>('polite');
   
   const saveErrorRef = useRef<any>(null);
   const saveSuccessRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (isLoading) {
-      announce('Loading record');
+      setStatusText(getStatusMessage('loading'));
+      setStatusMode('polite');
+    } else if (!isSaving && !wasSaving) {
+      setStatusText('');
     }
-  }, [isLoading, announce]);
+  }, [isLoading, isSaving, wasSaving]);
 
   useEffect(() => {
     if (registerMutationMiddleware && unregisterMutationMiddleware) {
@@ -48,7 +52,8 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
 
   useEffect(() => {
     if (isSaving) {
-      announce('Saving');
+      setStatusText(getStatusMessage('saving'));
+      setStatusMode('polite');
       setWasSaving(true);
       saveErrorRef.current = null;
       saveSuccessRef.current = false;
@@ -57,24 +62,25 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
       const success = saveSuccessRef.current;
       
       if (error) {
-        const errorMsg = error?.body?.message || error?.message || (typeof error === 'string' ? error : '');
-        if (errorMsg) {
-          announce(`Save failed: ${errorMsg}`, 'assertive');
-        } else {
-          announce('Save failed', 'assertive');
-        }
+        const errorMsg = error?.body?.message || error?.message || (typeof error === 'string' ? error : undefined);
+        setStatusText(getStatusMessage('error', errorMsg));
+        setStatusMode('assertive');
       } else if (success) {
-        announce('Save complete');
+        setStatusText(getStatusMessage('success'));
+        setStatusMode('polite');
       }
       
       setWasSaving(false);
       saveErrorRef.current = null;
       saveSuccessRef.current = false;
     }
-  }, [isSaving, wasSaving, announce]);
+  }, [isSaving, wasSaving]);
 
   return (
     <>
+      <VisuallyHidden aria-live={statusMode}>
+        {statusText}
+      </VisuallyHidden>
       {children}
     </>
   );
