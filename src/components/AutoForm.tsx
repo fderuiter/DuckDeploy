@@ -1,5 +1,5 @@
 
-import { Create, Edit, SimpleForm, TextInput, useCreateContext, useEditContext, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
+import { Create, Edit, SimpleForm, TextInput, useCreateContext, useEditContext, useTranslate, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { useEffect, useState, useRef } from 'react';
@@ -15,6 +15,7 @@ interface FormContextValue {
 
 const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () => FormContextValue | undefined, children: React.ReactNode }) => {
   const context = contextHook();
+  const translate = useTranslate();
   const isLoading = context?.isLoading;
   const isSaving = context?.isSaving;
   const registerMutationMiddleware = context?.registerMutationMiddleware;
@@ -29,12 +30,12 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
 
   useEffect(() => {
     if (isLoading) {
-      setStatusText(getStatusMessage('loading'));
+      setStatusText(getStatusMessage(translate, 'loading'));
       setStatusMode('polite');
     } else if (!isSaving && !wasSaving) {
       setStatusText('');
     }
-  }, [isLoading, isSaving, wasSaving]);
+  }, [isLoading, isSaving, wasSaving, translate]);
 
   useEffect(() => {
     if (registerMutationMiddleware && unregisterMutationMiddleware) {
@@ -59,7 +60,7 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
 
   useEffect(() => {
     if (isSaving) {
-      setStatusText(getStatusMessage('saving'));
+      setStatusText(getStatusMessage(translate, 'saving'));
       setStatusMode('polite');
       setWasSaving(true);
       saveErrorRef.current = null;
@@ -71,10 +72,10 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
       if (error) {
         const errObj = error as Record<string, unknown>;
         const errorMsg = errObj?.body ? (errObj.body as Record<string, unknown>)?.message : errObj?.message || (typeof error === 'string' ? error : undefined);
-        setStatusText(getStatusMessage('error', typeof errorMsg === 'string' ? errorMsg : undefined));
+        setStatusText(getStatusMessage(translate, 'error', typeof errorMsg === 'string' ? errorMsg : undefined));
         setStatusMode('assertive');
       } else if (success) {
-        setStatusText(getStatusMessage('success'));
+        setStatusText(getStatusMessage(translate, 'success'));
         setStatusMode('polite');
       }
       
@@ -82,7 +83,7 @@ const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () =
       saveErrorRef.current = null;
       saveSuccessRef.current = false;
     }
-  }, [isSaving, wasSaving]);
+  }, [isSaving, wasSaving, translate]);
 
   return (
     <>

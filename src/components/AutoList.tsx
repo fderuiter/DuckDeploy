@@ -1,19 +1,20 @@
-import { List, Datagrid, TextField, useListContext, type ListProps, type RaRecord } from 'react-admin';
+import { List, Datagrid, TextField, useListContext, useTranslate, type ListProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
 import { VisuallyHidden, getStatusMessage } from './AccessibilityUtils';
 
 const ListAccessibilityWrapper = ({ children }: { children: React.ReactNode }) => {
   const { isLoading, data, total } = useListContext();
+  const translate = useTranslate();
   
   let announcement = '';
   if (isLoading) {
-    announcement = getStatusMessage('loading');
+    announcement = getStatusMessage(translate, 'loading');
   } else if (data) {
     if (data.length === 0 || total === 0) {
-      announcement = getStatusMessage('empty');
+      announcement = getStatusMessage(translate, 'empty');
     } else {
-      announcement = getStatusMessage('loaded', total || data.length);
+      announcement = getStatusMessage(translate, 'loaded', total || data.length);
     }
   }
 

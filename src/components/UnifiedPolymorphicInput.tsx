@@ -1,5 +1,5 @@
-import { SelectInput, required } from 'react-admin';
-import { useEffect, useRef } from 'react';
+import { SelectInput, required, useTranslate } from 'react-admin';
+import { useEffect, useRef, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useAccessibility } from '../core/AccessibilityContext';
 import { renderInput } from './SchemaToFieldMapper';
@@ -30,12 +30,13 @@ export const UnifiedPolymorphicInput = ({
 }) => {
   const form = useFormContext();
   const { announce } = useAccessibility();
+  const translate = useTranslate();
   const { control, getValues, unregister, setValue } = form;
   
-  const choices = options.map((opt, index) => ({
+  const choices = useMemo(() => options.map((opt, index) => ({
     id: index,
-    name: opt.label || `Option ${index + 1}`
-  }));
+    name: opt.label || translate('duckdeploy.input.polymorphic.option', { index: index + 1 })
+  })), [options, translate]);
 
   const typeSource = `${source}${SCHEMA_SELECTION_KEY}`;
   const selectedIndexRaw = useWatch({ control, name: typeSource });
@@ -54,7 +55,11 @@ export const UnifiedPolymorphicInput = ({
     const previousSelectedIndex = previousSelectedIndexRef.current;
     if (previousSelectedIndex !== undefined && previousSelectedIndex !== selectedIndex) {
       resetPolymorphicValue(unregister, setValue, source, discriminatorProperty, selectedDiscriminatorValue);
-      announce(`Form structure updated for ${choices[selectedIndex]?.name || 'new selection'}.`);
+      const name = choices[selectedIndex]?.name;
+      const message = name 
+        ? translate('duckdeploy.a11y.polymorphic.update', { name })
+        : translate('duckdeploy.a11y.polymorphic.update_default');
+      announce(message);
       previousSelectedIndexRef.current = selectedIndex;
       return;
     }
@@ -101,14 +106,14 @@ export const UnifiedPolymorphicInput = ({
     }
 
     previousSelectedIndexRef.current = selectedIndex;
-  }, [discriminatorProperty, getValues, options, selectedDiscriminatorValue, selectedIndex, source, unregister, setValue, announce]);
+  }, [discriminatorProperty, getValues, options, selectedDiscriminatorValue, selectedIndex, source, unregister, setValue, announce, choices, translate]);
 
   return (
     <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
       <SelectInput
         source={typeSource}
         choices={choices}
-        label="Select Type"
+        label={translate('duckdeploy.input.polymorphic.select_type')}
         validate={isRequired ? [required()] : []}
       />
       {selectedIndex === undefined || Number.isNaN(selectedIndex)

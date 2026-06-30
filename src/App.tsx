@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Admin } from 'react-admin';
+import { Admin, I18nContextProvider, useTranslate, useLocaleState, Layout, AppBar, LocalesMenuButton } from 'react-admin';
+import polyglotI18nProvider from 'ra-i18n-polyglot';
+import englishMessages from './locales/en';
+import frenchMessages from './locales/fr';
 import { SpecProvider, useSpec } from './core/SpecContext';
 import { duckDeployAuthProvider, setAuthorizationResources } from './core/authProvider';
 import { openApiDataProvider, setResourceDefinitions } from './providers/openApiDataProvider';
@@ -36,34 +39,61 @@ interface ProxyHealthResponse {
 
 const runtimeConfig = getRuntimeApiConfig();
 
+const getInitialLocale = () => {
+  try {
+    const stored = localStorage.getItem('RaStore.locale');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    // ignore
+  }
+  return 'en';
+};
 
+const translations: Record<string, any> = {
+  en: englishMessages,
+  fr: frenchMessages,
+};
 
-const createRuntimeConfigIssue = (): BootstrapIssue => ({
-  title: 'API proxy is not configured',
-  message: 'DuckDeploy needs a deployed backend proxy before the UI can call CDISC.',
+export const i18nProvider = polyglotI18nProvider(
+  (locale) => translations[locale] || translations.en,
+  getInitialLocale(),
+  [
+    { locale: 'en', name: 'English' },
+    { locale: 'fr', name: 'Français' },
+  ]
+);
+
+const createRuntimeConfigIssue = (translate: any): BootstrapIssue => ({
+  title: translate('duckdeploy.bootstrap.api_not_configured.title'),
+  message: translate('duckdeploy.bootstrap.api_not_configured.message'),
   details: [
-    runtimeConfig.message ?? 'Set VITE_API_BASE_URL to the deployed proxy base URL.',
-    'Keep CDISC_PRIMARY_KEY and CDISC_SECONDARY_KEY on the proxy host only; do not inject them into the frontend build.',
+    runtimeConfig.message ?? translate('duckdeploy.bootstrap.api_not_configured.detail_1'),
+    translate('duckdeploy.bootstrap.api_not_configured.detail_2'),
   ],
 });
 
-
-
-
-
-const createNoResourcesIssue = (): BootstrapIssue => ({
-  title: 'No resources were discovered',
-  message: 'DuckDeploy loaded the schema and manifest, but no listable resources were available for React-Admin.',
+const createNoResourcesIssue = (translate: any): BootstrapIssue => ({
+  title: translate('duckdeploy.bootstrap.no_resources.title'),
+  message: translate('duckdeploy.bootstrap.no_resources.message'),
   details: [
-    'Verify that ui-manifest.json contains list fields for the desired resources.',
-    'If the OpenAPI contract changed, regenerate the manifest with `npm run generate` and rebuild the app.',
+    translate('duckdeploy.bootstrap.no_resources.detail_1'),
+    translate('duckdeploy.bootstrap.no_resources.detail_2'),
   ],
 });
+
+const CustomAppBar = (props: any) => (
+  <AppBar {...props} toolbar={<LocalesMenuButton />} />
+);
+
+const CustomLayout = (props: any) => <Layout {...props} appBar={CustomAppBar} />;
 
 const AdminApp = () => {
+  const translate = useTranslate();
   const { spec, uiManifest, isLoading, error } = useSpec();
   const [proxyIssue, setProxyIssue] = useState<BootstrapIssue | null>(
-    runtimeConfig.apiBaseUrl ? null : createRuntimeConfigIssue(),
+    runtimeConfig.apiBaseUrl ? null : createRuntimeConfigIssue(translate),
   );
   const [isProxyLoading, setIsProxyLoading] = useState(Boolean(runtimeConfig.healthUrl));
 
@@ -116,8 +146,8 @@ const AdminApp = () => {
           setProxyIssue(issue as BootstrapIssue);
         } else {
           setProxyIssue({
-            title: 'API proxy is unreachable',
-            message: 'DuckDeploy could not reach the configured backend proxy.',
+            title: translate('duckdeploy.bootstrap.api_unreachable.title'),
+            message: translate('duckdeploy.bootstrap.api_unreachable.message'),
             details: [String(issue)]
           });
         }
@@ -138,11 +168,11 @@ const AdminApp = () => {
   if (isLoading || isProxyLoading) {
     return (
       <BootstrapScreen
-        title="Starting DuckDeploy"
-        message="Loading the compiled schema, UI manifest, and backend proxy configuration."
+        title={translate('duckdeploy.bootstrap.starting.title')}
+        message={translate('duckdeploy.bootstrap.starting.message')}
         details={[
-          `API base: ${runtimeConfig.apiBaseUrl ?? 'not configured'}`,
-          'CDISC secrets stay on the proxy backend; the frontend only talks to that proxy.',
+          translate('duckdeploy.bootstrap.starting.detail_1', { base_url: runtimeConfig.apiBaseUrl ?? 'not configured' }),
+          translate('duckdeploy.bootstrap.starting.detail_2'),
         ]}
         loading
       />
@@ -151,8 +181,8 @@ const AdminApp = () => {
 
     if (error) {
     const issue = (error as any).title ? (error as BootstrapIssue) : {
-      title: 'Application bootstrap failed',
-      message: 'DuckDeploy could not load the compiled schema or UI manifest required to start.',
+      title: translate('duckdeploy.bootstrap.failed.title'),
+      message: translate('duckdeploy.bootstrap.failed.message'),
       details: [error.message],
     };
     return <BootstrapScreen title={issue.title} message={issue.message} details={issue.details} />;
@@ -163,25 +193,40 @@ const AdminApp = () => {
   }
 
   if (resources.length === 0) {
-    const issue = createNoResourcesIssue();
+    const issue = createNoResourcesIssue(translate);
     return <BootstrapScreen title={issue.title} message={issue.message} details={issue.details} />;
   }
 
   return (
-    <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider}>
+    <Admin layout={CustomLayout} i18nProvider={i18nProvider} authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider}>
       <ResourceFactory resources={resources} />
     </Admin>
   );
 };
 
-export const App = () => (
-  <AccessibilityProvider>
-    <WidgetRegistryProvider>
-      <SpecProvider>
-        <AdminApp />
-      </SpecProvider>
-    </WidgetRegistryProvider>
-  </AccessibilityProvider>
-);
+export const App = () => {
+  const HtmlLangSync = () => {
+    const [locale] = useLocaleState();
+    
+    useEffect(() => {
+      document.documentElement.lang = locale;
+    }, [locale]);
+    
+    return null;
+  };
+
+  return (
+    <I18nContextProvider value={i18nProvider}>
+      <HtmlLangSync />
+      <AccessibilityProvider>
+        <WidgetRegistryProvider>
+          <SpecProvider>
+            <AdminApp />
+          </SpecProvider>
+        </WidgetRegistryProvider>
+      </AccessibilityProvider>
+    </I18nContextProvider>
+  );
+};
 
 export default App;

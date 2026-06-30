@@ -25,20 +25,20 @@ export const VisuallyHidden = ({ children, role, 'aria-live': ariaLive }: { chil
 
 export type OperationState = 'loading' | 'saving' | 'success' | 'error' | 'idle' | 'empty' | 'loaded';
 
-export const getStatusMessage = (state: OperationState, details?: string | number): string => {
+export const getStatusMessage = (translate: any, state: OperationState, details?: string | number): string => {
   switch (state) {
     case 'loading':
-      return 'Loading data';
+      return translate('duckdeploy.a11y.status.loading');
     case 'saving':
-      return 'Saving data';
+      return translate('duckdeploy.a11y.status.saving');
     case 'success':
-      return 'Save complete';
+      return translate('duckdeploy.a11y.status.success');
     case 'error':
-      return details ? `Save failed: ${details}` : 'Save failed';
+      return details ? translate('duckdeploy.a11y.status.error_details', { details }) : translate('duckdeploy.a11y.status.error');
     case 'empty':
-      return 'Empty list';
+      return translate('duckdeploy.a11y.status.empty');
     case 'loaded':
-      return `Loaded ${details || 0} items`;
+      return translate('duckdeploy.a11y.status.loaded', { details: details || 0 });
     default:
       return '';
   }
