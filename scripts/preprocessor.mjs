@@ -11,7 +11,7 @@ import {
   getWidgetProps,
   determineSchemaKind,
 } from '../src/utils/heuristics.ts';
-import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator } from '@duckdeploy/openapi';
+import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator, UnifiedSchemaWalker } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -119,110 +119,111 @@ class OpenApiVisitor {
     }
   }
 
-  visitFormNode(source, schema, isRequired, pointer = '#') {
-    const node = normalizeSchema(schema);
+  visitFormNode(rootSource, rootSchema, rootIsRequired, rootPointer = '#') {
+    
+    
+    const walker = new UnifiedSchemaWalker({
+      visitNode: (context, defaultVisit) => {
+        const { schema: rawSchema, source, isRequired, pointer } = context;
+        const node = normalizeSchema(rawSchema);
 
-    if (!node || typeof node !== 'object') {
-      this.addTraceability(pointer, source, null, 'discarded');
-      return null;
-    }
-
-    const uiExtensions = extractUiExtensions(node);
-    const hasUiExtensions = Object.keys(uiExtensions).length > 0;
-    const base = {
-      source,
-      isRequired,
-      title: node.title,
-      description: node.description,
-      validation: this.getValidation(node),
-      widgetId: getWidgetId(node),
-      widgetProps: getWidgetProps(node),
-      uiExtensions: hasUiExtensions ? uiExtensions : undefined,
-    };
-
-    const kind = determineSchemaKind(source, node);
-
-    if (kind === 'polymorphic') {
-      const variantSchemas = node.oneOf || node.anyOf;
-      const strictDiscriminator = node.discriminator ? { propertyName: node.discriminator.propertyName } : null; // resolveDiscriminator(node);
-      const options = variantSchemas
-        .map((variant, index) => {
-          const variantPointer = `${pointer}/${node.oneOf ? 'oneOf' : 'anyOf'}/${index}`;
-          const variantNode = this.visitFormNode(source, variant, isRequired, variantPointer);
-          if (!variantNode) return null;
-          
-          const resolvedVariant = {
-            label: variantNode.title || `Option ${index + 1}`,
-            node: variantNode,
-          };
-          
-          const disc = resolveDiscriminator(node, variant['x-origin-ref']);
-          if (disc && disc.values.length > 0) {
-            resolvedVariant.discriminatorValue = disc.values[0];
-          }
-
-          return resolvedVariant;
-        })
-        .filter(Boolean);
-
-      if (options.length > 0) {
-        this.addTraceability(pointer, source, '<PolymorphicInput />');
-        
-        let discriminatorProperty;
-        if (strictDiscriminator) discriminatorProperty = strictDiscriminator.propertyName;
-        else if (options[0].discriminatorValue) {
-            discriminatorProperty = resolveDiscriminator(node, variantSchemas[0]['x-origin-ref'])?.propertyName;
+        if (!node || typeof node !== 'object') {
+          this.addTraceability(pointer, source, null, 'discarded');
+          return null;
         }
 
-        return {
-          ...base,
-          kind: 'polymorphic',
-          discriminatorProperty,
-          options,
+        const uiExtensions = extractUiExtensions(node);
+        const hasUiExtensions = Object.keys(uiExtensions).length > 0;
+        const base = {
+          source,
+          isRequired,
+          title: node.title,
+          description: node.description,
+          validation: this.getValidation(node),
+          widgetId: getWidgetId(node),
+          widgetProps: getWidgetProps(node),
+          uiExtensions: hasUiExtensions ? uiExtensions : undefined,
         };
+
+        const kind = determineSchemaKind(source, node);
+
+        if (kind === 'polymorphic') {
+          const variantSchemas = node.oneOf || node.anyOf;
+          const strictDiscriminator = node.discriminator ? { propertyName: node.discriminator.propertyName } : null;
+          
+          const defaultResult = defaultVisit();
+          if (!defaultResult || !defaultResult.options) return null;
+          
+          const options = defaultResult.options.map((variantNode, index) => {
+             if (!variantNode) return null;
+             const variantRaw = variantSchemas[index];
+             const resolvedVariant = {
+               label: variantNode.title || `Option ${index + 1}`,
+               node: variantNode,
+             };
+             
+             const disc = resolveDiscriminator(node, variantRaw['x-origin-ref']);
+             if (disc && disc.values.length > 0) {
+               resolvedVariant.discriminatorValue = disc.values[0];
+             }
+             return resolvedVariant;
+          }).filter(Boolean);
+
+          if (options.length > 0) {
+            this.addTraceability(pointer, source, '<PolymorphicInput />');
+            
+            let discriminatorProperty;
+            if (strictDiscriminator) discriminatorProperty = strictDiscriminator.propertyName;
+            else if (options[0].discriminatorValue) {
+                discriminatorProperty = resolveDiscriminator(node, variantSchemas[0]['x-origin-ref'])?.propertyName;
+            }
+
+            return {
+              ...base,
+              kind: 'polymorphic',
+              discriminatorProperty,
+              options,
+            };
+          }
+          return null;
+        }
+
+        if (kind === 'object') {
+          this.addTraceability(pointer, source || '(root)', '<ObjectGroup />');
+          const defaultResult = defaultVisit();
+          return { ...base, kind: 'object', children: defaultResult.children || [] };
+        }
+
+        if (kind === 'array') {
+          this.addTraceability(pointer, source, '<ArrayInput />');
+          const defaultResult = defaultVisit();
+          return { ...base, kind: 'array', items: defaultResult.items || [] };
+        }
+
+        switch (kind) {
+          case 'reference':
+            this.addTraceability(pointer, source, '<ReferenceInput />');
+            return { ...base, kind: 'reference', reference: getReferenceTarget(source) };
+          case 'enum':
+            this.addTraceability(pointer, source, '<SelectInput />');
+            return { ...base, kind: 'enum', choices: node.enum.map((value) => ({ id: String(value), name: String(value) })) };
+          case 'boolean':
+            this.addTraceability(pointer, source, '<BooleanInput />');
+            return { ...base, kind: 'boolean' };
+          case 'number':
+            this.addTraceability(pointer, source, '<NumberInput />');
+            return { ...base, kind: 'number' };
+          case 'date':
+            this.addTraceability(pointer, source, '<DateInput />');
+            return { ...base, kind: 'date' };
+          default:
+            this.addTraceability(pointer, source, '<TextInput />');
+            return { ...base, kind: 'text' };
+        }
       }
-    }
+    }, { walkPayload: false });
 
-    if (kind === 'object') {
-      const children = Object.entries(node.properties || {})
-        .map(([subName, subSchema]) => {
-          const nestedSource = source ? `${source}.${subName}` : subName;
-          const childRequired = (node.required || []).includes(subName);
-          const childPointer = `${pointer}/properties/${escapeJsonPointer(subName)}`;
-          return this.visitFormNode(nestedSource, subSchema, childRequired, childPointer);
-        })
-        .filter(Boolean);
-
-      this.addTraceability(pointer, source || '(root)', '<ObjectGroup />');
-      return { ...base, kind: 'object', children };
-    }
-
-    if (kind === 'array') {
-      const itemNode = this.visitFormNode('', node.items, false, `${pointer}/items`);
-      this.addTraceability(pointer, source, '<ArrayInput />');
-      return { ...base, kind: 'array', items: itemNode ? [itemNode] : [] };
-    }
-
-    switch (kind) {
-      case 'reference':
-        this.addTraceability(pointer, source, '<ReferenceInput />');
-        return { ...base, kind: 'reference', reference: getReferenceTarget(source) };
-      case 'enum':
-        this.addTraceability(pointer, source, '<SelectInput />');
-        return { ...base, kind: 'enum', choices: node.enum.map((value) => ({ id: String(value), name: String(value) })) };
-      case 'boolean':
-        this.addTraceability(pointer, source, '<BooleanInput />');
-        return { ...base, kind: 'boolean' };
-      case 'number':
-        this.addTraceability(pointer, source, '<NumberInput />');
-        return { ...base, kind: 'number' };
-      case 'date':
-        this.addTraceability(pointer, source, '<DateInput />');
-        return { ...base, kind: 'date' };
-      default:
-        this.addTraceability(pointer, source, '<TextInput />');
-        return { ...base, kind: 'text' };
-    }
+    return walker.walk(rootSchema, undefined, rootSource, rootPointer, rootIsRequired);
   }
 }
 
