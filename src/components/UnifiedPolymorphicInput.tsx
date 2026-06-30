@@ -9,6 +9,7 @@ import {
   resetPolymorphicValue,
   setPolymorphicDiscriminatorValue,
 } from './polymorphicState';
+import { SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import type { OpenAPIV3 } from 'openapi-types';
 
@@ -36,7 +37,7 @@ export const UnifiedPolymorphicInput = ({
     name: opt.label || `Option ${index + 1}`
   }));
 
-  const typeSource = `${source}__schemaIndex`;
+  const typeSource = `${source}${SCHEMA_SELECTION_KEY}`;
   const selectedIndexRaw = useWatch({ control, name: typeSource });
   const selectedIndex =
     selectedIndexRaw === undefined || selectedIndexRaw === null

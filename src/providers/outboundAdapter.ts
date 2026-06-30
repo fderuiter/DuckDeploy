@@ -1,5 +1,5 @@
 import type { OpenAPIV3 } from 'openapi-types';
-import { UnifiedSchemaWalker } from '@duckdeploy/openapi';
+import { UnifiedSchemaWalker, SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 
 /**
  * Outbound Adapter – sanitizes UI payloads before dispatch via Orval/Axios.
@@ -19,7 +19,7 @@ export const adaptOutboundPayload = (
     { walkPayload: true }
   );
 
-  // If there's no schema, we still want to strip out `__schemaIndex` and undefined values.
+  // If there's no schema, we still want to strip out `SCHEMA_SELECTION_KEY` and undefined values.
   // The Walker requires a schema to function correctly with properties. 
   // Wait, if no schema is provided, we should probably fall back to a basic traversal or create a dummy schema.
   if (!schema) {
@@ -28,7 +28,7 @@ export const adaptOutboundPayload = (
       if (obj !== null && typeof obj === 'object') {
         const res: any = {};
         for (const [k, v] of Object.entries(obj)) {
-          if (k.endsWith('__schemaIndex') || v === undefined) continue;
+          if (k.endsWith(SCHEMA_SELECTION_KEY) || v === undefined) continue;
           if (v === '') {
             res[k] = null;
           } else {

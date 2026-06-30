@@ -1,4 +1,5 @@
 import type { UseFormReturn } from 'react-hook-form';
+import { SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 
 type Unregister = UseFormReturn['unregister'];
 type SetValue = UseFormReturn['setValue'];
@@ -17,7 +18,7 @@ export const cleanupPolymorphicObjectValue = (
   discriminatorValue?: string,
 ) => {
   const cleanedValue = Object.entries(value).reduce<Record<string, unknown>>((acc, [key, fieldValue]) => {
-    if (key.endsWith('__schemaIndex')) return acc;
+    if (key.endsWith(SCHEMA_SELECTION_KEY)) return acc;
     if (allowedKeys && !allowedKeys.has(key)) return acc;
     acc[key] = fieldValue;
     return acc;
