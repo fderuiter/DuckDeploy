@@ -1,4 +1,5 @@
 import type { OpenAPIV3 } from 'openapi-types';
+import { SCHEMA_SELECTION_KEY } from './constants.ts';
 
 export const isSchemaObject = (
   obj: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined
@@ -110,10 +111,10 @@ export class UnifiedSchemaWalker {
       if (schema && (schema.oneOf || schema.anyOf)) {
         let indexVal: any;
         if (context.parentPayload && context.key) {
-          indexVal = context.parentPayload[`${context.key}__schemaIndex`];
+          indexVal = context.parentPayload[`${context.key}${SCHEMA_SELECTION_KEY}`];
         }
         if (indexVal === undefined && payload && typeof payload === 'object') {
-          indexVal = payload['__schemaIndex'];
+          indexVal = payload[SCHEMA_SELECTION_KEY];
         }
 
         if (indexVal !== undefined && indexVal !== null) {
@@ -145,7 +146,7 @@ export class UnifiedSchemaWalker {
         if (typeof payload === 'object' && !Array.isArray(payload)) {
           const result: any = {};
           for (const [k, v] of Object.entries(payload)) {
-            if (k.endsWith('__schemaIndex')) continue;
+            if (k.endsWith(SCHEMA_SELECTION_KEY)) continue;
             if (v === undefined) continue;
 
             const childSchema = schema?.properties?.[k];
