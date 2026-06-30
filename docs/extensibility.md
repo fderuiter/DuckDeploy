@@ -6,7 +6,7 @@ DuckDeploy is built on React-Admin. While the application aims to minimize boile
 
 The `ResourceFactory` component (`src/components/ResourceFactory.tsx`) bridges the gap between OpenAPI metadata and React-Admin's `<Resource />` registration.
 
-When the application bootstraps, it invokes `resolveAdminResources` to discover available models. For every model with recognized endpoints, `ResourceFactory` will mount a dynamic resource with custom 'Auto' wrapper components (`AutoList`, `AutoCreate`, `AutoEdit`).
+When the application bootstraps, it invokes `resolveAdminResources` to configure available models based on the build-time generated `ui-manifest.json`. For every model with recognized endpoints in the manifest, `ResourceFactory` will mount a dynamic resource with custom 'Auto' wrapper components (`AutoList`, `AutoCreate`, `AutoEdit`).
 
 ## Custom 'Auto' Components
 
@@ -14,7 +14,7 @@ By default, `ResourceFactory` wires up the resources to use `AutoList`, `AutoCre
 
 ### AutoList
 
-The `AutoList` component (`src/components/AutoList.tsx`) automatically generates a generic React-Admin `<List>` and `<Datagrid>`. It uses `ui-manifest.json` and `schema.json` to extract table columns.
+The `AutoList` component (`src/components/AutoList.tsx`) automatically generates a generic React-Admin `<List>` and `<Datagrid>`. It uses `ui-manifest.json` to extract table columns.
 
 ```tsx
 import { Resource } from 'react-admin';

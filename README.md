@@ -14,8 +14,8 @@ For a detailed understanding of how DuckDeploy works under the hood, please refe
 
 1. Update `openapi.yaml` with your API specification.
 2. Run `npm run dev` locally (or `npm run build` in CI).
-3. The build pipeline compiles `openapi.yaml` into `public/schema.json` (dereferenced + optimized) and Orval generates TypeScript models and Axios fetchers into `src/api/`.
-4. The browser loads only the static `schema.json` artifact (not raw YAML), and GitHub Actions builds and deploys the app to GitHub Pages.
+3. The build pipeline compiles `openapi.yaml` into the OpenAPI schema (`public/schema.json`) and the UI manifest (`public/ui-manifest.json`). Orval generates TypeScript models and Axios fetchers into `src/api/`.
+4. The browser loads both the static `schema.json` and `ui-manifest.json` artifacts (not raw YAML), and GitHub Actions builds and deploys the app to GitHub Pages.
 5. Static asset integrity relies on standard CI/CD controls and Vite’s content-hashed build artifacts; `ui-manifest.sha256` is generated as build metadata for traceability, not as a client-side tamper-proof guarantee.
 6. CDISC credentials stay server-side behind a proxy/backend layer; the frontend only talks to that proxy via `VITE_API_BASE_URL`.
 

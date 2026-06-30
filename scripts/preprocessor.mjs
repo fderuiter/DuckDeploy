@@ -31,6 +31,74 @@ const MANIFEST_GENERATION_LOG_PATH = path.join(repoRoot, 'manifest-generation-lo
 const LEGACY_TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
 const HASH_OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.sha256');
 const STABLE_JSON_EOL = '\n';
+const DOCS_DIR = path.join(repoRoot, 'docs');
+
+const PROHIBITED_PATTERNS = [
+  {
+    regex: /schema\.json.*?\(the UI manifest\)/i,
+    message: "Terminology Error: 'schema.json' is incorrectly described as the UI manifest. Use 'ui-manifest.json'."
+  },
+  {
+    regex: /generate.*?ui-manifest\.json.*?via Orval/i,
+    message: "Architecture Error: Orval does not generate the UI manifest. It generates API clients."
+  },
+  {
+    regex: /Orval.*?generates.*?ui-manifest\.json/i,
+    message: "Architecture Error: Orval does not generate the UI manifest. It generates API clients."
+  },
+  {
+    regex: /dynamically based on discovered endpoints/i,
+    message: "Architecture Error: Resource discovery is a build-time process, not dynamic runtime discovery."
+  }
+];
+
+const validateDocsAndInjectMetadata = () => {
+  const files = [
+    path.join(repoRoot, 'README.md'),
+    ...fs.readdirSync(DOCS_DIR).map((file) => path.join(DOCS_DIR, file))
+  ].filter((file) => file.endsWith('.md'));
+
+  let totalErrors = 0;
+  for (const file of files) {
+    const content = fs.readFileSync(file, 'utf8');
+    for (const pattern of PROHIBITED_PATTERNS) {
+      if (pattern.regex.test(content)) {
+        console.error(`\n❌ Validation failed in ${path.relative(repoRoot, file)}`);
+        console.error(`   ${pattern.message}`);
+        totalErrors++;
+      }
+    }
+  }
+
+  if (totalErrors > 0) {
+    throw new Error(`Found ${totalErrors} documentation terminology errors.`);
+  }
+
+  const archFile = path.join(DOCS_DIR, 'architecture.md');
+  if (fs.existsSync(archFile)) {
+    const content = fs.readFileSync(archFile, 'utf8');
+    const metadata = `
+### Generated Architecture Metadata
+*Automatically updated during build*
+
+- **UI Manifest Generation**: Handled by internal preprocessor (\`scripts/preprocessor.mjs\` and \`@duckdeploy/openapi\`).
+- **Resource Discovery Process**: Build-time analysis of OpenAPI paths.
+- **API Client Generation**: Handled by Orval.
+- **Artifacts Generated**:
+  - \`public/ui-manifest.json\`: The UI manifest containing discovered resources and forms.
+  - \`public/schema.json\`: The optimized OpenAPI schema.
+`;
+    const updatedContent = content.replace(
+      /<!-- ARCHITECTURE_START -->[\s\S]*?<!-- ARCHITECTURE_END -->/,
+      `<!-- ARCHITECTURE_START -->\n${metadata}\n<!-- ARCHITECTURE_END -->`
+    );
+    
+    if (content !== updatedContent) {
+      fs.writeFileSync(archFile, updatedContent, 'utf8');
+      console.log(`Updated architecture metadata in ${path.relative(repoRoot, archFile)}`);
+    }
+  }
+};
 
 const resolveInputPath = () => INPUT_CANDIDATES.find((candidate) => fs.existsSync(candidate));
 
@@ -492,6 +560,8 @@ const compile = async () => {
   console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)} (depth limit removed)`);
   console.log(`Generated ${path.relative(repoRoot, MANIFEST_GENERATION_LOG_PATH)}`);
   console.log(`Generated ${path.relative(repoRoot, HASH_OUTPUT_PATH)}`);
+  
+  validateDocsAndInjectMetadata();
 };
 
 compile().catch((error) => {
