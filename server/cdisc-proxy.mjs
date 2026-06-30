@@ -13,7 +13,14 @@ const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CDISC_PROXY_TIMEOUT_MS ??
 const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
 const NORMALIZED_PROXY_ALLOWED_HEADERS = PROXY_ALLOWED_HEADERS.map((header) => header.toLowerCase());
-const PROXY_ALLOWED_RESPONSE_HEADERS = ['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count'];
+
+const BASE_PROXY_ALLOWED_RESPONSE_HEADERS = ['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count', 'www-authenticate'];
+const additionalAllowedHeaders = (process.env.PROXY_ALLOWED_HEADERS || '')
+  .split(',')
+  .map((header) => header.trim().toLowerCase())
+  .filter(Boolean);
+const PROXY_ALLOWED_RESPONSE_HEADERS = [...new Set([...BASE_PROXY_ALLOWED_RESPONSE_HEADERS, ...additionalAllowedHeaders])];
+
 const TRUSTED_INGRESS_HEADER_NAME = normalizeHeaderName(process.env.CDISC_TRUSTED_INGRESS_HEADER_NAME);
 const TRUSTED_INGRESS_HEADER_VALUE = normalizeHeaderValue(process.env.CDISC_TRUSTED_INGRESS_HEADER_VALUE);
 const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS);
@@ -185,6 +192,7 @@ function setCorsHeaders(response, requestOrigin) {
 
   response.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', PROXY_ALLOWED_HEADERS.join(', '));
+  response.setHeader('Access-Control-Expose-Headers', PROXY_ALLOWED_RESPONSE_HEADERS.join(', '));
   response.setHeader('Access-Control-Max-Age', '600');
   response.setHeader('Vary', 'Origin');
 }

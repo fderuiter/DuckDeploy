@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
-import type { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
+import type { AxiosRequestConfig, RawAxiosRequestHeaders, AxiosResponse } from 'axios';
 import { getRuntimeApiConfig } from '../core/runtimeConfig';
 
 type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
@@ -233,14 +233,14 @@ const normalizeConfig = (
 export const customInstance = <T>(
   config: RequestInput,
   options?: AxiosRequestConfig,
-): Promise<T> => {
+): CancelablePromise<AxiosResponse<T>> => {
   const controller = new AbortController();
   const normalizedConfig = normalizeConfig(config, options);
 
   const promise = AXIOS_INSTANCE({
     ...normalizedConfig,
     signal: controller.signal,
-  }).then(({ data }) => data) as CancelablePromise<T>;
+  }) as CancelablePromise<AxiosResponse<T>>;
 
   promise.cancel = () => {
     controller.abort();
