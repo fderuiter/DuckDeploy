@@ -6,9 +6,23 @@ This document describes the architectural data flow in DuckDeploy, focusing on h
 
 DuckDeploy operates strictly on an API-first paradigm. All application logic is derived from the `openapi.yaml` contract.
 
-1. **Compilation Phase**: `openapi.yaml` is processed to generate `public/schema.json` (the UI manifest) and the TypeScript models / Axios clients in `src/api/` via Orval.
-2. **Bootstrapping Phase**: The frontend loads the static `schema.json` to precalculate available resources, fields, and forms (`src/App.tsx`).
-3. **Runtime UI Construction**: The `ResourceFactory` provisions standard React-Admin `<Resource>` definitions dynamically based on discovered endpoints (e.g., matching a `/users` path to a `users` resource).
+1. **Compilation Phase**: `openapi.yaml` is processed to generate the UI manifest (`public/ui-manifest.json`) at build time via internal preprocessor scripts (e.g., `@duckdeploy/openapi` and `scripts/preprocessor.mjs`). The OpenAPI schema (`public/schema.json`) is also generated here, but it is distinct from the UI manifest. Orval solely generates TypeScript models / Axios clients in `src/api/`.
+2. **Bootstrapping Phase**: The frontend loads the static `ui-manifest.json` to configure available resources, fields, and forms (`src/App.tsx`).
+3. **Runtime UI Construction**: The `ResourceFactory` provisions standard React-Admin `<Resource>` definitions based on the build-time discovered endpoints in the manifest.
+
+<!-- ARCHITECTURE_START -->
+
+### Generated Architecture Metadata
+*Automatically updated during build*
+
+- **UI Manifest Generation**: Handled by internal preprocessor (`scripts/preprocessor.mjs` and `@duckdeploy/openapi`).
+- **Resource Discovery Process**: Build-time analysis of OpenAPI paths.
+- **API Client Generation**: Handled by Orval.
+- **Artifacts Generated**:
+  - `public/ui-manifest.json`: The UI manifest containing discovered resources and forms.
+  - `public/schema.json`: The optimized OpenAPI schema.
+
+<!-- ARCHITECTURE_END -->
 
 ## The Custom Data Provider
 
