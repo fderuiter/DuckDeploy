@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextInput } from 'react-admin';
-import type { EngineContext } from '../../core/WidgetRegistry';
+import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
 import PlaceIcon from '@mui/icons-material/Place';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -18,7 +18,7 @@ import { useSchemaMetadata } from '../../core/useSchemaMetadata';
  * Generated description.
  *
  */
-export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setValue, schemaNode }) => {
+export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 'schemaNode'>> = ({ source, value, setValue, schemaNode }) => {
   const [markers] = useState([{ id: 1, lat: 40.7128, lng: -74.0060, label: 'New York', status: 'Active' }]);
 
   const [listView, setListView] = useState(false);

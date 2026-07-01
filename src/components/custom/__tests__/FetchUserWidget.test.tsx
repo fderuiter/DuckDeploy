@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FetchUserWidget } from '../FetchUserWidget';
-import type { EngineContext } from '../../../core/WidgetRegistry';
+import { WidgetMutationContext, type WidgetValueProps } from '../../../core/WidgetRegistry';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 
@@ -11,17 +11,17 @@ describe('FetchUserWidget', () => {
       data: { username: 'test_user_from_api' }
     });
 
-    const mockProps = {
-      record: {},
-      schemaNode: {} as any,
+    const mockProps: WidgetValueProps = {
       source: 'testSource',
       value: 'initial_value',
-      widgetProps: {},
       setValue: mockSetValue,
-      mutate: mockMutate,
-    } as EngineContext;
+    };
 
-    render(<FetchUserWidget {...mockProps} />);
+    render(
+      <WidgetMutationContext.Provider value={{ mutate: mockMutate }}>
+        <FetchUserWidget {...mockProps} />
+      </WidgetMutationContext.Provider>
+    );
 
     // Check initial value
     expect(screen.getByText('Current Value: initial_value')).toBeInTheDocument();

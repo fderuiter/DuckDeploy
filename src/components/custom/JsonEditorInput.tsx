@@ -1,12 +1,12 @@
 import { TextInput } from 'react-admin';
-import type { EngineContext } from '../../core/WidgetRegistry';
+import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
 import { useSchemaMetadata } from '../../core/useSchemaMetadata';
 
 /**
  * Generated description.
  *
  */
-export const JsonEditorInput: React.FC<EngineContext> = ({ source, value, setValue, schemaNode }) => {
+export const JsonEditorInput: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 'schemaNode'>> = ({ source, value, setValue, schemaNode }) => {
   const { description } = useSchemaMetadata(schemaNode);
   return (
     <TextInput
