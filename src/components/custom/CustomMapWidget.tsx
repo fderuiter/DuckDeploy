@@ -12,6 +12,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import type { ElementType } from 'react';
 import { useAccessibility } from '../../core/AccessibilityContext';
+import { useSchemaMetadata } from '../../core/useSchemaMetadata';
 
 /**
  * Generated description.
@@ -23,12 +24,7 @@ export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setVal
   const [listView, setListView] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { announce } = useAccessibility();
-
-  const headingLevel = schemaNode?.uiExtensions?.['x-ui-headingLevel'] as string;
-  const validHeading = typeof headingLevel === 'string' && /^h[1-6]$/.test(headingLevel) ? headingLevel : 'h4';
-  
-  const headingVariant = schemaNode?.uiExtensions?.['x-ui-headingVariant'] as string;
-  const validVariant = typeof headingVariant === 'string' && /^h[1-6]$/.test(headingVariant) ? headingVariant : 'h4';
+  const { headingLevel, headingVariant, description } = useSchemaMetadata(schemaNode);
 
   const handleSelect = (marker: typeof markers[0]) => {
     setSelectedId(marker.id);
@@ -41,7 +37,7 @@ export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setVal
 
   return (
     <div style={{ border: '1px solid #89a', borderRadius: 4, padding: 12 }}>
-      <Typography variant={validVariant as any} component={validHeading as ElementType} style={{ marginTop: 0 }}>
+      <Typography variant={headingVariant as any} component={headingLevel as ElementType} style={{ marginTop: 0 }}>
         Custom Map Widget
       </Typography>
       
@@ -86,7 +82,7 @@ export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setVal
         helperText="Sample override widget (lat,lng)."
         defaultValue={typeof value === 'string' ? value : undefined}
         onChange={(event) => setValue(event.target.value)}
-        aria-description={schemaNode?.description}
+        aria-description={description}
       />
     </div>
   );
