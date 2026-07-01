@@ -17,6 +17,11 @@ export const extractUiExtensions = (node: any): Record<string, unknown> => {
     }, {} as Record<string, unknown>);
 };
 
+export const getPrimaryField = (node: any): string | undefined => {
+  const ext = extractUiExtensions(node);
+  return typeof ext['x-ui-primary-field'] === 'string' ? ext['x-ui-primary-field'] : undefined;
+};
+
 export const getWidgetId = (node: any): string | undefined => {
   const ext = extractUiExtensions(node);
   return typeof ext['x-ui-widget'] === 'string' ? ext['x-ui-widget'] : undefined;
