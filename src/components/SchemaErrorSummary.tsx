@@ -4,7 +4,7 @@ import { useFormContext } from 'react-hook-form';
 import { useSaveContext } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { useAccessibility } from '../core/AccessibilityContext';
-import { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
+import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 
 interface SchemaErrorSummaryProps {
   resourceName: string;
