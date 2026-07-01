@@ -15,6 +15,32 @@ export const getReferenceTarget = (name: string): string => {
 };
 
 /**
+ * Generates a human-readable label from a property key (camelCase, snake_case, kebab-case).
+ */
+export const generateHeuristicLabel = (key: string): string => {
+  if (!key) return '';
+  const words = key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[-_]/g, ' ')
+    .trim()
+    .split(/\s+/);
+  return words
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+};
+
+/**
+ * Standardizes metadata extraction to ensure both title and description are preserved.
+ * Falls back to heuristic labels if title is missing.
+ */
+export const extractMetadata = (node: any, sourceName: string) => {
+  const isHeuristicTitle = !node?.title;
+  const title = isHeuristicTitle ? generateHeuristicLabel(sourceName) : node.title;
+  const description = node?.description;
+  return { title, description, isHeuristicTitle };
+};
+
+/**
  * Extracts all UI extension metadata from a schema node.
  * This looks for any property starting with 'x-ui-' and aggregates them.
  */
