@@ -2,6 +2,8 @@ import { List, Datagrid, DatagridRow, useRecordContext, TextField, type ListProp
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
 import { resolveRecordLabel } from './AccessibilityUtils';
+import { useLayoutRegistry } from '../core/LayoutRegistry';
+import React from 'react';
 
 const CustomDatagridRow = (props: any) => {
   const { resourceName, manifestPrimaryField, specSchema, ...rest } = props;
@@ -29,35 +31,46 @@ export interface AutoListProps<RecordType extends RaRecord = RaRecord> extends O
  */
 export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoListProps<RecordType>) => {
   const { uiManifest, spec } = useSpec();
+  const { getLayout } = useLayoutRegistry();
   const resourceName = props.resource || '';
   const precomputedResource = uiManifest?.resources?.[resourceName];
   const precomputedListFields = precomputedResource?.listFields as PrecomputedFieldDescriptor[] | undefined;
   const manifestPrimaryField = precomputedResource?.primaryField;
   const specSchema = spec?.components?.schemas?.[resourceName];
 
+  const layoutId = precomputedResource?.listLayout || precomputedResource?.layout;
+  const layoutConfig = precomputedResource?.listLayoutConfig || precomputedResource?.layoutConfig;
+  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+
+  let fields: React.ReactNode[] = [];
   if (precomputedListFields && precomputedListFields.length > 0) {
     const idField = precomputedListFields.find(field => field.source === 'id');
     const nonIdFields = precomputedListFields.filter(field => field.source !== 'id');
+    fields = [
+      idField ? renderPrecomputedField(idField, `${resourceName}.id`) : <TextField key={`${resourceName}.id`} source="id" />,
+      ...nonIdFields.map((field, index) => renderPrecomputedField(field, `${resourceName}.${field.source || index}`))
+    ];
+  } else {
+    fields = [<TextField key={`${resourceName}.id`} source="id" />];
+  }
 
+  if (CustomLayout) {
     return (
       <List {...props}>
-        <Datagrid 
-          rowClick="edit" 
-          row={<CustomDatagridRow resourceName={resourceName} manifestPrimaryField={manifestPrimaryField} specSchema={specSchema} />}
-        >
-          {idField ? renderPrecomputedField(idField, `${resourceName}.id`) : <TextField source="id" />}
-          {nonIdFields.map((field, index) =>
-            renderPrecomputedField(field, `${resourceName}.${field.source || index}`)
-          )}
-        </Datagrid>
+        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isList={true}>
+          {fields}
+        </CustomLayout>
       </List>
     );
   }
 
   return (
     <List {...props}>
-      <Datagrid row={<CustomDatagridRow resourceName={resourceName} manifestPrimaryField={manifestPrimaryField} specSchema={specSchema} />}>
-        <TextField source="id" />
+      <Datagrid 
+        rowClick="edit" 
+        row={<CustomDatagridRow resourceName={resourceName} manifestPrimaryField={manifestPrimaryField} specSchema={specSchema} />}
+      >
+        {fields}
       </Datagrid>
     </List>
   );
