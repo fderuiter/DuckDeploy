@@ -88,6 +88,8 @@ export type PrecomputedFieldDescriptor = {
   source: string;
   description?: string;
   widgetId?: string;
+  widgetProps?: Record<string, unknown>;
+  uiExtensions?: Record<string, unknown>;
   reference?: string;
   choices?: Array<{ id: string; name: string }>;
 };
@@ -222,6 +224,58 @@ const WidgetOverrideInput = ({
   });
 };
 
+type WidgetOverrideFieldProps = {
+  source: string;
+  candidateWidgetId?: string;
+  fallbackWidgetId?: string;
+  widgetProps?: Record<string, unknown>;
+  schemaNode: PrecomputedFieldDescriptor;
+  fallback: React.ReactNode;
+};
+
+const WidgetOverrideField = ({
+  source,
+  candidateWidgetId,
+  fallbackWidgetId,
+  widgetProps,
+  schemaNode,
+  fallback,
+}: WidgetOverrideFieldProps) => {
+  const { getWidget } = useWidgetRegistry();
+  const record = useRecordContext();
+  const dataProvider = useDataProvider();
+
+  const widgetId = resolveFallbackWidgetId(candidateWidgetId, fallbackWidgetId) && [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
+  const Widget = widgetId ? getWidget(widgetId) : undefined;
+
+  const value = record ? record[source] : undefined;
+
+  if (!Widget || !source) {
+    return <>{fallback}</>;
+  }
+
+  return createElement(Widget, {
+    record: record || {},
+    schemaNode,
+    source,
+    value,
+    widgetProps: widgetProps || {},
+    mutate: async (operation: string, payload?: any) => {
+      const dp = dataProvider as any;
+      if (typeof dp[operation] !== 'function') {
+        throw new Error(`Data provider does not support operation: ${operation}`);
+      }
+      
+      if (payload && typeof payload === 'object' && 'resource' in payload) {
+        const { resource, params } = payload;
+        return dp[operation](resource, params || payload);
+      }
+      
+      return dp[operation](payload);
+    },
+  });
+};
+
 /**
  * Generated description.
  *
@@ -318,9 +372,21 @@ export const renderPrecomputedField = (
     </>
   );
 
-    const ComponentDef = ComponentMappingFactory[node.kind] || ComponentMappingFactory.default;
+  const ComponentDef = ComponentMappingFactory[node.kind] || ComponentMappingFactory.default;
   const reference = node.kind === 'reference' ? (node.reference || getReferenceTarget(node.source)) : undefined;
-  return <ComponentDef.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />;
+  const fallback = <ComponentDef.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />;
+
+  return (
+    <WidgetOverrideField
+      key={key}
+      source={node.source}
+      candidateWidgetId={node.widgetId}
+      fallbackWidgetId={node.source}
+      widgetProps={node.widgetProps}
+      schemaNode={node}
+      fallback={fallback}
+    />
+  );
 };
 
 
