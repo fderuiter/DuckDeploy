@@ -1,7 +1,6 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { injectOriginRefs } from './normalization.ts';
-
-export const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']);
+import { FULL_HTTP_METHODS } from '../../../src/core/discovery.ts';
 
 export const toOperationId = (method: string, route: string): string => {
   const routePart = route
@@ -107,7 +106,7 @@ export const compileSpec = async (parsed: any): Promise<any> => {
       if (!pathItem || typeof pathItem !== 'object') continue;
 
       for (const [method, operation] of Object.entries(pathItem)) {
-        if (!HTTP_METHODS.has(method.toLowerCase())) continue;
+        if (!FULL_HTTP_METHODS.has(method.toLowerCase())) continue;
         optimizeOperation(route, method, operation);
       }
     }

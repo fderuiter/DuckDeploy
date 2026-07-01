@@ -1,29 +1,6 @@
 import { getSchemaFromContent } from './schema.ts';
-
-export interface ResourceDefinition {
-  name: string;
-  hasList: boolean;
-  hasCreate: boolean;
-  hasShow: boolean;
-  hasEdit: boolean;
-  hasDelete: boolean;
-  listPath?: string;
-  createPath?: string;
-  showPath?: string;
-  editPath?: string;
-  editMethod?: 'put' | 'patch';
-  deletePath?: string;
-  listOperationId?: string;
-  createOperationId?: string;
-  showOperationId?: string;
-  editOperationId?: string;
-  deleteOperationId?: string;
-  listResponseSchema?: any;
-  showResponseSchema?: any;
-  createRequestBodySchema?: any;
-  editRequestBodySchema?: any;
-  listQueryParams?: string[];
-}
+import type { ResourceDefinition } from '../../../src/core/discovery.ts';
+import { HTTP_METHODS } from '../../../src/core/discovery.ts';
 
 export const resolveResourceName = (path: string, pathItem: any, methods: string[]): string | null => {
   for (const method of methods) {
@@ -47,7 +24,7 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
     if (!pathItem || typeof pathItem !== 'object') continue;
 
     const methods = Object.keys(pathItem).filter(k =>
-      ['get', 'post', 'put', 'patch', 'delete'].includes(k.toLowerCase())
+      HTTP_METHODS.has(k.toLowerCase())
     );
 
     const resourceName = resolveResourceName(path, pathItem, methods);
