@@ -12,6 +12,7 @@ import { WidgetRegistryProvider, registerWidget } from './core/WidgetRegistry';
 import { AccessibilityProvider } from './core/AccessibilityContext';
 import { CustomMapWidget } from './components/custom/CustomMapWidget';
 import { TerminologyLookupInput } from './components/custom/TerminologyLookupInput';
+import { FetchUserWidget } from './components/custom/FetchUserWidget';
 import { BootstrapScreen } from './components/BootstrapScreen';
 import { getRuntimeApiConfig } from './core/runtimeConfig';
 import { customInstance } from './api/custom-instance';
@@ -20,6 +21,7 @@ import { StandardLayout } from './layouts/StandardLayout';
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
 registerWidget('cdisc-terminology', TerminologyLookupInput);
+registerWidget('fetch-user-widget', FetchUserWidget);
 
 interface BootstrapIssue {
   title: string;
