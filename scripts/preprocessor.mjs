@@ -7,6 +7,7 @@ import {
   isReferenceField,
   getReferenceTarget,
   extractUiExtensions,
+  getPrimaryField,
   getWidgetId,
   getWidgetProps,
   determineSchemaKind,
@@ -414,8 +415,25 @@ const buildUiManifest = (spec) => {
 
     if (!resources[resourceName]) {
       const discoveredResource = discoveredByName.get(resourceName);
+      
+      const resourceSchema = spec.components?.schemas?.[resourceName];
+      let primaryField;
+      if (resourceSchema) {
+        primaryField = getPrimaryField(resourceSchema);
+        if (!primaryField && resourceSchema.properties) {
+          const propKeys = Object.keys(resourceSchema.properties);
+          for (const key of propKeys) {
+            if (resourceSchema.properties[key]?.['x-ui-primary-field'] === true) {
+              primaryField = key;
+              break;
+            }
+          }
+        }
+      }
+
       resources[resourceName] = {
         name: resourceName,
+        primaryField,
         hasList: discoveredResource?.hasList ?? false,
         hasCreate: discoveredResource?.hasCreate ?? false,
         hasShow: discoveredResource?.hasShow ?? false,

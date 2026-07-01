@@ -43,3 +43,36 @@ export const getStatusMessage = (state: OperationState, details?: string | numbe
       return '';
   }
 };
+
+export const resolveRecordLabel = (
+  record: any,
+  resourceName: string,
+  manifestPrimaryField?: string,
+  specSchema?: any
+): string => {
+  if (!record) return `Edit ${resourceName}`;
+
+  let primaryField = manifestPrimaryField;
+
+  if (!primaryField && specSchema) {
+    const ext = specSchema['x-ui-primary-field'];
+    if (typeof ext === 'string') {
+      primaryField = ext;
+    } else if (specSchema.properties) {
+      // Check if any property has x-ui-primary-field: true
+      const propKeys = Object.keys(specSchema.properties);
+      for (const key of propKeys) {
+        if (specSchema.properties[key]?.['x-ui-primary-field'] === true) {
+          primaryField = key;
+          break;
+        }
+      }
+    }
+  }
+
+  const primaryValue = (primaryField && record[primaryField] !== undefined && record[primaryField] !== null) 
+    ? record[primaryField] 
+    : record.id;
+    
+  return primaryValue !== undefined ? `Edit ${resourceName}: ${primaryValue}` : `Edit ${resourceName}`;
+};

@@ -1,6 +1,14 @@
-import { List, Datagrid, TextField, type ListProps, type RaRecord } from 'react-admin';
+import { List, Datagrid, DatagridRow, useRecordContext, TextField, type ListProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
+import { resolveRecordLabel } from './AccessibilityUtils';
+
+const CustomDatagridRow = (props: any) => {
+  const { resourceName, manifestPrimaryField, specSchema, ...rest } = props;
+  const record = useRecordContext(props);
+  const label = record ? resolveRecordLabel(record, resourceName, manifestPrimaryField, specSchema) : undefined;
+  return <DatagridRow {...rest} aria-label={label} />;
+};
 
 /**
  * Props for the AutoList component.
@@ -21,10 +29,12 @@ export interface AutoListProps<RecordType extends RaRecord = RaRecord> extends O
  * @param {AutoListProps<RecordType>} props - Component props
  */
 export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoListProps<RecordType>) => {
-  const { uiManifest } = useSpec();
+  const { uiManifest, spec } = useSpec();
   const resourceName = props.resource || '';
   const precomputedResource = uiManifest?.resources?.[resourceName];
   const precomputedListFields = precomputedResource?.listFields as PrecomputedFieldDescriptor[] | undefined;
+  const manifestPrimaryField = precomputedResource?.primaryField;
+  const specSchema = spec?.components?.schemas?.[resourceName];
 
   if (precomputedListFields && precomputedListFields.length > 0) {
     const idField = precomputedListFields.find(field => field.source === 'id');
@@ -32,7 +42,10 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
 
     return (
       <List {...props}>
-        <Datagrid rowClick="edit">
+        <Datagrid 
+          rowClick="edit" 
+          row={<CustomDatagridRow resourceName={resourceName} manifestPrimaryField={manifestPrimaryField} specSchema={specSchema} />}
+        >
           {idField ? renderPrecomputedField(idField, `${resourceName}.id`) : <TextField source="id" />}
           {nonIdFields.map((field, index) =>
             renderPrecomputedField(field, `${resourceName}.${field.source || index}`)
@@ -44,7 +57,7 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
 
   return (
     <List {...props}>
-      <Datagrid>
+      <Datagrid row={<CustomDatagridRow resourceName={resourceName} manifestPrimaryField={manifestPrimaryField} specSchema={specSchema} />}>
         <TextField source="id" />
       </Datagrid>
     </List>
