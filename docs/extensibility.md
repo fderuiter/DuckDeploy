@@ -76,11 +76,11 @@ export const CustomUserEdit = (props) => (
 
 ## Integrating Overrides
 
-Currently, the primary entry point to override components is to modify `src/App.tsx` and conditionally pass a custom component in the `<Admin>` setup, or inject custom components into the `ResourceFactory` pipeline.
+Currently, the primary entry point to override components is to modify `src/App.tsx`, which serves as the orchestrator for widget registration and resource listing. You can conditionally pass a custom component in the `<Admin>` setup, or manually mount custom resources.
 
 ## Custom Widgets and the WidgetRegistry
 
-For complex inputs that cannot be mapped by standard React-Admin inputs, you can create custom widgets. The Advanced Widget Developer SDK provides tools to register and implement custom components without having to write boilerplate code.
+For complex inputs that cannot be mapped by standard React-Admin inputs, you can create custom widgets. The internal widget registry (`src/core/WidgetRegistry.tsx`) provides tools to register and implement custom components without having to write boilerplate code.
 
 ### Registering a Widget
 
@@ -102,18 +102,20 @@ properties:
     x-ui-widget: my-custom-widget
 ```
 
+Alternatively, the system features an automatic widget-matching fallback based on the field's `source` property. If an explicit `x-ui-widget` is not found, the `WidgetOverrideInput` will try to resolve a widget using the field's `source` name. For example, if the field is "email", it will automatically look for and use a registered widget named "email". This logic is implemented in `src/components/SchemaToFieldMapper.tsx`.
+
 ### The `mutate` Prop and `setValue`
 
 Custom widgets receive a standard set of props from the `EngineContext`, including `mutate` and `setValue`. 
 
-- `setValue(value)`: This prop remains fully supported for backward compatibility and is used to update the current field's value in the form state.
+- `setValue(value)`: This prop is the primary method for state updates in the `EngineContext`. The `WidgetOverrideInput` injects `setValue` into custom widgets (calling `form.setValue` under the hood) to update the current field's value in the form state.
 - `mutate(operation, payload)`: This prop provides direct access to data provider operations. The form engine automatically binds this function to the active `dataProvider`, eliminating the need for boilerplate context usage.
 
 ### Handling Side-Effects with `useWidgetMutation`
 
-The SDK provides a `useWidgetMutation` hook that manages `loading`, `error`, and side effects for widget mutations. This greatly simplifies implementing interactions like executing an API call and updating the form state based on the result.
+The internal registry provides a `useWidgetMutation` hook that manages `loading`, `error`, and side effects for widget mutations. This greatly simplifies implementing interactions like executing an API call and updating the form state based on the result.
 
-Here is a complete working code example of a custom widget that performs an asynchronous side-effect, fetches data, and sets the value using backward-compatible `setValue`:
+Here is a complete working code example of a custom widget that performs an asynchronous side-effect, fetches data, and sets the value using `setValue`:
 
 ```tsx
 import React from 'react';
@@ -123,7 +125,7 @@ import { EngineContext, useWidgetMutation } from '../core/WidgetRegistry';
 export const FetchUserWidget: React.FC<EngineContext> = (props) => {
   const { execute, isLoading, error } = useWidgetMutation(props.mutate, {
     onSuccess: (data) => {
-      // Use the backward compatible setValue pattern to update the field
+      // Use setValue to update the field in the form state
       props.setValue(data.data.username);
     },
     onError: (err) => {
