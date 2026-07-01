@@ -15,7 +15,7 @@ import { TerminologyLookupInput } from './components/custom/TerminologyLookupInp
 import { BootstrapScreen } from './components/BootstrapScreen';
 import { getRuntimeApiConfig } from './core/runtimeConfig';
 import { customInstance } from './api/custom-instance';
-import type { ResourceDefinition } from './core/discovery';
+import type { ResourceDefinition } from '@duckdeploy/core';
 import { StandardLayout } from './layouts/StandardLayout';
 
 registerWidget('x-ui-custom-map', CustomMapWidget);

@@ -1,7 +1,6 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { injectOriginRefs } from './normalization.ts';
-
-export const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']);
+import { HTTP_METHODS } from '@duckdeploy/core';
 
 export const toOperationId = (method: string, route: string): string => {
   const routePart = route

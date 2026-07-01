@@ -2,7 +2,7 @@ import type { AxiosRequestConfig } from 'axios';
 import type { AuthProvider } from 'react-admin';
 import { AXIOS_INSTANCE } from '../api/custom-instance';
 import { getNormalizedErrorStatus } from '../providers/openApiDataProvider';
-import type { ResourceDefinition } from './discovery';
+import type { ResourceDefinition } from '@duckdeploy/core';
 
 type ResourceAction = 'list' | 'show' | 'create' | 'edit' | 'delete';
 

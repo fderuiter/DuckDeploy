@@ -12,12 +12,12 @@ import {
   determineSchemaKind,
 } from '../src/utils/heuristics.ts';
 import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator, UnifiedSchemaWalker } from '@duckdeploy/openapi';
+import { HTTP_METHODS } from '@duckdeploy/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 
-const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
 const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
 
 const INPUT_CANDIDATES = [

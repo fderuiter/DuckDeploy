@@ -2,7 +2,7 @@ import { normalizeProviderError, NormalizedHttpError } from "../api/custom-insta
 import { isAxiosError, type AxiosError } from 'axios';
 import { HttpError, type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
 import { AXIOS_INSTANCE } from '../api/custom-instance';
-import type { ResourceDefinition } from '../core/discovery';
+import type { ResourceDefinition } from '@duckdeploy/core';
 import { adaptOutboundPayload } from './outboundAdapter';
 
 let resourceMap: Record<string, ResourceDefinition> = {};

@@ -22,3 +22,5 @@ export interface ResourceDefinition {
   editRequestBodySchema?: any;
   listQueryParams?: string[];
 }
+
+export const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);

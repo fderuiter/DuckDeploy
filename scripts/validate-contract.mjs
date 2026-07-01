@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'node:url';
+import { HTTP_METHODS } from '@duckdeploy/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,7 +94,6 @@ const collectConstraintBearingFields = (spec) => {
   const results = [];
   // HEAD and OPTIONS are excluded: they do not carry request bodies or
   // meaningful response payload schemas that drive UI component selection.
-  const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
 
   const escapeSegment = (s) => String(s).replace(/~/g, '~0').replace(/\//g, '~1');
 

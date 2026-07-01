@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^15.3.5",
+    "@duckdeploy/core": "*",
     "@duckdeploy/openapi": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

@@ -4,6 +4,7 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^15.3.5"
+    "@apidevtools/json-schema-ref-parser": "^15.3.5",
+    "@duckdeploy/core": "*"
   }
 }
