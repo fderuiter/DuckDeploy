@@ -23,6 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'node:url';
+import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -188,11 +189,14 @@ const collectConstraintBearingFields = (spec) => {
   return results;
 };
 
-const validate = () => {
+const validate = async () => {
   const entries = loadMatrix();
   const spec = loadOpenApi();
+  const candidate = OPENAPI_CANDIDATES.find((p) => fs.existsSync(p));
+  const dereferencedSpec = await $RefParser.dereference(candidate, { dereference: { circular: 'ignore' } });
 
   const violations = [];
+  const warnings = [];
 
   // ── Rule 1: no field should be "discarded" ───────────────────────────────
   // The preprocessor emits status='discarded' with a null component whenever
@@ -235,6 +239,21 @@ const validate = () => {
     }
   }
 
+  // ── Rule 3: Documentation audit (Non-blocking) ────────────────────────────
+  for (const entry of entries) {
+    if (entry.status !== 'mapped') continue;
+    
+    const node = resolveRef(dereferencedSpec, entry.pointer);
+    if (!node || typeof node !== 'object') continue;
+    
+    if (!node.title) {
+      warnings.push(`MISSING METADATA (title): pointer="${entry.pointer}" source="${entry.source}"`);
+    }
+    if (!node.description) {
+      warnings.push(`MISSING METADATA (description): pointer="${entry.pointer}" source="${entry.source}"`);
+    }
+  }
+
   // ── Report ────────────────────────────────────────────────────────────────
   const total = entries.length;
   const mapped = entries.filter((e) => e.status === 'mapped').length;
@@ -245,11 +264,19 @@ const validate = () => {
     totalEntries: total,
     mappedEntries: mapped,
     violations,
+    warnings,
   };
 
   fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2), 'utf8');
   console.log(`Manifest mapping validation — ${mapped}/${total} entries mapped.`);
   console.log(`Generated validation report at ${path.relative(repoRoot, REPORT_PATH)}`);
+
+  if (warnings.length > 0) {
+    console.warn(`\nDocumentation warnings (${warnings.length}):`);
+    for (const w of warnings) {
+      console.warn(`  ⚠ ${w}`);
+    }
+  }
 
   if (violations.length > 0) {
     console.error(`\nContract violations (${violations.length}):`);
@@ -264,7 +291,7 @@ const validate = () => {
 };
 
 try {
-  validate();
+  await validate();
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;

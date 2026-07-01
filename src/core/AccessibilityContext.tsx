@@ -13,6 +13,8 @@ interface Announcement {
 interface AccessibilityContextType {
   announce: (message: string, mode?: 'polite' | 'assertive', focusTarget?: FocusTarget) => void;
   shiftFocus: (target: FocusTarget) => void;
+  trackMissingMetadata: (fieldPath: string, missingType: 'title' | 'description') => void;
+  missingMetadataLog: Array<{ fieldPath: string; missingType: 'title' | 'description'; timestamp: number }>;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
@@ -27,6 +29,17 @@ const MAX_QUEUE_SIZE = 5;
 export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [queue, setQueue] = useState<Announcement[]>([]);
   const [current, setCurrent] = useState<Announcement | null>(null);
+  const [missingMetadataLog, setMissingMetadataLog] = useState<Array<{ fieldPath: string; missingType: 'title' | 'description'; timestamp: number }>>([]);
+
+  const trackMissingMetadata = useCallback((fieldPath: string, missingType: 'title' | 'description') => {
+    setMissingMetadataLog((prev) => {
+      // Prevent duplicate logs for the same field and type
+      if (prev.some((log) => log.fieldPath === fieldPath && log.missingType === missingType)) {
+        return prev;
+      }
+      return [...prev, { fieldPath, missingType, timestamp: Date.now() }];
+    });
+  }, []);
 
   const shiftFocus = useCallback((target: FocusTarget) => {
     // Delay to let the DOM settle before shifting focus
@@ -135,7 +148,7 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
     };
   }, [shiftFocus]);
 
-  const contextValue = useMemo(() => ({ announce, shiftFocus }), [announce, shiftFocus]);
+  const contextValue = useMemo(() => ({ announce, shiftFocus, trackMissingMetadata, missingMetadataLog }), [announce, shiftFocus, trackMissingMetadata, missingMetadataLog]);
 
   return (
     <AccessibilityContext.Provider value={contextValue}>

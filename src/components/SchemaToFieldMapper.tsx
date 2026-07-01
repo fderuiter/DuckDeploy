@@ -39,8 +39,18 @@ import {
   getWidgetProps,
   resolveFallbackWidgetId,
   extractUiExtensions,
+  extractMetadata,
   type SchemaKind,
 } from '../utils/heuristics';
+import { useAccessibility } from '../core/AccessibilityContext';
+
+const MetadataTracker = ({ source, missingType }: { source: string, missingType: 'title' | 'description' }) => {
+  const { trackMissingMetadata } = useAccessibility();
+  React.useEffect(() => {
+    if (source) trackMissingMetadata(source, missingType);
+  }, [source, missingType, trackMissingMetadata]);
+  return null;
+};
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -221,48 +231,67 @@ export const renderPrecomputedField = (
   keyPrefix: string = node.source,
 ): React.ReactNode => {
   const key = keyPrefix || node.source || 'field';
+  const { title, description, isHeuristicTitle } = extractMetadata(node, node.source);
+  
+  const commonProps: any = {
+    key,
+    source: node.source,
+    label: title,
+  };
+  if (description) {
+    commonProps['aria-description'] = description;
+  }
+
+  const trackerNodes = (
+    <>
+      {isHeuristicTitle && <MetadataTracker source={node.source} missingType="title" />}
+      {!description && <MetadataTracker source={node.source} missingType="description" />}
+    </>
+  );
 
   if (node.kind === 'reference') {
     const reference = node.reference || getReferenceTarget(node.source);
     return (
-      <ReferenceField key={key} source={node.source} reference={reference}>
+      <ReferenceField {...commonProps} reference={reference}>
         <TextField source="id" />
+        {trackerNodes}
       </ReferenceField>
     );
   }
 
   if (node.kind === 'enum') {
-    return <SelectField key={key} source={node.source} choices={node.choices || []} />;
+    return <><SelectField {...commonProps} choices={node.choices || []} />{trackerNodes}</>;
   }
 
   if (node.kind === 'boolean') {
-    return <BooleanField key={key} source={node.source} />;
+    return <><BooleanField {...commonProps} />{trackerNodes}</>;
   }
 
   if (node.kind === 'number') {
-    return <NumberField key={key} source={node.source} />;
+    return <><NumberField {...commonProps} />{trackerNodes}</>;
   }
 
   if (node.kind === 'date') {
-    return <DateField key={key} source={node.source} />;
+    return <><DateField {...commonProps} />{trackerNodes}</>;
   }
 
   if (node.kind === 'array') {
     return (
-      <ArrayField key={key} source={node.source}>
+      <ArrayField {...commonProps}>
         <SingleFieldList>
           <ChipField source="id" />
         </SingleFieldList>
+        {trackerNodes}
       </ArrayField>
     );
   }
 
 
   if (node.kind === 'link') {
-    return <AccessibleLinkField key={key} source={node.source} />;
+    return <><AccessibleLinkField {...commonProps} />{trackerNodes}</>;
   }
 
-  return <TextField key={key} source={node.source} />;
+  return <><TextField {...commonProps} />{trackerNodes}</>;
 };
 
 
@@ -272,49 +301,68 @@ export const renderPrecomputedField = (
  */
 export const mapSchemaToField = (name: string, property: any) => {
   const kind = determineSchemaKind(name, property);
+  const { title, description, isHeuristicTitle } = extractMetadata(property, name);
+
+  const commonProps: any = {
+    key: name,
+    source: name,
+    label: title,
+  };
+  if (description) {
+    commonProps['aria-description'] = description;
+  }
+
+  const trackerNodes = (
+    <>
+      {isHeuristicTitle && <MetadataTracker source={name} missingType="title" />}
+      {!description && <MetadataTracker source={name} missingType="description" />}
+    </>
+  );
 
   if (kind === 'reference') {
     const target = getReferenceTarget(name);
     return (
-      <ReferenceField key={name} source={name} reference={target}>
+      <ReferenceField {...commonProps} reference={target}>
         <TextField source="id" />
+        {trackerNodes}
       </ReferenceField>
     );
   }
 
   if (kind === 'enum') {
     const choices = property.enum.map((val: string) => ({ id: val, name: val }));
-    return <SelectField key={name} source={name} choices={choices} />;
+    return <><SelectField {...commonProps} choices={choices} />{trackerNodes}</>;
   }
 
   if (kind === 'boolean') {
-    return <BooleanField key={name} source={name} />;
+    return <><BooleanField {...commonProps} />{trackerNodes}</>;
   }
 
   if (kind === 'number') {
-    return <NumberField key={name} source={name} />;
+    return <><NumberField {...commonProps} />{trackerNodes}</>;
   }
 
   if (kind === 'date') {
-    return <DateField key={name} source={name} />;
+    return <><DateField {...commonProps} />{trackerNodes}</>;
   }
 
   if (kind === 'array') {
     return (
-      <ArrayField key={name} source={name}>
+      <ArrayField {...commonProps}>
         <SingleFieldList>
           <ChipField source="id" />
         </SingleFieldList>
+        {trackerNodes}
       </ArrayField>
     );
   }
 
 
   if (kind === 'link') {
-    return <AccessibleLinkField key={name} source={name} />;
+    return <><AccessibleLinkField {...commonProps} />{trackerNodes}</>;
   }
 
-  return <TextField key={name} source={name} />;
+  return <><TextField {...commonProps} />{trackerNodes}</>;
 };
 
 
@@ -335,8 +383,7 @@ export const renderInput = (
   const source = isPrecomputed ? (node as PrecomputedInputDescriptor).source : (sourceContext as string);
   const isRequired = isPrecomputed ? (node as PrecomputedInputDescriptor).isRequired : isRequiredContext;
   const kind = isPrecomputed ? (node as PrecomputedInputDescriptor).kind : determineSchemaKind(source, node);
-  const description = isPrecomputed ? (node as PrecomputedInputDescriptor).description : (node as OpenAPIV3.SchemaObject).description;
-  const title = isPrecomputed ? (node as PrecomputedInputDescriptor).title : (node as OpenAPIV3.SchemaObject).title;
+  const { title, description, isHeuristicTitle } = extractMetadata(node, source);
   const uiExtensions = isPrecomputed ? (node as PrecomputedInputDescriptor).uiExtensions : extractUiExtensions(node);
   
   const normalizedSchemaNode = isPrecomputed 
@@ -353,10 +400,18 @@ export const renderInput = (
     source,
     validate: validators,
     isRequired,
+    label: title,
   };
   if (description) {
     commonProps['aria-description'] = description;
   }
+
+  const trackerNodes = (
+    <>
+      {isHeuristicTitle && <MetadataTracker source={source} missingType="title" />}
+      {!description && <MetadataTracker source={source} missingType="description" />}
+    </>
+  );
 
   const renderDefault = () => {
     if (kind === 'polymorphic') {
@@ -371,23 +426,29 @@ export const renderInput = (
         const schemas = (schema.oneOf || schema.anyOf) as OpenAPIV3.SchemaObject[];
         const discriminatorMetadata = resolveDiscriminatorMetadata(schema, schemas);
         discriminatorProperty = discriminatorMetadata?.propertyName;
-        options = schemas.map((s, index) => ({
-          label: s.title || `Option ${index + 1} (${s.type})`,
-          discriminatorValue: discriminatorMetadata?.values?.[index],
-          node: s,
-        }));
+        options = schemas.map((s, index) => {
+          const optMeta = extractMetadata(s, `Option ${index + 1}`);
+          return {
+            label: optMeta.title || `Option ${index + 1} (${s.type})`,
+            discriminatorValue: discriminatorMetadata?.values?.[index],
+            node: s,
+          };
+        });
       }
 
       if (options && options.length > 0) {
         return (
-          <UnifiedPolymorphicInput
-            keyPrefix={key}
-            source={source}
-            options={options}
-            discriminatorProperty={discriminatorProperty}
-            isRequired={isRequired}
-            depth={depth + 1}
-          />
+          <>
+            <UnifiedPolymorphicInput
+              keyPrefix={key}
+              source={source}
+              options={options}
+              discriminatorProperty={discriminatorProperty}
+              isRequired={isRequired}
+              depth={depth + 1}
+            />
+            {trackerNodes}
+          </>
         );
       }
     }
@@ -413,6 +474,7 @@ export const renderInput = (
           <Typography variant={headingVariant as any} component={headingLevel as ElementType}>
             {title || source.split('.').pop() || source}
           </Typography>
+          {trackerNodes}
           {isPrecomputed 
             ? (childrenNodes as PrecomputedInputDescriptor[]).map((child, index) => 
                 renderInput(child, `${key}.${child.source || index}`, child.isRequired, depth + 1, `${key}.${child.source || index}`))
@@ -446,6 +508,7 @@ export const renderInput = (
           <SimpleFormIterator inline>
             {itemNodes}
           </SimpleFormIterator>
+          {trackerNodes}
         </ArrayInput>
       );
     }
@@ -455,9 +518,12 @@ export const renderInput = (
         ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
         : getReferenceTarget(source);
       return (
-        <ReferenceInput {...commonProps} reference={referenceTarget}>
-          <SelectInput optionText="id" />
-        </ReferenceInput>
+        <>
+          <ReferenceInput {...commonProps} reference={referenceTarget}>
+            <SelectInput optionText="id" />
+          </ReferenceInput>
+          {trackerNodes}
+        </>
       );
     }
 
@@ -465,13 +531,13 @@ export const renderInput = (
       const choices = isPrecomputed 
         ? ((node as PrecomputedInputDescriptor).choices || [])
         : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
-      return <SelectInput {...commonProps} choices={choices} />;
+      return <><SelectInput {...commonProps} choices={choices} />{trackerNodes}</>;
     }
 
-    if (kind === 'boolean') return <BooleanInput {...commonProps} />;
-    if (kind === 'number') return <NumberInput {...commonProps} />;
-    if (kind === 'date') return <DateInput {...commonProps} />;
-    return <TextInput {...commonProps} />;
+    if (kind === 'boolean') return <><BooleanInput {...commonProps} />{trackerNodes}</>;
+    if (kind === 'number') return <><NumberInput {...commonProps} />{trackerNodes}</>;
+    if (kind === 'date') return <><DateInput {...commonProps} />{trackerNodes}</>;
+    return <><TextInput {...commonProps} />{trackerNodes}</>;
   };
 
   const fallback = renderDefault();
