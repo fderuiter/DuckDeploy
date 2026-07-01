@@ -1,31 +1,6 @@
-import { List, Datagrid, TextField, useListContext, type ListProps, type RaRecord } from 'react-admin';
+import { List, Datagrid, TextField, type ListProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
-import { VisuallyHidden, getStatusMessage } from './AccessibilityUtils';
-
-const ListAccessibilityWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading, data, total } = useListContext();
-  
-  let announcement = '';
-  if (isLoading) {
-    announcement = getStatusMessage('loading');
-  } else if (data) {
-    if (data.length === 0 || total === 0) {
-      announcement = getStatusMessage('empty');
-    } else {
-      announcement = getStatusMessage('loaded', total || data.length);
-    }
-  }
-
-  return (
-    <>
-      <VisuallyHidden aria-live="polite">
-        {announcement}
-      </VisuallyHidden>
-      {children}
-    </>
-  );
-};
 
 /**
  * Props for the AutoList component.
@@ -57,25 +32,21 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
 
     return (
       <List {...props}>
-        <ListAccessibilityWrapper>
-          <Datagrid rowClick="edit">
-            {idField ? renderPrecomputedField(idField, `${resourceName}.id`) : <TextField source="id" />}
-            {nonIdFields.map((field, index) =>
-              renderPrecomputedField(field, `${resourceName}.${field.source || index}`)
-            )}
-          </Datagrid>
-        </ListAccessibilityWrapper>
+        <Datagrid rowClick="edit">
+          {idField ? renderPrecomputedField(idField, `${resourceName}.id`) : <TextField source="id" />}
+          {nonIdFields.map((field, index) =>
+            renderPrecomputedField(field, `${resourceName}.${field.source || index}`)
+          )}
+        </Datagrid>
       </List>
     );
   }
 
   return (
     <List {...props}>
-      <ListAccessibilityWrapper>
-        <Datagrid>
-          <TextField source="id" />
-        </Datagrid>
-      </ListAccessibilityWrapper>
+      <Datagrid>
+        <TextField source="id" />
+      </Datagrid>
     </List>
   );
 };
