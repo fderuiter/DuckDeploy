@@ -104,26 +104,54 @@ properties:
 
 Alternatively, the system features an automatic widget-matching fallback based on the field's `source` property. If an explicit `x-ui-widget` is not found, the `WidgetOverrideInput` will try to resolve a widget using the field's `source` name. For example, if the field is "email", it will automatically look for and use a registered widget named "email". This logic is implemented in `src/components/SchemaToFieldMapper.tsx`.
 
-### The `mutate` Prop and `setValue`
+### The Granular Engine Interfaces
 
-Custom widgets receive a standard set of props from the `EngineContext`, including `mutate` and `setValue`. 
+Custom widgets no longer require the monolithic `EngineContext`. You can implement standard, thinner interfaces to easily reuse components outside dynamic forms.
 
-- `setValue(value)`: This prop is the primary method for state updates in the `EngineContext`. The `WidgetOverrideInput` injects `setValue` into custom widgets (calling `form.setValue` under the hood) to update the current field's value in the form state.
-- `mutate(operation, payload)`: This prop provides direct access to data provider operations. The form engine automatically binds this function to the active `dataProvider`, eliminating the need for boilerplate context usage.
+- `WidgetValueProps`: Standard props for read/write components (`source`, `value`, `setValue`).
+- `WidgetMetaProps`: Props for schema reflection (`schemaNode`, `widgetProps`).
+- `WidgetRecordProps`: The active record context.
+- `WidgetMutationProps`: The legacy data provider mutation handler.
+
+For stateless or "thin" widgets, you can just use `WidgetValueProps` and `WidgetMetaProps` (which are passed as standard props), enabling immediate reusability:
+
+```tsx
+import React from 'react';
+import type { WidgetValueProps } from '../core/WidgetRegistry';
+
+export const MyThinWidget: React.FC<WidgetValueProps> = ({ source, value, setValue }) => (
+  <input 
+    name={source} 
+    value={String(value || '')} 
+    onChange={(e) => setValue(e.target.value)} 
+  />
+);
+```
+
+### The Bridge HOC (`withEngineContext`)
+
+For legacy custom widgets requiring the full `EngineContext` injected via props (including `mutate` and `record`), wrap your component in `withEngineContext` before registering it:
+
+```tsx
+import { registerWidget, withEngineContext } from '../core/WidgetRegistry';
+import { LegacyMonolithicWidget } from './LegacyMonolithicWidget';
+
+registerWidget('my-legacy-widget', withEngineContext(LegacyMonolithicWidget));
+```
 
 ### Handling Side-Effects with `useWidgetMutation`
 
-The internal registry provides a `useWidgetMutation` hook that manages `loading`, `error`, and side effects for widget mutations. This greatly simplifies implementing interactions like executing an API call and updating the form state based on the result.
+The internal registry provides a `useWidgetMutation` hook that manages `loading`, `error`, and side effects for widget mutations. It seamlessly taps into the underlying `WidgetMutationContext` so widgets do not need to accept `mutate` via props.
 
-Here is a complete working code example of a custom widget that performs an asynchronous side-effect, fetches data, and sets the value using `setValue`:
+Here is a complete working code example of a custom widget that performs an asynchronous side-effect and updates the form state, using the thinner `WidgetValueProps`:
 
 ```tsx
 import React from 'react';
 import { Button, CircularProgress } from '@mui/material';
-import { EngineContext, useWidgetMutation } from '../core/WidgetRegistry';
+import { type WidgetValueProps, useWidgetMutation } from '../core/WidgetRegistry';
 
-export const FetchUserWidget: React.FC<EngineContext> = (props) => {
-  const { execute, isLoading, error } = useWidgetMutation(props.mutate, {
+export const FetchUserWidget: React.FC<WidgetValueProps> = (props) => {
+  const { execute, isLoading, error } = useWidgetMutation({
     onSuccess: (data) => {
       // Use setValue to update the field in the form state
       props.setValue(data.data.username);

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import type { EngineContext } from '../../core/WidgetRegistry';
+import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
 import { VisuallyHidden, getStatusMessage } from '../AccessibilityUtils';
 import { useSchemaMetadata } from '../../core/useSchemaMetadata';
 
@@ -20,7 +20,7 @@ const mockTerminologyDb: Record<string, string[]> = {
  * Generated description.
  *
  */
-export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value, setValue, widgetProps, schemaNode }) => {
+export const TerminologyLookupInput: React.FC<WidgetValueProps & WidgetMetaProps> = ({ source, value, setValue, widgetProps, schemaNode }) => {
   const domain = resolveDomain(widgetProps) || 'AE';
   const options = useMemo(() => mockTerminologyDb[domain] || [], [domain]);
   const { description } = useSchemaMetadata(schemaNode);

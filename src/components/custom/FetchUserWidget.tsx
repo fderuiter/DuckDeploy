@@ -1,10 +1,14 @@
 import React from 'react';
 import { Button, CircularProgress } from '@mui/material';
 import { useWidgetMutation } from '../../core/WidgetRegistry';
-import type { EngineContext } from '../../core/WidgetRegistry';
+import type { WidgetValueProps } from '../../core/WidgetRegistry';
 
-export const FetchUserWidget: React.FC<EngineContext> = (props) => {
-  const { execute, isLoading, error } = useWidgetMutation(props.mutate, {
+/**
+ * FetchUserWidget component.
+ * @param props The widget value props.
+ */
+export const FetchUserWidget: React.FC<WidgetValueProps> = (props) => {
+  const { execute, isLoading, error } = useWidgetMutation({
     onSuccess: (data) => {
       // Use the backward compatible setValue pattern to update the field
       props.setValue(data.data.username);

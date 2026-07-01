@@ -29,7 +29,13 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { UnifiedPolymorphicInput } from './UnifiedPolymorphicInput';
-import { useWidgetRegistry } from '../core/WidgetRegistry';
+import {
+  WidgetValueContext,
+  WidgetMetaContext,
+  WidgetRecordContext,
+  WidgetMutationContext,
+  useWidgetRegistry,
+} from '../core/WidgetRegistry';
 import Typography from '@mui/material/Typography';
 import type { ElementType } from 'react';
 import {
@@ -193,35 +199,46 @@ const WidgetOverrideInput = ({
     return <>{fallback}</>;
   }
 
-  return createElement(Widget, {
-    record: (form.getValues() as Record<string, unknown>) ?? {},
-    schemaNode,
-    source,
-    value,
-    widgetProps: widgetProps || {},
-    setValue: (nextValue: any) => {
-      form.setValue(source, nextValue, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      });
-    },
-    mutate: async (operation: string, payload?: any) => {
-      const dp = dataProvider as any;
-      if (typeof dp[operation] !== 'function') {
-        throw new Error(`Data provider does not support operation: ${operation}`);
-      }
-      
-      // Map standard RA data provider signatures (resource, params)
-      if (payload && typeof payload === 'object' && 'resource' in payload) {
-        const { resource, params } = payload;
-        return dp[operation](resource, params || payload);
-      }
-      
-      // Fallback for custom data provider methods
-      return dp[operation](payload);
-    },
-  });
+  const handleSetValue = (nextValue: any) => {
+    form.setValue(source, nextValue, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
+  const handleMutate = async (operation: string, payload?: any) => {
+    const dp = dataProvider as any;
+    if (typeof dp[operation] !== 'function') {
+      throw new Error(`Data provider does not support operation: ${operation}`);
+    }
+    
+    // Map standard RA data provider signatures (resource, params)
+    if (payload && typeof payload === 'object' && 'resource' in payload) {
+      const { resource, params } = payload;
+      return dp[operation](resource, params || payload);
+    }
+    
+    // Fallback for custom data provider methods
+    return dp[operation](payload);
+  };
+
+  const valueProps = { source, value, setValue: handleSetValue };
+  const metaProps = { schemaNode, widgetProps: widgetProps || {} };
+  const recordProps = { record: (form.getValues() as Record<string, unknown>) ?? {} };
+  const mutationProps = { mutate: handleMutate };
+
+  return (
+    <WidgetMutationContext.Provider value={mutationProps}>
+      <WidgetRecordContext.Provider value={recordProps}>
+        <WidgetMetaContext.Provider value={metaProps}>
+          <WidgetValueContext.Provider value={valueProps}>
+            {createElement(Widget, { ...valueProps, ...metaProps })}
+          </WidgetValueContext.Provider>
+        </WidgetMetaContext.Provider>
+      </WidgetRecordContext.Provider>
+    </WidgetMutationContext.Provider>
+  );
 };
 
 type WidgetOverrideFieldProps = {
