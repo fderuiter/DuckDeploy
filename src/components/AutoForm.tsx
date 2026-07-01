@@ -1,98 +1,7 @@
 
-import { Create, Edit, SimpleForm, TextInput, useCreateContext, useEditContext, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
+import { Create, Edit, SimpleForm, TextInput, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
-import { useEffect, useState, useRef } from 'react';
-
-import { VisuallyHidden, getStatusMessage } from './AccessibilityUtils';
-
-interface FormContextValue {
-  isLoading?: boolean;
-  isSaving?: boolean;
-  registerMutationMiddleware?: (middleware: (...args: unknown[]) => Promise<unknown>) => void;
-  unregisterMutationMiddleware?: (middleware: (...args: unknown[]) => Promise<unknown>) => void;
-}
-
-const FormAccessibilityWrapper = ({ contextHook, children }: { contextHook: () => FormContextValue | undefined, children: React.ReactNode }) => {
-  const context = contextHook();
-  const isLoading = context?.isLoading;
-  const isSaving = context?.isSaving;
-  const registerMutationMiddleware = context?.registerMutationMiddleware;
-  const unregisterMutationMiddleware = context?.unregisterMutationMiddleware;
-  
-  const [wasSaving, setWasSaving] = useState(false);
-  const [statusText, setStatusText] = useState('');
-  const [statusMode, setStatusMode] = useState<'polite' | 'assertive'>('polite');
-  
-  const saveErrorRef = useRef<unknown>(null);
-  const saveSuccessRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    if (isLoading) {
-      setStatusText(getStatusMessage('loading'));
-      setStatusMode('polite');
-    } else if (!isSaving && !wasSaving) {
-      setStatusText('');
-    }
-  }, [isLoading, isSaving, wasSaving]);
-
-  useEffect(() => {
-    if (registerMutationMiddleware && unregisterMutationMiddleware) {
-      const middleware = async (...args: unknown[]) => {
-        saveErrorRef.current = null;
-        saveSuccessRef.current = false;
-        const next = args[args.length - 1] as (...args: unknown[]) => Promise<unknown>;
-        const newArgs = args.slice(0, -1);
-        try {
-          const result = await next(...newArgs);
-          saveSuccessRef.current = true;
-          return result;
-        } catch (error: unknown) {
-          saveErrorRef.current = error;
-          throw error;
-        }
-      };
-      registerMutationMiddleware(middleware);
-      return () => unregisterMutationMiddleware(middleware);
-    }
-  }, [registerMutationMiddleware, unregisterMutationMiddleware]);
-
-  useEffect(() => {
-    if (isSaving) {
-      setStatusText(getStatusMessage('saving'));
-      setStatusMode('polite');
-      setWasSaving(true);
-      saveErrorRef.current = null;
-      saveSuccessRef.current = false;
-    } else if (wasSaving && !isSaving) {
-      const error = saveErrorRef.current;
-      const success = saveSuccessRef.current;
-      
-      if (error) {
-        const errObj = error as Record<string, unknown>;
-        const errorMsg = errObj?.body ? (errObj.body as Record<string, unknown>)?.message : errObj?.message || (typeof error === 'string' ? error : undefined);
-        setStatusText(getStatusMessage('error', typeof errorMsg === 'string' ? errorMsg : undefined));
-        setStatusMode('assertive');
-      } else if (success) {
-        setStatusText(getStatusMessage('success'));
-        setStatusMode('polite');
-      }
-      
-      setWasSaving(false);
-      saveErrorRef.current = null;
-      saveSuccessRef.current = false;
-    }
-  }, [isSaving, wasSaving]);
-
-  return (
-    <>
-      <VisuallyHidden aria-live={statusMode}>
-        {statusText}
-      </VisuallyHidden>
-      {children}
-    </>
-  );
-};
 
 const AutoFormContent = ({ resourceName, isCreate }: { resourceName: string; isCreate: boolean }) => {
   const { uiManifest } = useSpec();
@@ -133,11 +42,9 @@ export interface AutoCreateProps<RecordType extends RaRecord = RaRecord> extends
 export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCreateProps<RecordType>) => {
   return (
     <Create {...props}>
-      <FormAccessibilityWrapper contextHook={useCreateContext}>
-        <SimpleForm>
-          <AutoFormContent resourceName={props.resource || ''} isCreate={true} />
-        </SimpleForm>
-      </FormAccessibilityWrapper>
+      <SimpleForm>
+        <AutoFormContent resourceName={props.resource || ''} isCreate={true} />
+      </SimpleForm>
     </Create>
   );
 };
@@ -163,12 +70,10 @@ export interface AutoEditProps<RecordType extends RaRecord = RaRecord> extends O
 export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEditProps<RecordType>) => {
   return (
     <Edit {...props}>
-      <FormAccessibilityWrapper contextHook={useEditContext}>
-        <SimpleForm>
-          <TextInput source="id" disabled />
-          <AutoFormContent resourceName={props.resource || ''} isCreate={false} />
-        </SimpleForm>
-      </FormAccessibilityWrapper>
+      <SimpleForm>
+        <TextInput source="id" disabled />
+        <AutoFormContent resourceName={props.resource || ''} isCreate={false} />
+      </SimpleForm>
     </Edit>
   );
 };
