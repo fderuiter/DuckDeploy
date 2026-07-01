@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useSafeContext } from '../utils/context';
 
 interface AuthViolation {
   method?: string;
@@ -53,9 +54,5 @@ export const ReflectiveAuthProvider: React.FC<{ children: ReactNode }> = ({ chil
 };
 
 export const useReflectiveAuth = () => {
-  const context = useContext(ReflectiveAuthContext);
-  if (!context) {
-    throw new Error('useReflectiveAuth must be used within a ReflectiveAuthProvider');
-  }
-  return context;
+  return useSafeContext(ReflectiveAuthContext, 'useReflectiveAuth must be used within a ReflectiveAuthProvider');
 };

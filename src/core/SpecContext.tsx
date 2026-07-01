@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useEffect, useState, useMemo, type ReactNode } from 'react';
+import { useSafeContext } from '../utils/context';
 import type { ManifestWorkerResponse } from '../workers/manifest.worker';
 // Vite processes the `?worker` suffix at build time and bundles the worker
 // as a separate chunk — must be a static import at the top level.
@@ -110,17 +111,15 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  const contextValue = useMemo(() => ({ spec, uiManifest, isLoading, error }), [spec, uiManifest, isLoading, error]);
+
   return (
-    <SpecContext.Provider value={{ spec, uiManifest, isLoading, error }}>
+    <SpecContext.Provider value={contextValue}>
       {children}
     </SpecContext.Provider>
   );
 };
 
 export const useSpec = () => {
-  const context = useContext(SpecContext);
-  if (context === undefined) {
-    throw new Error('useSpec must be used within a SpecProvider');
-  }
-  return context;
+  return useSafeContext(SpecContext, 'useSpec must be used within a SpecProvider');
 };
