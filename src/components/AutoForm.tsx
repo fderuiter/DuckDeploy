@@ -1,26 +1,10 @@
 
+import React from 'react';
 import { Create, Edit, SimpleForm, TextInput, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { SchemaErrorSummary } from './SchemaErrorSummary';
-
-const AutoFormContent = ({ resourceName, isCreate }: { resourceName: string; isCreate: boolean }) => {
-  const { uiManifest } = useSpec();
-  const precomputedResource = uiManifest?.resources?.[resourceName];
-  const precomputedNodes = (isCreate ? precomputedResource?.createForm : precomputedResource?.editForm) as
-    | PrecomputedInputDescriptor[]
-    | undefined;
-
-  if (precomputedNodes && precomputedNodes.length > 0) {
-    return (
-      <>
-        {precomputedNodes.map((node, index) => renderPrecomputedInput(node, `${resourceName}.${node.source || index}`))}
-      </>
-    );
-  }
-
-  return <TextInput source="id" />;
-};
+import { useLayoutRegistry } from '../core/LayoutRegistry';
 
 /**
  * Props for the AutoCreate component.
@@ -40,11 +24,43 @@ export interface AutoCreateProps<RecordType extends RaRecord = RaRecord> extends
  * @param props - Component props
  */
 export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCreateProps<RecordType>) => {
+  const { uiManifest } = useSpec();
+  const { getLayout } = useLayoutRegistry();
+  const resourceName = props.resource || '';
+  
+  const precomputedResource = uiManifest?.resources?.[resourceName];
+  const layoutId = precomputedResource?.createLayout || precomputedResource?.layout;
+  const layoutConfig = precomputedResource?.createLayoutConfig || precomputedResource?.layoutConfig;
+  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+
+  const precomputedNodes = precomputedResource?.createForm as PrecomputedInputDescriptor[] | undefined;
+  let contentNodes: React.ReactNode[] = [];
+  if (precomputedNodes && precomputedNodes.length > 0) {
+    contentNodes = precomputedNodes.map((node, index) => 
+      renderPrecomputedInput(node, `${resourceName}.${node.source || index}`)
+    );
+  } else {
+    contentNodes = [<TextInput key="id" source="id" />];
+  }
+
+  const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={true} />;
+
+  if (CustomLayout) {
+    return (
+      <Create {...props}>
+        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={true}>
+          {errorSummary}
+          {contentNodes}
+        </CustomLayout>
+      </Create>
+    );
+  }
+
   return (
     <Create {...props}>
       <SimpleForm>
-        <SchemaErrorSummary resourceName={props.resource || ''} isCreate={true} />
-        <AutoFormContent resourceName={props.resource || ''} isCreate={true} />
+        {errorSummary}
+        {contentNodes}
       </SimpleForm>
     </Create>
   );
@@ -68,12 +84,46 @@ export interface AutoEditProps<RecordType extends RaRecord = RaRecord> extends O
  * @param props - Component props
  */
 export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEditProps<RecordType>) => {
+  const { uiManifest } = useSpec();
+  const { getLayout } = useLayoutRegistry();
+  const resourceName = props.resource || '';
+
+  const precomputedResource = uiManifest?.resources?.[resourceName];
+  const layoutId = precomputedResource?.editLayout || precomputedResource?.layout;
+  const layoutConfig = precomputedResource?.editLayoutConfig || precomputedResource?.layoutConfig;
+  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+
+  const precomputedNodes = precomputedResource?.editForm as PrecomputedInputDescriptor[] | undefined;
+  let contentNodes: React.ReactNode[] = [];
+  if (precomputedNodes && precomputedNodes.length > 0) {
+    contentNodes = precomputedNodes.map((node, index) => 
+      renderPrecomputedInput(node, `${resourceName}.${node.source || index}`)
+    );
+  } else {
+    contentNodes = [<TextInput key="id-fallback" source="id" />];
+  }
+
+  const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={false} />;
+  const idInput = <TextInput key="id-disabled" source="id" disabled />;
+
+  if (CustomLayout) {
+    return (
+      <Edit {...props}>
+        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={false}>
+          {errorSummary}
+          {idInput}
+          {contentNodes}
+        </CustomLayout>
+      </Edit>
+    );
+  }
+
   return (
     <Edit {...props}>
       <SimpleForm>
-        <SchemaErrorSummary resourceName={props.resource || ''} isCreate={false} />
-        <TextInput source="id" disabled />
-        <AutoFormContent resourceName={props.resource || ''} isCreate={false} />
+        {errorSummary}
+        {idInput}
+        {contentNodes}
       </SimpleForm>
     </Edit>
   );

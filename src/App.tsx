@@ -9,6 +9,9 @@ import {
   resolveOperationMappings,
 } from './components/ResourceFactory';
 import { WidgetRegistryProvider, registerWidget } from './core/WidgetRegistry';
+import { LayoutRegistryProvider, registerLayout } from './core/LayoutRegistry';
+import { TabbedFormLayout } from './layouts/TabbedFormLayout';
+import { AccordionFormLayout } from './layouts/AccordionFormLayout';
 import { AccessibilityProvider } from './core/AccessibilityContext';
 import { CustomMapWidget } from './components/custom/CustomMapWidget';
 import { TerminologyLookupInput } from './components/custom/TerminologyLookupInput';
@@ -22,6 +25,9 @@ import { StandardLayout } from './layouts/StandardLayout';
 registerWidget('x-ui-custom-map', CustomMapWidget);
 registerWidget('cdisc-terminology', TerminologyLookupInput);
 registerWidget('fetch-user-widget', FetchUserWidget);
+
+registerLayout('TabbedFormLayout', TabbedFormLayout);
+registerLayout('AccordionFormLayout', AccordionFormLayout);
 
 interface BootstrapIssue {
   title: string;
@@ -189,11 +195,13 @@ const AdminApp = () => {
  */
 export const App = () => (
   <AccessibilityProvider>
-    <WidgetRegistryProvider>
-      <SpecProvider>
-        <AdminApp />
-      </SpecProvider>
-    </WidgetRegistryProvider>
+    <LayoutRegistryProvider>
+      <WidgetRegistryProvider>
+        <SpecProvider>
+          <AdminApp />
+        </SpecProvider>
+      </WidgetRegistryProvider>
+    </LayoutRegistryProvider>
   </AccessibilityProvider>
 );
 
