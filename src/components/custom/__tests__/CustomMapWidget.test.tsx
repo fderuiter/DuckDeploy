@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { axe } from 'jest-axe';
 import { CustomMapWidget } from '../CustomMapWidget';
 import { expect, test, describe, vi } from 'vitest';
 import { AdminContext, SimpleForm } from 'react-admin';
+import { AccessibilityProvider } from '../../../core/AccessibilityContext';
 
 describe('CustomMapWidget', () => {
   const defaultProps: any = {
@@ -14,11 +15,13 @@ describe('CustomMapWidget', () => {
 
   test('should not have basic accessibility violations', async () => {
     const { container } = render(
-      <AdminContext>
-        <SimpleForm toolbar={false} resource="dummy">
-          <CustomMapWidget {...defaultProps} />
-        </SimpleForm>
-      </AdminContext>
+      <AccessibilityProvider>
+        <AdminContext>
+          <SimpleForm toolbar={false} resource="dummy">
+            <CustomMapWidget {...defaultProps} />
+          </SimpleForm>
+        </AdminContext>
+      </AccessibilityProvider>
     );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
@@ -26,11 +29,13 @@ describe('CustomMapWidget', () => {
 
   test('markers are accessible to screen readers', () => {
     render(
-      <AdminContext>
-        <SimpleForm toolbar={false} resource="dummy">
-          <CustomMapWidget {...defaultProps} />
-        </SimpleForm>
-      </AdminContext>
+      <AccessibilityProvider>
+        <AdminContext>
+          <SimpleForm toolbar={false} resource="dummy">
+            <CustomMapWidget {...defaultProps} />
+          </SimpleForm>
+        </AdminContext>
+      </AccessibilityProvider>
     );
     
     // Check that there is at least one marker with an aria-label
