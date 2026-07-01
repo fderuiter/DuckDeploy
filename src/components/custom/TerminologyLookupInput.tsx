@@ -15,6 +15,10 @@ const mockTerminologyDb: Record<string, string[]> = {
   CM: ['Concomitant Medication A', 'Concomitant Medication B'],
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value, setValue, widgetProps, schemaNode }) => {
   const domain = resolveDomain(widgetProps) || 'AE';
   const options = useMemo(() => mockTerminologyDb[domain] || [], [domain]);

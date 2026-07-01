@@ -96,7 +96,7 @@ const AdminApp = () => {
       setIsProxyLoading(true);
 
       try {
-                const payload = await customInstance<ProxyHealthResponse>({
+                const _payload = await customInstance<ProxyHealthResponse>({
           url: healthUrl,
           method: 'GET',
           headers: { Accept: 'application/json' }
@@ -175,6 +175,10 @@ const AdminApp = () => {
   );
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const App = () => (
   <AccessibilityProvider>
     <WidgetRegistryProvider>

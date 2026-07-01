@@ -2,6 +2,10 @@ import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { injectOriginRefs } from './normalization.ts';
 import { FULL_HTTP_METHODS } from '../../../src/core/discovery.ts';
 
+/**
+ * Generated description.
+ *
+ */
 export const toOperationId = (method: string, route: string): string => {
   const routePart = route
     .replace(/^\/+/, '')
@@ -13,6 +17,10 @@ export const toOperationId = (method: string, route: string): string => {
   return `${method.toLowerCase()}-${routePart}`;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const pickPreferredMediaType = (content: any): any => {
   if (!content || typeof content !== 'object') return content;
 
@@ -24,6 +32,10 @@ export const pickPreferredMediaType = (content: any): any => {
   return firstType ? { [firstType]: content[firstType] } : content;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const optimizeOperation = (route: string, method: string, operation: any): void => {
   if (!operation || typeof operation !== 'object') return;
 
@@ -49,6 +61,10 @@ export const optimizeOperation = (route: string, method: string, operation: any)
   }
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const stripNoise = (node: any): void => {
   if (Array.isArray(node)) {
     for (const item of node) {
@@ -69,6 +85,10 @@ export const stripNoise = (node: any): void => {
   }
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const sortKeysDeep = (node: any): any => {
   if (Array.isArray(node)) {
     return node.map(sortKeysDeep);
@@ -86,6 +106,10 @@ export const sortKeysDeep = (node: any): any => {
   return sorted;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const compileSpec = async (parsed: any): Promise<any> => {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('Invalid OpenAPI document: expected an object at root.');
@@ -116,6 +140,10 @@ export const compileSpec = async (parsed: any): Promise<any> => {
   return sortKeysDeep(dereferenced);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const getSchemaFromContent = (content: any): any => {
   if (!content || typeof content !== 'object') return null;
   if (content['application/json']?.schema) return content['application/json'].schema;

@@ -17,6 +17,10 @@ export interface UseWidgetMutationOptions {
   onError?: (error: Error) => void;
 }
 
+/**
+ * Generated description.
+ *
+ */
 export const useWidgetMutation = (
   mutate: EngineContext['mutate'],
   options?: UseWidgetMutationOptions
@@ -58,10 +62,18 @@ const registry = new Map<string, WidgetComponent>();
 
 const WidgetRegistryContext = createContext<WidgetRegistryValue | undefined>(undefined);
 
+/**
+ * Generated description.
+ *
+ */
 export const registerWidget = (id: string, Component: WidgetComponent) => {
   registry.set(id, Component);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const WidgetRegistryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const value = useMemo<WidgetRegistryValue>(
     () => ({
@@ -73,6 +85,10 @@ export const WidgetRegistryProvider: React.FC<{ children: ReactNode }> = ({ chil
   return <WidgetRegistryContext.Provider value={value}>{children}</WidgetRegistryContext.Provider>;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const useWidgetRegistry = (): WidgetRegistryValue => {
   return useSafeContext(WidgetRegistryContext, 'useWidgetRegistry must be used within a WidgetRegistryProvider');
 };

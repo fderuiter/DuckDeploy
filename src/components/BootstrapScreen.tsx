@@ -8,6 +8,10 @@ interface BootstrapScreenProps {
   loading?: boolean;
 }
 
+/**
+ * Generated description.
+ *
+ */
 export const BootstrapScreen = ({
   title,
   message,

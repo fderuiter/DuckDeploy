@@ -4,6 +4,10 @@ import { useLocation } from 'react-router-dom';
 import { Box, Link } from '@mui/material';
 import { useAccessibility } from '../core/AccessibilityContext';
 
+/**
+ * Generated description.
+ *
+ */
 export const StandardLayout = ({ children, ...props }: React.ComponentProps<typeof Layout>) => {
   const location = useLocation();
   const { announce } = useAccessibility();

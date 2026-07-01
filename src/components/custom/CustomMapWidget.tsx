@@ -13,6 +13,10 @@ import ListItemText from '@mui/material/ListItemText';
 import type { ElementType } from 'react';
 import { useAccessibility } from '../../core/AccessibilityContext';
 
+/**
+ * Generated description.
+ *
+ */
 export const CustomMapWidget: React.FC<EngineContext> = ({ source, value, setValue, schemaNode }) => {
   const [markers] = useState([{ id: 1, lat: 40.7128, lng: -74.0060, label: 'New York', status: 'Active' }]);
 

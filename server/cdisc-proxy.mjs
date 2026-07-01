@@ -155,6 +155,14 @@ function hasTrustedIngressAssertion(request) {
   return headerValue === TRUSTED_INGRESS_HEADER_VALUE;
 }
 
+/**
+ * Validates if the incoming request originates from a trusted source.
+ * This ensures that only local traffic or traffic that has passed through 
+ * an authorized reverse proxy (and contains the correct ingress header) is processed.
+ * 
+ * @param {import('node:http').IncomingMessage} request The incoming HTTP request.
+ * @returns {boolean} True if the request is trusted, false otherwise.
+ */
 function isTrustedRequest(request) {
   return isLoopbackAddress(request.socket.remoteAddress) || hasTrustedIngressAssertion(request);
 }
@@ -229,6 +237,18 @@ function getForwardPath(url) {
   return withoutPrefix.startsWith('/') ? withoutPrefix : `/${withoutPrefix}`;
 }
 
+/**
+ * Proxies the incoming request to the upstream CDISC API.
+ * This function enforces path restrictions, strips hop-by-hop headers,
+ * and implements a fallback retry mechanism using primary and secondary API keys.
+ * If the primary key fails with a 401 or 403, it will automatically retry with the secondary key.
+ * 
+ * @param {import('node:http').IncomingMessage} request The incoming HTTP request.
+ * @param {import('node:http').ServerResponse} response The HTTP response object.
+ * @param {URL} url The parsed request URL.
+ * @param {string|null} requestOrigin The resolved request origin for CORS processing.
+ * @returns {Promise<void>}
+ */
 async function proxyToUpstream(request, response, url, requestOrigin) {
   const upstreamPath = getForwardPath(url);
   if (!upstreamPath) {

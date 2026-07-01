@@ -1,6 +1,10 @@
 import type { OpenAPIV3 } from 'openapi-types';
 import { SCHEMA_SELECTION_KEY } from './constants.ts';
 
+/**
+ * Type guard to check if an object is an OpenAPIV3 SchemaObject rather than a ReferenceObject.
+ * This ensures safe access to properties like `type` and `properties` that do not exist on references.
+ */
 export const isSchemaObject = (
   obj: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined
 ): obj is OpenAPIV3.SchemaObject =>
@@ -9,6 +13,10 @@ export const isSchemaObject = (
 const BOOLEAN_TRUE_STRINGS = new Set(['true', '1', 'y', 'yes']);
 const BOOLEAN_FALSE_STRINGS = new Set(['false', '0', 'n', 'no']);
 
+/**
+ * Coerces various input types into a boolean value.
+ * Handles strings like "true", "1", "yes" and their false equivalents.
+ */
 export const coerceBoolean = (value: unknown): boolean | null => {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'boolean') return value;
@@ -21,6 +29,10 @@ export const coerceBoolean = (value: unknown): boolean | null => {
   return null;
 };
 
+/**
+ * Coerces various input types into a number value.
+ * Returns null if the value is not a valid number.
+ */
 export const coerceNumber = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'number') return value;
@@ -45,20 +57,37 @@ export interface Visitor {
   visitNode: (context: TraversalContext, defaultVisit: () => any) => any;
 }
 
+/**
+ * Escapes a segment of a JSON pointer according to RFC 6901.
+ * Replaces `~` with `~0` and `/` with `~1`.
+ */
 export const escapeJsonPointer = (segment: string) =>
   String(segment).replace(/~/g, '~0').replace(/\//g, '~1');
 
+/**
+ * UnifiedSchemaWalker is responsible for recursively traversing an OpenAPI schema,
+ * optionally along with a data payload. It detects circular references and delegates
+ * custom logic to a provided Visitor implementation, making it easy to build UI forms,
+ * perform validation, or extract values from complex schemas.
+ */
 export class UnifiedSchemaWalker {
   private visited = new Set<any>();
 
   private visitor: Visitor;
   private options: { walkPayload?: boolean };
 
+  /**
+   * Initializes a new UnifiedSchemaWalker with the given visitor and options.
+   */
   constructor(visitor: Visitor, options: { walkPayload?: boolean } = {}) {
     this.visitor = visitor;
     this.options = options;
   }
 
+  /**
+   * Starts walking a schema from the root, invoking the Visitor for each node.
+   * Maintains state to handle circular schema references gracefully.
+   */
   public walk(
     schema: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined,
     payload?: any,

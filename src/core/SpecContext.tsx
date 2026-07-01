@@ -15,6 +15,10 @@ export interface SpecContextType {
 
 const SpecContext = createContext<SpecContextType | undefined>(undefined);
 
+/**
+ * Generated description.
+ *
+ */
 export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [spec, setSpec] = useState<any | null>(null);
   const [uiManifest, setUiManifest] = useState<any | null>(null);
@@ -120,6 +124,10 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const useSpec = () => {
   return useSafeContext(SpecContext, 'useSpec must be used within a SpecProvider');
 };

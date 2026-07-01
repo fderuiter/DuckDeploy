@@ -11,6 +11,10 @@ interface SchemaErrorSummaryProps {
   isCreate: boolean;
 }
 
+/**
+ * Generated description.
+ *
+ */
 export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resourceName, isCreate }) => {
   const { formState: { errors, isSubmitted, isSubmitting, submitCount } } = useFormContext();
   const saveContext = useSaveContext();

@@ -1,11 +1,23 @@
+/**
+ * Generated description.
+ *
+ */
 export const isReferenceField = (name: string): boolean => {
   return name.endsWith('_id') || name.endsWith('Id');
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const getReferenceTarget = (name: string): string => {
   return name.replace(/_id$/i, '').replace(/Id$/, '');
 };
 
+/**
+ * Extracts all UI extension metadata from a schema node.
+ * This looks for any property starting with 'x-ui-' and aggregates them.
+ */
 export const extractUiExtensions = (node: any): Record<string, unknown> => {
   if (!node || typeof node !== 'object') return {};
 
@@ -17,16 +29,28 @@ export const extractUiExtensions = (node: any): Record<string, unknown> => {
     }, {} as Record<string, unknown>);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const getPrimaryField = (node: any): string | undefined => {
   const ext = extractUiExtensions(node);
   return typeof ext['x-ui-primary-field'] === 'string' ? ext['x-ui-primary-field'] : undefined;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const getWidgetId = (node: any): string | undefined => {
   const ext = extractUiExtensions(node);
   return typeof ext['x-ui-widget'] === 'string' ? ext['x-ui-widget'] : undefined;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const getWidgetProps = (node: any): Record<string, unknown> | undefined => {
   const ext = extractUiExtensions(node);
   return ext['x-ui-props'] && typeof ext['x-ui-props'] === 'object'
@@ -34,6 +58,10 @@ export const getWidgetProps = (node: any): Record<string, unknown> | undefined =
     : undefined;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const resolveFallbackWidgetId = (
   candidateWidgetId?: string,
   fallbackWidgetId?: string,
@@ -54,6 +82,17 @@ export type SchemaKind =
   | 'link'
   | 'unknown';
 
+/**
+ * Determines the primary data kind of a schema field by traversing its properties.
+ * 
+ * Conditional Path Explanation:
+ * 1. Link / ID Check: If the field is named "id" or explicitly marked with widget="link", it's treated as a link.
+ * 2. Pre-computed Kind: If the node already has a `kind` field (e.g. from the AST walker), it uses that.
+ * 3. Polymorphism: If `oneOf` or `anyOf` are present, it implies multiple possible types (polymorphism).
+ * 4. Structured Data: Checks for explicit 'object' or 'array' types.
+ * 5. References: Checks if the name implies a relationship (e.g. ending in "_id") or has an OpenAPI `$ref`.
+ * 6. Primitives: Maps remaining standard OpenAPI primitive types to 'enum', 'boolean', 'number', 'date', or 'text'.
+ */
 export const determineSchemaKind = (name: string, node: any): SchemaKind => {
   if (!node || typeof node !== 'object') return 'unknown';
 

@@ -20,6 +20,10 @@ const AccessibilityContext = createContext<AccessibilityContextType | undefined>
 const DURATION = 3000;
 const MAX_QUEUE_SIZE = 5;
 
+/**
+ * Generated description.
+ *
+ */
 export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [queue, setQueue] = useState<Announcement[]>([]);
   const [current, setCurrent] = useState<Announcement | null>(null);
@@ -157,6 +161,10 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
   );
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const useAccessibility = (): AccessibilityContextType => {
   return useSafeContext(AccessibilityContext, 'useAccessibility must be used within an AccessibilityProvider');
 };
