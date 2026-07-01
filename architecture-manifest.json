@@ -1,0 +1,22 @@
+{
+  "components": [
+    {
+      "id": "PROXY",
+      "name": "Enterprise Proxy",
+      "mandatory": true,
+      "metadata": {
+        "role": "Routing and Policy Enforcement",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "id": "COMPILER",
+      "name": "Schema Compiler",
+      "mandatory": true,
+      "metadata": {
+        "role": "Manifest Generation",
+        "version": "2.1.0"
+      }
+    }
+  ]
+}

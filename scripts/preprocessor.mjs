@@ -79,6 +79,17 @@ const validateDocsAndInjectMetadata = () => {
     throw new Error(`Found ${totalErrors} documentation terminology errors.`);
   }
 
+  const manifestPath = path.join(repoRoot, 'architecture-manifest.json');
+  let components = [];
+  if (fs.existsSync(manifestPath)) {
+    try {
+      const manifestData = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      components = manifestData.components || [];
+    } catch (e) {
+      console.warn('Failed to parse architecture-manifest.json', e);
+    }
+  }
+
   const archFile = path.join(DOCS_DIR, 'architecture.md');
   if (fs.existsSync(archFile)) {
     const content = fs.readFileSync(archFile, 'utf8');
@@ -93,14 +104,62 @@ const validateDocsAndInjectMetadata = () => {
   - \`public/ui-manifest.json\`: The UI manifest containing discovered resources and forms.
   - \`public/schema.json\`: The optimized OpenAPI schema.
 `;
-    const updatedContent = content.replace(
+    let updatedContent = content.replace(
       /<!-- ARCHITECTURE_START -->[\s\S]*?<!-- ARCHITECTURE_END -->/,
       `<!-- ARCHITECTURE_START -->\n${metadata}\n<!-- ARCHITECTURE_END -->`
     );
-    
+
+    let missingMandatory = false;
+    const coverage = {};
+
+    for (const comp of components) {
+      const metaBlock = `<!-- COMPONENT_${comp.id}_METADATA_START -->\n**Role**: ${comp.metadata.role || 'N/A'}\n**Version**: ${comp.metadata.version || 'N/A'}\n<!-- COMPONENT_${comp.id}_METADATA_END -->`;
+      const compStart = `<!-- COMPONENT_${comp.id}_START -->`;
+      const compEnd = `<!-- COMPONENT_${comp.id}_END -->`;
+
+      if (updatedContent.includes(compStart)) {
+        const regex = new RegExp(`<!-- COMPONENT_${comp.id}_METADATA_START -->[\\s\\S]*?<!-- COMPONENT_${comp.id}_METADATA_END -->`);
+        if (regex.test(updatedContent)) {
+          updatedContent = updatedContent.replace(regex, metaBlock);
+        } else {
+          updatedContent = updatedContent.replace(compStart, `${compStart}\n${metaBlock}`);
+        }
+      } else {
+        const block = `\n\n${compStart}\n### ${comp.name}\n\n${metaBlock}\n\n<!-- COMPONENT_${comp.id}_DESCRIPTION_START -->\n<!-- TODO: Add specific implementation details here -->\n<!-- COMPONENT_${comp.id}_DESCRIPTION_END -->\n${compEnd}\n`;
+        updatedContent += block;
+      }
+
+      const descRegex = new RegExp(`<!-- COMPONENT_${comp.id}_DESCRIPTION_START -->([\\s\\S]*?)<!-- COMPONENT_${comp.id}_DESCRIPTION_END -->`);
+      const match = updatedContent.match(descRegex);
+      let isDocumented = false;
+      if (match) {
+        let desc = match[1].replace('<!-- TODO: Add specific implementation details here -->', '').trim();
+        if (desc.length > 0) {
+          isDocumented = true;
+        }
+      }
+
+      coverage[comp.id] = {
+        name: comp.name,
+        documented: isDocumented,
+        mandatory: comp.mandatory
+      };
+
+      if (comp.mandatory && !isDocumented) {
+        console.error(`\n❌ Mandatory component '${comp.name}' (${comp.id}) is undocumented in architecture.md.`);
+        missingMandatory = true;
+      }
+    }
+
+    fs.writeFileSync(path.join(repoRoot, 'docs-coverage-report.json'), JSON.stringify(coverage, null, 2), 'utf8');
+
     if (content !== updatedContent) {
       fs.writeFileSync(archFile, updatedContent, 'utf8');
       console.log(`Updated architecture metadata in ${path.relative(repoRoot, archFile)}`);
+    }
+
+    if (missingMandatory) {
+      throw new Error("Build failed: Mandatory architectural components are missing descriptive documentation.");
     }
   }
 };

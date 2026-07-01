@@ -43,3 +43,31 @@ The `AuthProvider` in `src/core/authProvider.ts` implements the React-Admin [Aut
 - `401 Unauthorized` or `403 Forbidden` responses deny access to the corresponding view or button in the UI.
 
 This enables backend-enforced security to instantly reflect on the frontend without duplicating permission roles.
+
+
+<!-- COMPONENT_PROXY_START -->
+### Enterprise Proxy
+
+<!-- COMPONENT_PROXY_METADATA_START -->
+**Role**: Routing and Policy Enforcement
+**Version**: 1.0.0
+<!-- COMPONENT_PROXY_METADATA_END -->
+
+<!-- COMPONENT_PROXY_DESCRIPTION_START -->
+The Enterprise Proxy ensures all traffic correctly conforms to corporate security policies. It parses API routes before passing requests into the local processing core.
+<!-- COMPONENT_PROXY_DESCRIPTION_END -->
+<!-- COMPONENT_PROXY_END -->
+
+
+<!-- COMPONENT_COMPILER_START -->
+### Schema Compiler
+
+<!-- COMPONENT_COMPILER_METADATA_START -->
+**Role**: Manifest Generation
+**Version**: 2.1.0
+<!-- COMPONENT_COMPILER_METADATA_END -->
+
+<!-- COMPONENT_COMPILER_DESCRIPTION_START -->
+The Schema Compiler translates OpenAPI definitions into standard duck-typed user interface schemas. It handles polymorphic forms and cross-references.
+<!-- COMPONENT_COMPILER_DESCRIPTION_END -->
+<!-- COMPONENT_COMPILER_END -->
