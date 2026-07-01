@@ -43,6 +43,16 @@ const generate = () => {
   const fuzzXml = fs.existsSync(FUZZ_REPORT_PATH) ? fs.readFileSync(FUZZ_REPORT_PATH, 'utf8') : null;
   const fuzzSummary = parseJunit(fuzzXml);
 
+  const DOCS_COVERAGE_PATH = path.join(repoRoot, 'docs-coverage-report.json');
+  const docsCoverage = fs.existsSync(DOCS_COVERAGE_PATH) ? JSON.parse(fs.readFileSync(DOCS_COVERAGE_PATH, 'utf8')) : {};
+  
+  const architecturalComponents = Object.entries(docsCoverage).map(([id, info]) => ({
+    id,
+    name: info.name,
+    mandatory: info.mandatory,
+    documentationStatus: info.documented ? 'Documented' : 'Undocumented'
+  }));
+
   const entries = logData.entries.map((entry) => {
     // Determine verification methods based on status and validation
     const methods = ['Inspection']; // All mappings are inspected during generation
@@ -89,6 +99,7 @@ const generate = () => {
       fuzzTests: fuzzSummary,
     },
     traceability: entries,
+    architecturalComponents: architecturalComponents
   };
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(matrix, null, 2), 'utf8');
