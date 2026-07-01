@@ -6,6 +6,27 @@ info:
 servers:
   - url: https://api.library.cdisc.org/api
 paths:
+  /__duckdeploy/health:
+    get:
+      tags:
+        - System
+      summary: Proxy Health Check
+      description: Internal proxy health check endpoint
+      operationId: getProxyHealth
+      x-internal: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                type: object
   /mdr/suggest:
     get:
       tags:
@@ -13,6 +34,8 @@ paths:
       summary: Get Search Query Suggestion Results Across CDISC Library
       description: Get Search Query Suggestion Results Across CDISC Library
       operationId: api-search-suggest
+      x-data-collection: _links.searchResults
+      x-record-id: href
       parameters:
         - name: q
           in: query
@@ -375,6 +398,8 @@ paths:
       summary: Get Search Results Across CDISC Library
       description: Get Search Results Across CDISC Library
       operationId: api-search-search
+      x-data-collection: _links.searchResults
+      x-record-id: href
       parameters:
         - name: q
           in: query
@@ -893,6 +918,7 @@ paths:
       summary: Get a list of Search Scopes
       description: Get a list of Search Scopes
       operationId: api-search-search_scopes
+      x-data-collection: scopes
       responses:
         '200':
           description: OK
@@ -1231,6 +1257,8 @@ paths:
       summary: Get products that implment href
       description: Get products that implment href
       operationId: api-search-implemented_by
+      x-data-collection: _links.searchResults
+      x-record-id: href
       parameters:
         - name: href
           in: query
@@ -1593,6 +1621,8 @@ paths:
       summary: Get Search Results Limited to Scope
       description: Get Search Results Limited to Scope
       operationId: api-search-search_scope
+      x-data-collection: _links.searchResults
+      x-record-id: href
       parameters:
         - name: scope
           in: path

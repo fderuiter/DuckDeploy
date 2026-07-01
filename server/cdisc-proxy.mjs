@@ -269,6 +269,12 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     return;
   }
 
+  if (upstreamPath === '/__duckdeploy/health') {
+    const health = getProxyHealthPayload();
+    sendJson(response, health.ok ? 200 : 503, health, requestOrigin);
+    return;
+  }
+
   const keys = getKeyChain();
   if (keys.length === 0) {
     sendJson(response, 503, getProxyHealthPayload(), requestOrigin);
@@ -338,12 +344,6 @@ const server = http.createServer(async (request, response) => {
     setCorsHeaders(response, requestOrigin);
     response.writeHead(204);
     response.end();
-    return;
-  }
-
-  if (requestUrl.pathname === HEALTH_PATH) {
-    const health = getProxyHealthPayload();
-    sendJson(response, health.ok ? 200 : 503, health, requestOrigin);
     return;
   }
 

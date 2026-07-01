@@ -123,7 +123,7 @@ const callApiFunction = async (operationKey: string | undefined, ...args: unknow
   );
 };
 
-const transformResponse = (response: unknown): { data: unknown; total?: number } => {
+const transformResponse = (response: unknown, resourceDefinition: ResourceDefinition): { data: unknown; total?: number } => {
   const isObject = typeof response === 'object' && response !== null;
   const payload = isObject && 'data' in (response as Record<string, unknown>)
     ? (response as Record<string, unknown>).data
@@ -131,53 +131,41 @@ const transformResponse = (response: unknown): { data: unknown; total?: number }
 
   let data: unknown = payload;
 
-  if (data && typeof data === 'object' && '_embedded' in (data as Record<string, unknown>)) {
-    const embedded = (data as Record<string, unknown>)._embedded as Record<string, unknown> | undefined;
-    if (embedded) {
-      const firstKey = Object.keys(embedded)[0];
-      if (firstKey) {
-        data = embedded[firstKey];
+  const halKey = resourceDefinition.xHalEmbedded;
+  const collectionKey = resourceDefinition.xDataCollection;
+
+  const resolvePath = (obj: any, path: string) => {
+    const parts = path.split('.');
+    let current = obj;
+    for (const part of parts) {
+      if (current && typeof current === 'object' && part in current) {
+        current = current[part];
+      } else {
+        return undefined;
       }
     }
-  } else if (data && typeof data === 'object' && Array.isArray((data as Record<string, unknown>).items)) {
-    data = (data as Record<string, unknown>).items;
+    return current;
+  };
+
+  if (halKey && data && typeof data === 'object') {
+    const embedded = resolvePath(data, '_embedded');
+    if (embedded && typeof embedded === 'object' && halKey in embedded) {
+      data = embedded[halKey];
+    }
+  } else if (collectionKey && data && typeof data === 'object') {
+    const resolvedData = resolvePath(data, collectionKey);
+    if (resolvedData !== undefined) {
+      data = resolvedData;
+    }
   }
 
   let total: number | undefined;
-  const headers =
-    isObject && 'headers' in (response as Record<string, unknown>)
-      ? ((response as Record<string, unknown>).headers as Record<string, string | undefined>)
-      : undefined;
 
-  if (headers) {
-    const customTotalHeader =
-      typeof import.meta.env.VITE_TOTAL_COUNT_HEADER === 'string'
-        ? import.meta.env.VITE_TOTAL_COUNT_HEADER.toLowerCase()
-        : undefined;
-
-    const totalHeaderValue =
-      headers['x-total-count'] ||
-      headers['content-range'] ||
-      (customTotalHeader ? headers[customTotalHeader] : undefined);
-
-    if (typeof totalHeaderValue === 'string') {
-      total = totalHeaderValue.includes('/')
-        ? Number.parseInt(totalHeaderValue.split('/').pop() || '0', 10)
-        : Number.parseInt(totalHeaderValue, 10);
-    }
-  }
-
-  if (total === undefined && payload && typeof payload === 'object') {
-    const source = payload as Record<string, unknown>;
-    const maybeTotal = source.total ?? source.count ?? source.totalCount;
-    if (typeof maybeTotal === 'number') {
-      total = maybeTotal;
-    } else if (
-      source.page &&
-      typeof source.page === 'object' &&
-      typeof (source.page as Record<string, unknown>).totalElements === 'number'
-    ) {
-      total = (source.page as Record<string, unknown>).totalElements as number;
+  const totalPath = resourceDefinition.xPaginationTotal;
+  if (totalPath && payload && typeof payload === 'object') {
+    const resolvedTotal = resolvePath(payload, totalPath);
+    if (typeof resolvedTotal === 'number') {
+      total = resolvedTotal;
     }
   }
 
@@ -191,21 +179,31 @@ const transformResponse = (response: unknown): { data: unknown; total?: number }
 const buildListQueryParams = (resourceDefinition: ResourceDefinition, params: GetListParams): Record<string, unknown> => {
   const query: Record<string, unknown> = { ...(params.filter || {}) };
   const knownQueryParams = new Set(resourceDefinition.listQueryParams || []);
-  const queryIsOpen = knownQueryParams.size === 0;
-  const hasParam = (...candidates: string[]) => candidates.find((candidate) => queryIsOpen || knownQueryParams.has(candidate));
 
   const setQuery = (key: string | undefined, value: unknown) => {
     if (!key || value === undefined) return;
     query[key] = value;
   };
 
+  const hasParam = (candidate: string) => knownQueryParams.has(candidate) ? candidate : undefined;
+
   if (params.pagination) {
     const page = params.pagination.page;
     const perPage = params.pagination.perPage;
 
-    setQuery(hasParam('page', 'pageNumber', 'pageIndex'), page);
-    setQuery(hasParam('perPage', 'pageSize', 'limit', 'size', 'top'), perPage);
-    setQuery(hasParam('offset', 'skip', 'start'), (page - 1) * perPage);
+    if (hasParam('page')) setQuery('page', page);
+    else if (hasParam('pageNumber')) setQuery('pageNumber', page);
+    else if (hasParam('pageIndex')) setQuery('pageIndex', page);
+
+    if (hasParam('perPage')) setQuery('perPage', perPage);
+    else if (hasParam('pageSize')) setQuery('pageSize', perPage);
+    else if (hasParam('limit')) setQuery('limit', perPage);
+    else if (hasParam('size')) setQuery('size', perPage);
+    else if (hasParam('top')) setQuery('top', perPage);
+
+    if (hasParam('offset')) setQuery('offset', (page - 1) * perPage);
+    else if (hasParam('skip')) setQuery('skip', (page - 1) * perPage);
+    else if (hasParam('start')) setQuery('start', (page - 1) * perPage);
   }
 
   if (params.sort) {
@@ -213,31 +211,37 @@ const buildListQueryParams = (resourceDefinition: ResourceDefinition, params: Ge
     const sortOrder = String(params.sort.order || '').toLowerCase();
     const sortDirection = sortOrder === 'desc' ? 'desc' : 'asc';
 
-    setQuery(hasParam('sort'), `${sortField},${sortDirection}`);
-    setQuery(hasParam('sortBy', 'orderby', 'orderBy'), sortField);
-    setQuery(hasParam('order', 'sortOrder', 'direction'), sortDirection);
+    if (hasParam('sort')) setQuery('sort', `${sortField},${sortDirection}`);
+    else {
+      if (hasParam('sortBy')) setQuery('sortBy', sortField);
+      else if (hasParam('orderby')) setQuery('orderby', sortField);
+      else if (hasParam('orderBy')) setQuery('orderBy', sortField);
+
+      if (hasParam('order')) setQuery('order', sortDirection);
+      else if (hasParam('sortOrder')) setQuery('sortOrder', sortDirection);
+      else if (hasParam('direction')) setQuery('direction', sortDirection);
+    }
   }
 
   if (params.meta?.query && typeof params.meta.query === 'object') {
     Object.assign(query, params.meta.query);
   }
 
-  if (!queryIsOpen) {
-    return Object.fromEntries(Object.entries(query).filter(([key]) => knownQueryParams.has(key)));
-  }
-
-  return query;
+  return Object.fromEntries(Object.entries(query).filter(([key]) => knownQueryParams.has(key)));
 };
 
-const ensureRecordId = (record: unknown, fallbackId: unknown) => {
+const ensureRecordId = (record: unknown, resourceDefinition: ResourceDefinition, fallbackId: unknown) => {
   if (!record || typeof record !== 'object') {
     return { id: fallbackId };
   }
 
   const typedRecord = record as Record<string, unknown>;
+  const explicitIdKey = resourceDefinition.xRecordId;
+  const idValue = explicitIdKey && explicitIdKey in typedRecord ? typedRecord[explicitIdKey] : typedRecord.id;
+
   return {
     ...typedRecord,
-    id: typedRecord.id ?? typedRecord._id ?? typedRecord.uuid ?? fallbackId,
+    id: idValue ?? fallbackId,
   };
 };
 
@@ -248,11 +252,11 @@ export const openApiDataProvider: DataProvider = {
 
     const queryParams = buildListQueryParams(resourceDefinition, params);
     const response = await callApiFunction(resourceDefinition.listOperationId, queryParams);
-    const transformed = transformResponse(response);
+    const transformed = transformResponse(response, resourceDefinition);
     const rows = Array.isArray(transformed.data) ? transformed.data : [];
 
     return {
-      data: rows.map((item, index) => ensureRecordId(item, index)),
+      data: rows.map((item, index) => ensureRecordId(item, resourceDefinition, index)),
       total: transformed.total ?? rows.length,
     } as GetListResult;
   },
@@ -262,9 +266,9 @@ export const openApiDataProvider: DataProvider = {
     if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
     const response = await callApiFunction(resourceDefinition.showOperationId, String(params.id));
-    const transformed = transformResponse(response);
+    const transformed = transformResponse(response, resourceDefinition);
 
-    return { data: ensureRecordId(transformed.data, params.id) };
+    return { data: ensureRecordId(transformed.data, resourceDefinition, params.id) };
   },
 
   getMany: async (resource, params) => {
@@ -286,9 +290,9 @@ export const openApiDataProvider: DataProvider = {
 
     const outboundData = adaptOutboundPayload(params.data, resourceDefinition.editRequestBodySchema);
     const response = await callApiFunction(resourceDefinition.editOperationId, String(params.id), outboundData);
-    const transformed = transformResponse(response);
+    const transformed = transformResponse(response, resourceDefinition);
 
-    return { data: ensureRecordId(transformed.data ?? outboundData, params.id) };
+    return { data: ensureRecordId(transformed.data ?? outboundData, resourceDefinition, params.id) };
   },
 
   updateMany: async (resource, params) => {
@@ -308,10 +312,10 @@ export const openApiDataProvider: DataProvider = {
 
     const outboundData = adaptOutboundPayload(params.data, resourceDefinition.createRequestBodySchema);
     const response = await callApiFunction(resourceDefinition.createOperationId, outboundData);
-    const transformed = transformResponse(response);
+    const transformed = transformResponse(response, resourceDefinition);
     const payload = transformed.data ?? outboundData;
 
-    return { data: ensureRecordId(payload, (params.data as Record<string, unknown>).id ?? null) };
+    return { data: ensureRecordId(payload, resourceDefinition, (params.data as Record<string, unknown>).id ?? null) };
   },
 
   delete: async (resource, params) => {
@@ -319,7 +323,7 @@ export const openApiDataProvider: DataProvider = {
     if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
     const response = await callApiFunction(resourceDefinition.deleteOperationId, String(params.id));
-    const transformed = transformResponse(response);
+    const transformed = transformResponse(response, resourceDefinition);
     return { data: transformed.data ?? params.previousData };
   },
 
