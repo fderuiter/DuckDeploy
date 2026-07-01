@@ -2,6 +2,7 @@
 import { Create, Edit, SimpleForm, TextInput, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
 import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
+import { SchemaErrorSummary } from './SchemaErrorSummary';
 
 const AutoFormContent = ({ resourceName, isCreate }: { resourceName: string; isCreate: boolean }) => {
   const { uiManifest } = useSpec();
@@ -43,6 +44,7 @@ export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCr
   return (
     <Create {...props}>
       <SimpleForm>
+        <SchemaErrorSummary resourceName={props.resource || ''} isCreate={true} />
         <AutoFormContent resourceName={props.resource || ''} isCreate={true} />
       </SimpleForm>
     </Create>
@@ -71,6 +73,7 @@ export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEdit
   return (
     <Edit {...props}>
       <SimpleForm>
+        <SchemaErrorSummary resourceName={props.resource || ''} isCreate={false} />
         <TextInput source="id" disabled />
         <AutoFormContent resourceName={props.resource || ''} isCreate={false} />
       </SimpleForm>
