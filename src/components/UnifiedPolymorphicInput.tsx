@@ -1,7 +1,6 @@
 import { SelectInput, required } from 'react-admin';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { useAccessibility } from '../core/AccessibilityContext';
 import { renderInput } from './SchemaToFieldMapper';
 import {
   areShallowObjectsEqual,
@@ -12,6 +11,7 @@ import {
 import { SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import type { OpenAPIV3 } from 'openapi-types';
+import { DeclarativeA11yContainer } from './DeclarativeA11yContainer';
 
 /**
  * Generated description.
@@ -33,7 +33,6 @@ export const UnifiedPolymorphicInput = ({
   keyPrefix: string,
 }) => {
   const form = useFormContext();
-  const { announce } = useAccessibility();
   const { control, getValues, unregister, setValue } = form;
   
   const choices = options.map((opt, index) => ({
@@ -58,7 +57,6 @@ export const UnifiedPolymorphicInput = ({
     const previousSelectedIndex = previousSelectedIndexRef.current;
     if (previousSelectedIndex !== undefined && previousSelectedIndex !== selectedIndex) {
       resetPolymorphicValue(unregister, setValue, source, discriminatorProperty, selectedDiscriminatorValue);
-      announce(`Form structure updated for ${choices[selectedIndex]?.name || 'new selection'}.`);
       previousSelectedIndexRef.current = selectedIndex;
       return;
     }
@@ -105,19 +103,27 @@ export const UnifiedPolymorphicInput = ({
     }
 
     previousSelectedIndexRef.current = selectedIndex;
-  }, [discriminatorProperty, getValues, options, selectedDiscriminatorValue, selectedIndex, source, unregister, setValue, announce]);
+  }, [discriminatorProperty, getValues, options, selectedDiscriminatorValue, selectedIndex, source, unregister, setValue]);
 
   return (
-    <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
-      <SelectInput
-        source={typeSource}
-        choices={choices}
-        label="Select Type"
-        validate={isRequired ? [required()] : []}
-      />
-      {selectedIndex === undefined || Number.isNaN(selectedIndex)
-        ? null
-        : renderInput(options[selectedIndex].node, source, isRequired, depth, `${keyPrefix}.${selectedIndex}`)}
-    </div>
+    <DeclarativeA11yContainer
+      dependency={selectedIndex}
+      announcement={`Form structure updated for ${choices[selectedIndex ?? 0]?.name || 'new selection'}.`}
+      focusTarget="[data-polymorphic-content] input:not([type='hidden']):not([disabled]), [data-polymorphic-content] select:not([disabled]), [data-polymorphic-content] textarea:not([disabled]), [data-polymorphic-content] button:not([disabled])"
+    >
+      <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
+        <SelectInput
+          source={typeSource}
+          choices={choices}
+          label="Select Type"
+          validate={isRequired ? [required()] : []}
+        />
+        {selectedIndex === undefined || Number.isNaN(selectedIndex) ? null : (
+          <div data-polymorphic-content="true">
+            {renderInput(options[selectedIndex].node, source, isRequired, depth, `${keyPrefix}.${selectedIndex}`)}
+          </div>
+        )}
+      </div>
+    </DeclarativeA11yContainer>
   );
 };
