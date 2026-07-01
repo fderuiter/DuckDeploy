@@ -20,6 +20,7 @@ import {
   ChipField,
   ArrayInput,
   SimpleFormIterator,
+  useDataProvider,
 } from 'react-admin';
 import { Link as RouterLink } from 'react-router-dom';
 import MuiLink from '@mui/material/Link';
@@ -169,6 +170,7 @@ const WidgetOverrideInput = ({
 }: WidgetOverrideInputProps) => {
   const { getWidget } = useWidgetRegistry();
   const form = useFormContext();
+  const dataProvider = useDataProvider();
 
   const widgetId = resolveFallbackWidgetId(candidateWidgetId, fallbackWidgetId) && [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
   const Widget = widgetId ? getWidget(widgetId) : undefined;
@@ -192,9 +194,20 @@ const WidgetOverrideInput = ({
         shouldValidate: true,
       });
     },
-    mutate: async (operation: any) => {
-      console.warn(`Widget mutate('${operation}') was called without a bound mutation handler.`);
-      return undefined;
+    mutate: async (operation: string, payload?: any) => {
+      const dp = dataProvider as any;
+      if (typeof dp[operation] !== 'function') {
+        throw new Error(`Data provider does not support operation: ${operation}`);
+      }
+      
+      // Map standard RA data provider signatures (resource, params)
+      if (payload && typeof payload === 'object' && 'resource' in payload) {
+        const { resource, params } = payload;
+        return dp[operation](resource, params || payload);
+      }
+      
+      // Fallback for custom data provider methods
+      return dp[operation](payload);
     },
   });
 };
