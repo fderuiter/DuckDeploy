@@ -91,13 +91,17 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           headers: { Accept: 'application/json' }
         });
         if (!parsedJson || typeof parsedJson !== 'object') {
+          console.error('Failed to parse compiled OpenAPI schema');
           throw new Error('Failed to parse compiled OpenAPI schema');
         }
 
+        console.log('Schema loaded successfully');
         if (!cancelled) setSpec(parsedJson);
 
         // ── 2. Await the manifest worker (likely already done by now) ─────────
+        console.log('Waiting for manifest worker...');
         await manifestPromise;
+        console.log('Manifest worker finished');
       } catch (err) {
         if (!cancelled) {
           console.error('Error loading compiled OpenAPI schema:', err);

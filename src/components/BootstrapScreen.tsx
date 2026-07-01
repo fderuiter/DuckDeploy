@@ -17,7 +17,9 @@ export const BootstrapScreen = ({
   message,
   details = [],
   loading = false,
-}: BootstrapScreenProps) => (
+}: BootstrapScreenProps) => {
+  console.log('Rendering BootstrapScreen:', title);
+  return (
   <Box
     sx={{
       minHeight: '100vh',
@@ -42,7 +44,7 @@ export const BootstrapScreen = ({
         <Typography variant="h4" component="h1">
           {title}
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.primary">
           {message}
         </Typography>
       </Stack>
@@ -61,3 +63,4 @@ export const BootstrapScreen = ({
     </Stack>
   </Box>
 );
+}
