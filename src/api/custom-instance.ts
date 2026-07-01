@@ -6,10 +6,17 @@ type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
 const runtimeConfig = getRuntimeApiConfig();
 
+/**
+ *
+ */
 export class NormalizedHttpError extends Error {
   public title?: string;
   public details?: string[];
 
+  /**
+   * Generated description.
+   *
+   */
   constructor(
     public readonly message: string,
     public readonly status: number,
@@ -110,6 +117,10 @@ const dispatchNormalizedAuthViolation = (error: AxiosError, status: number) => {
   }
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const normalizeProviderError = (error: unknown): unknown => {
   if (error instanceof NormalizedHttpError) {
     return error;
@@ -230,6 +241,10 @@ const normalizeConfig = (
   return { ...input, ...options };
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const customInstance = <T>(
   config: RequestInput,
   options?: AxiosRequestConfig,

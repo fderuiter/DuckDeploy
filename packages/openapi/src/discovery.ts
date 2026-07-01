@@ -2,6 +2,10 @@ import { getSchemaFromContent } from './schema.ts';
 import type { ResourceDefinition } from '../../../src/core/discovery.ts';
 import { HTTP_METHODS } from '../../../src/core/discovery.ts';
 
+/**
+ * Generated description.
+ *
+ */
 export const resolveResourceName = (path: string, pathItem: any, methods: string[]): string | null => {
   for (const method of methods) {
     if (pathItem[method]?.tags && pathItem[method].tags.length > 0) {
@@ -15,6 +19,10 @@ export const resolveResourceName = (path: string, pathItem: any, methods: string
   return segments[0];
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const discoverResources = (spec: any): ResourceDefinition[] => {
   if (!spec || !spec.paths) return [];
 

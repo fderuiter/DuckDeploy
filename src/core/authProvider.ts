@@ -89,6 +89,10 @@ const probeAccess = async (resource: string, action: ResourceAction) => {
   }
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const setAuthorizationResources = (resources: ResourceDefinition[]) => {
   resourceMap = resources.reduce<Record<string, ResourceDefinition>>((acc, resourceDefinition) => {
     acc[resourceDefinition.name] = resourceDefinition;

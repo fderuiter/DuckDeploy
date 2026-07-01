@@ -4,6 +4,10 @@ import { SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 type Unregister = UseFormReturn['unregister'];
 type SetValue = UseFormReturn['setValue'];
 
+/**
+ * Generated description.
+ *
+ */
 export const areShallowObjectsEqual = (left: Record<string, unknown>, right: Record<string, unknown>) => {
   const leftKeys = Object.keys(left);
   const rightKeys = Object.keys(right);
@@ -11,6 +15,10 @@ export const areShallowObjectsEqual = (left: Record<string, unknown>, right: Rec
   return leftKeys.every((key) => left[key] === right[key]);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const cleanupPolymorphicObjectValue = (
   value: Record<string, unknown>,
   allowedKeys: Set<string> | null,
@@ -31,6 +39,10 @@ export const cleanupPolymorphicObjectValue = (
   return cleanedValue;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const resetPolymorphicValue = (
   unregister: Unregister,
   setValue: SetValue,
@@ -50,6 +62,10 @@ export const resetPolymorphicValue = (
   });
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const setPolymorphicDiscriminatorValue = (
   setValue: SetValue,
   source: string,

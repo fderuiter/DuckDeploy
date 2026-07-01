@@ -1,6 +1,6 @@
 import { normalizeProviderError, NormalizedHttpError } from "../api/custom-instance";
-import { isAxiosError, type AxiosError } from 'axios';
-import { HttpError, type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
+import { type AxiosError } from 'axios';
+import { type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
 import { AXIOS_INSTANCE } from '../api/custom-instance';
 import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
@@ -62,6 +62,10 @@ const ensureModuleLoaded = async (modulePath: string): Promise<Record<string, un
 
 
 
+/**
+ * Generated description.
+ *
+ */
 export const getNormalizedErrorStatus = (error: unknown): number | undefined => {
   const normalizedError = normalizeProviderError(error);
   if (normalizedError instanceof NormalizedHttpError || (normalizedError instanceof Error && normalizedError.name === "HttpError")) {
@@ -70,10 +74,18 @@ export const getNormalizedErrorStatus = (error: unknown): number | undefined => 
   return undefined;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const resetErrorInterceptor = () => {
   // No-op since interceptor is now managed in custom-instance.ts
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const setResourceDefinitions = (
   resources: ResourceDefinition[],
   operationMappings: Record<string, { functionName: string; modulePath: string }> = {},

@@ -13,6 +13,10 @@ import { SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import type { OpenAPIV3 } from 'openapi-types';
 
+/**
+ * Generated description.
+ *
+ */
 export const UnifiedPolymorphicInput = ({
   source,
   options,

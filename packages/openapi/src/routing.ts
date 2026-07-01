@@ -5,11 +5,19 @@ export interface AllowedOperation {
   methods: Set<string>;
 }
 
+/**
+ * Generated description.
+ *
+ */
 export const pathToRegExp = (pathTemplate: string): RegExp => {
   const escaped = pathTemplate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`^${escaped.replace(/\\\{[^/}]+\\\}/g, '[^/]+')}$`);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const parseAllowedOperations = (parsedSpec: any): AllowedOperation[] => {
   const paths = parsedSpec && typeof parsedSpec === 'object' ? parsedSpec.paths : undefined;
   if (!paths || typeof paths !== 'object') {
@@ -32,6 +40,10 @@ export const parseAllowedOperations = (parsedSpec: any): AllowedOperation[] => {
   });
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const isOperationAllowed = (allowedOperations: AllowedOperation[], method: string, pathname: string): boolean => {
   const normalizedMethod = method.toUpperCase();
   return allowedOperations.some(({ pattern, methods }) => {

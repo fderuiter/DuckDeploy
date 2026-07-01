@@ -29,6 +29,10 @@ export interface RuntimeApiConfig {
   message?: string;
 }
 
+/**
+ * Generated description.
+ *
+ */
 export const getRuntimeApiConfig = (): RuntimeApiConfig => {
   const configuredBaseUrl = normalizeConfiguredBaseUrl(import.meta.env.VITE_API_BASE_URL);
   if (configuredBaseUrl) {

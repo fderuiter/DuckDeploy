@@ -2,6 +2,10 @@ import { Resource } from 'react-admin';
 import { AutoList } from './AutoList';
 import { AutoCreate, AutoEdit } from './AutoForm';
 
+/**
+ * Generated description.
+ *
+ */
 export const resolveAdminResources = (_spec: unknown, uiManifest: unknown): any[] => {
   const manifestResourceMap =
     uiManifest &&
@@ -15,6 +19,10 @@ export const resolveAdminResources = (_spec: unknown, uiManifest: unknown): any[
   return manifestResources.filter((resource: any) => resource && resource.hasList);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const resolveOperationMappings = (
   uiManifest: unknown,
 ): Record<string, { functionName: string; modulePath: string }> =>
@@ -26,6 +34,10 @@ export const resolveOperationMappings = (
         .operationFunctionMap
     : {};
 
+/**
+ * Generated description.
+ *
+ */
 export const ResourceFactory = ({ resources }: { resources: any[] }) => {
   return (
     <>

@@ -212,6 +212,10 @@ const WidgetOverrideInput = ({
   });
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const renderPrecomputedField = (
   node: PrecomputedFieldDescriptor,
   keyPrefix: string = node.source,
@@ -262,6 +266,10 @@ export const renderPrecomputedField = (
 };
 
 
+/**
+ * Generated description.
+ *
+ */
 export const mapSchemaToField = (name: string, property: any) => {
   const kind = determineSchemaKind(name, property);
 
@@ -310,6 +318,10 @@ export const mapSchemaToField = (name: string, property: any) => {
 };
 
 
+/**
+ * Generated description.
+ *
+ */
 export const renderInput = (
   node: PrecomputedInputDescriptor | OpenAPIV3.SchemaObject,
   sourceContext?: string,

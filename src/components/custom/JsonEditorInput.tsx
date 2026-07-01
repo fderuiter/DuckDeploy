@@ -1,6 +1,10 @@
 import { TextInput } from 'react-admin';
 import type { EngineContext } from '../../core/WidgetRegistry';
 
+/**
+ * Generated description.
+ *
+ */
 export const JsonEditorInput: React.FC<EngineContext> = ({ source, value, setValue, schemaNode }) => {
   return (
     <TextInput

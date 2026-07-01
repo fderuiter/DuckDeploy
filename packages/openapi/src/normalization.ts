@@ -4,6 +4,10 @@ const isObject = (item: any): boolean => item && typeof item === 'object' && !Ar
 
 const mergeUnique = (arr1: any[], arr2: any[]): any[] => Array.from(new Set([...arr1, ...arr2]));
 
+/**
+ * Generated description.
+ *
+ */
 export const mergeSchemas = (baseSchema: any, overrideSchema: any): any => {
   if (!isObject(baseSchema) || !isObject(overrideSchema)) {
     if (overrideSchema !== undefined) return overrideSchema;
@@ -94,6 +98,10 @@ export const mergeSchemas = (baseSchema: any, overrideSchema: any): any => {
   return merged;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const normalizeSchema = (schema: any): any => {
   if (!schema || typeof schema !== 'object') {
     return schema;
@@ -168,11 +176,15 @@ export const normalizeSchema = (schema: any): any => {
   return sortKeysDeep(normalizedSchema);
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const resolveDiscriminator = (schema: any, originRef?: string): { propertyName?: string; values: string[] } | null => {
   if (!schema?.discriminator?.propertyName) return null;
 
   const propertyName = schema.discriminator.propertyName;
-  let values: string[] = [];
+  const values: string[] = [];
 
   if (schema.discriminator.mapping && originRef) {
     // If explicit mappings exist, try to match originRef
@@ -196,6 +208,10 @@ export const resolveDiscriminator = (schema: any, originRef?: string): { propert
   return { propertyName, values: values.length > 0 ? values : [] };
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const injectOriginRefs = (node: any): void => {
   if (Array.isArray(node)) {
     for (const item of node) {

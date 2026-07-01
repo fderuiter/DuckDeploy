@@ -1,0 +1,17 @@
+{
+  "entryPoints": [
+    "src/core",
+    "src/utils",
+    "src/components",
+    "packages/openapi/src"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "name": "DuckDeploy Documentation",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "compilerOptions": {
+    "allowJs": true
+  }
+}

@@ -14,6 +14,10 @@ interface ReflectiveAuthContextType {
 
 const ReflectiveAuthContext = createContext<ReflectiveAuthContextType | undefined>(undefined);
 
+/**
+ * Generated description.
+ *
+ */
 export const ReflectiveAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [deniedEndpoints, setDeniedEndpoints] = useState<Set<string>>(new Set());
 
@@ -53,6 +57,10 @@ export const ReflectiveAuthProvider: React.FC<{ children: ReactNode }> = ({ chil
   return <ReflectiveAuthContext.Provider value={value}>{children}</ReflectiveAuthContext.Provider>;
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const useReflectiveAuth = () => {
   return useSafeContext(ReflectiveAuthContext, 'useReflectiveAuth must be used within a ReflectiveAuthProvider');
 };

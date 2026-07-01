@@ -13,6 +13,10 @@ export const visuallyHiddenStyle = {
   border: 0,
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const VisuallyHidden = ({ children, role, 'aria-live': ariaLive }: { children: React.ReactNode, role?: string, 'aria-live'?: "polite" | "assertive" | "off" }) => (
   <Box
     role={role}
@@ -25,6 +29,10 @@ export const VisuallyHidden = ({ children, role, 'aria-live': ariaLive }: { chil
 
 export type OperationState = 'loading' | 'saving' | 'success' | 'error' | 'idle' | 'empty' | 'loaded';
 
+/**
+ * Generated description.
+ *
+ */
 export const getStatusMessage = (state: OperationState, details?: string | number): string => {
   switch (state) {
     case 'loading':
@@ -44,6 +52,10 @@ export const getStatusMessage = (state: OperationState, details?: string | numbe
   }
 };
 
+/**
+ * Generated description.
+ *
+ */
 export const resolveRecordLabel = (
   record: any,
   resourceName: string,
