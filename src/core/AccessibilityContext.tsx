@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
+import { useSafeContext } from '../utils/context';
 
 type FocusTarget = string | HTMLElement | React.RefObject<HTMLElement>;
 
@@ -130,8 +131,10 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
     };
   }, [shiftFocus]);
 
+  const contextValue = useMemo(() => ({ announce, shiftFocus }), [announce, shiftFocus]);
+
   return (
-    <AccessibilityContext.Provider value={{ announce, shiftFocus }}>
+    <AccessibilityContext.Provider value={contextValue}>
       {children}
       <div 
         aria-live={current?.mode || 'polite'} 
@@ -155,9 +158,5 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
 };
 
 export const useAccessibility = (): AccessibilityContextType => {
-  const context = useContext(AccessibilityContext);
-  if (!context) {
-    throw new Error('useAccessibility must be used within an AccessibilityProvider');
-  }
-  return context;
+  return useSafeContext(AccessibilityContext, 'useAccessibility must be used within an AccessibilityProvider');
 };
