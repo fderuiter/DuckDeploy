@@ -6,6 +6,8 @@
     "PORT": {
       "type": "number",
       "default": 8787,
+      "minimum": 1,
+      "maximum": 65535,
       "description": "Port for the proxy server to listen on.",
       "public": false
     },
@@ -52,7 +54,14 @@
     },
     "CDISC_ALLOWED_ORIGINS": {
       "type": "string",
+      "default": "http://localhost:5173, http://127.0.0.1:5173",
       "description": "Comma-separated list of allowed CORS origins.",
+      "public": false
+    },
+    "PROXY_ALLOWED_HEADERS": {
+      "type": "string",
+      "default": "",
+      "description": "Comma-separated list of additional allowed headers.",
       "public": false
     },
     "CDISC_ALLOW_UNTRUSTED_ORIGINS": {

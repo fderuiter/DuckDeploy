@@ -1,31 +1,35 @@
 import { validateEnv } from '../scripts/config/validate.mjs';
-validateEnv('backend');
+const config = validateEnv('backend');
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
 import { isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
 
-const PORT = parsePort(process.env.PORT);
-const PROXY_PREFIX = normalizePrefix(process.env.CDISC_PROXY_PREFIX ?? '/api/cdisc');
+const PORT = config.PORT;
+const PROXY_PREFIX = normalizePrefix(config.CDISC_PROXY_PREFIX);
 const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
-const MAX_REQUEST_BODY_BYTES = Number.parseInt(process.env.CDISC_PROXY_MAX_BODY_BYTES ?? '1048576', 10);
-const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.CDISC_PROXY_TIMEOUT_MS ?? '15000', 10);
-const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const MAX_REQUEST_BODY_BYTES = config.CDISC_PROXY_MAX_BODY_BYTES;
+const REQUEST_TIMEOUT_MS = config.CDISC_PROXY_TIMEOUT_MS;
 const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
 const NORMALIZED_PROXY_ALLOWED_HEADERS = PROXY_ALLOWED_HEADERS.map((header) => header.toLowerCase());
 
 const BASE_PROXY_ALLOWED_RESPONSE_HEADERS = ['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count', 'www-authenticate'];
-const additionalAllowedHeaders = (process.env.PROXY_ALLOWED_HEADERS || '')
+const additionalAllowedHeaders = (config.PROXY_ALLOWED_HEADERS || '')
   .split(',')
   .map((header) => header.trim().toLowerCase())
   .filter(Boolean);
 const PROXY_ALLOWED_RESPONSE_HEADERS = [...new Set([...BASE_PROXY_ALLOWED_RESPONSE_HEADERS, ...additionalAllowedHeaders])];
 
-const TRUSTED_INGRESS_HEADER_NAME = normalizeHeaderName(process.env.CDISC_TRUSTED_INGRESS_HEADER_NAME);
-const TRUSTED_INGRESS_HEADER_VALUE = normalizeHeaderValue(process.env.CDISC_TRUSTED_INGRESS_HEADER_VALUE);
-const configuredOrigins = parseAllowedOrigins(process.env.CDISC_ALLOWED_ORIGINS);
-const allowUntrustedOrigins = process.env.CDISC_ALLOW_UNTRUSTED_ORIGINS === 'true';
-const UPSTREAM_BASE_URL = parseUpstreamBaseUrl(process.env.CDISC_UPSTREAM_BASE_URL);
+const TRUSTED_INGRESS_HEADER_NAME = normalizeHeaderName(config.CDISC_TRUSTED_INGRESS_HEADER_NAME);
+const TRUSTED_INGRESS_HEADER_VALUE = normalizeHeaderValue(config.CDISC_TRUSTED_INGRESS_HEADER_VALUE);
+const configuredOrigins = new Set(config.CDISC_ALLOWED_ORIGINS.split(',').map((entry) => entry.trim()).filter(Boolean));
+const allowUntrustedOrigins = config.CDISC_ALLOW_UNTRUSTED_ORIGINS;
+let UPSTREAM_BASE_URL;
+try {
+  UPSTREAM_BASE_URL = new URL(config.CDISC_UPSTREAM_BASE_URL);
+} catch (error) {
+  throw new Error(`Invalid CDISC_UPSTREAM_BASE_URL: ${config.CDISC_UPSTREAM_BASE_URL}`, { cause: error });
+}
 
 const MANIFEST_URL = new URL('../public/ui-manifest.json', import.meta.url);
 
@@ -66,39 +70,11 @@ function normalizeHeaderValue(value) {
   return value.trim();
 }
 
-function parsePort(rawValue) {
-  const normalized = typeof rawValue === 'string' && rawValue.trim().length > 0 ? rawValue.trim() : '8787';
-  const parsed = Number(normalized);
-  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
-    throw new Error(`Invalid PORT value: ${normalized}`);
-  }
-
-  return parsed;
-}
-
-function parseAllowedOrigins(rawValue) {
-  const values = typeof rawValue === 'string' && rawValue.trim().length > 0
-    ? rawValue.split(',').map((entry) => entry.trim()).filter(Boolean)
-    : DEFAULT_ALLOWED_ORIGINS;
-  return new Set(values);
-}
-
 function validateTrustedIngressConfig() {
   if (Boolean(TRUSTED_INGRESS_HEADER_NAME) !== Boolean(TRUSTED_INGRESS_HEADER_VALUE)) {
     throw new Error(
       'CDISC_TRUSTED_INGRESS_HEADER_NAME and CDISC_TRUSTED_INGRESS_HEADER_VALUE must be configured together.',
     );
-  }
-}
-
-function parseUpstreamBaseUrl(rawValue) {
-  try {
-    return new URL(rawValue ?? 'https://api.library.cdisc.org');
-  } catch (error) {
-    const configuredValue = typeof rawValue === 'string' && rawValue.trim().length > 0
-      ? rawValue
-      : '(default)';
-    throw new Error(`Invalid CDISC_UPSTREAM_BASE_URL: ${configuredValue}`, { cause: error });
   }
 }
 
@@ -114,8 +90,8 @@ function buildUpstreamUrl(upstreamPath, searchParams) {
 
 function getKeyChain() {
   const entries = [
-    ['primary', process.env.CDISC_PRIMARY_KEY],
-    ['secondary', process.env.CDISC_SECONDARY_KEY],
+    ['primary', config.CDISC_PRIMARY_KEY],
+    ['secondary', config.CDISC_SECONDARY_KEY],
   ];
 
   return entries
