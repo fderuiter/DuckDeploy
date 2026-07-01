@@ -51,10 +51,15 @@ export type SchemaKind =
   | 'text'
   | 'object'
   | 'polymorphic'
+  | 'link'
   | 'unknown';
 
 export const determineSchemaKind = (name: string, node: any): SchemaKind => {
   if (!node || typeof node !== 'object') return 'unknown';
+
+  if (name === 'id' || getWidgetId(node) === 'link') {
+    return 'link';
+  }
 
   if (node.kind) {
     return node.kind as SchemaKind;

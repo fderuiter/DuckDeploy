@@ -1,4 +1,8 @@
 import {
+  UrlField,
+  useRecordContext,
+  useCreatePath,
+  useResourceContext,
   TextField,
   DateField,
   BooleanField,
@@ -17,6 +21,8 @@ import {
   ArrayInput,
   SimpleFormIterator,
 } from 'react-admin';
+import { Link as RouterLink } from 'react-router-dom';
+import MuiLink from '@mui/material/Link';
 import { createElement } from 'react';
 import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
@@ -41,6 +47,29 @@ type ValidationDescriptor = {
   minimum?: number;
   maximum?: number;
   pattern?: string;
+};
+
+
+const AccessibleLinkField = ({ source, ...props }: { source: string, [key: string]: any }) => {
+  const record = useRecordContext();
+  const resource = useResourceContext();
+  const createPath = useCreatePath();
+
+  if (!record) return null;
+  const value = record[source];
+
+
+  if (source === 'id') {
+    if (!record.id) return null;
+    const path = createPath({ resource, id: record.id, type: 'edit' });
+    return (
+      <MuiLink component={RouterLink} to={path} variant="body2" onClick={(e: React.MouseEvent) => e.stopPropagation()} {...props}>
+        {value}
+      </MuiLink>
+    );
+  }
+
+  return <UrlField source={source} onClick={(e: React.MouseEvent) => e.stopPropagation()} {...props} />;
 };
 
 export type PrecomputedFieldDescriptor = {
@@ -211,8 +240,14 @@ export const renderPrecomputedField = (
     );
   }
 
+
+  if (node.kind === 'link') {
+    return <AccessibleLinkField key={key} source={node.source} />;
+  }
+
   return <TextField key={key} source={node.source} />;
 };
+
 
 export const mapSchemaToField = (name: string, property: any) => {
   const kind = determineSchemaKind(name, property);
@@ -253,8 +288,14 @@ export const mapSchemaToField = (name: string, property: any) => {
     );
   }
 
+
+  if (kind === 'link') {
+    return <AccessibleLinkField key={name} source={name} />;
+  }
+
   return <TextField key={name} source={name} />;
 };
+
 
 export const renderInput = (
   node: PrecomputedInputDescriptor | OpenAPIV3.SchemaObject,
