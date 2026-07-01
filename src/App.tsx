@@ -70,8 +70,14 @@ const AdminApp = () => {
   );
   const [isProxyLoading, setIsProxyLoading] = useState(Boolean(runtimeConfig.healthUrl));
 
+  console.log('AdminApp render', { isLoading, isProxyLoading, hasError: !!error, hasProxyIssue: !!proxyIssue });
+
   const resources = useMemo<ResourceDefinition[]>(
-    () => (spec ? resolveAdminResources(spec, uiManifest) : []),
+    () => {
+      const res = spec ? resolveAdminResources(spec, uiManifest) : [];
+      console.log('Resolved resources:', res.length);
+      return res;
+    },
     [spec, uiManifest],
   );
   const operationMappings = useMemo(
@@ -172,7 +178,7 @@ const AdminApp = () => {
 
   return (
     <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider} layout={StandardLayout}>
-      <ResourceFactory resources={resources} />
+      {() => ResourceFactory({ resources }).props.children}
     </Admin>
   );
 };

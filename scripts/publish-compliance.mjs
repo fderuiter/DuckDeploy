@@ -15,7 +15,8 @@ const files = [
   'traceability-matrix.json',
   'manifest-generation-log.json',
   'contract-validation-report.json',
-  'junit.xml'
+  'junit.xml',
+  'a11y-report.json'
 ];
 
 for (const file of files) {
