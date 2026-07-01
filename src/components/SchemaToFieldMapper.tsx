@@ -16,21 +16,22 @@ import {
   ChipField,
   ArrayInput,
   SimpleFormIterator,
-  required,
 } from 'react-admin';
 import { createElement } from 'react';
 import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { UnifiedPolymorphicInput } from './UnifiedPolymorphicInput';
-import { useAccessibility } from '../core/AccessibilityContext';
 import { useWidgetRegistry } from '../core/WidgetRegistry';
+import Typography from '@mui/material/Typography';
+import type { ElementType } from 'react';
 import {
   determineSchemaKind,
   getReferenceTarget,
   getWidgetId,
   getWidgetProps,
   resolveFallbackWidgetId,
+  extractUiExtensions,
   type SchemaKind,
 } from '../utils/heuristics';
 
@@ -270,6 +271,11 @@ export const renderInput = (
   const kind = isPrecomputed ? (node as PrecomputedInputDescriptor).kind : determineSchemaKind(source, node);
   const description = isPrecomputed ? (node as PrecomputedInputDescriptor).description : (node as OpenAPIV3.SchemaObject).description;
   const title = isPrecomputed ? (node as PrecomputedInputDescriptor).title : (node as OpenAPIV3.SchemaObject).title;
+  const uiExtensions = isPrecomputed ? (node as PrecomputedInputDescriptor).uiExtensions : extractUiExtensions(node);
+  
+  const normalizedSchemaNode = isPrecomputed 
+    ? (node as PrecomputedInputDescriptor) 
+    : ({ ...node, uiExtensions } as unknown as PrecomputedInputDescriptor);
 
   const validators = isPrecomputed 
     ? buildValidatorsFromDescriptor(node as PrecomputedInputDescriptor) 
@@ -288,7 +294,7 @@ export const renderInput = (
 
   const renderDefault = () => {
     if (kind === 'polymorphic') {
-      let options: Array<{ label: string; discriminatorValue?: string; node: any }> = [];
+      let options: Array<{ label: string; discriminatorValue?: string; node: any }>;
       let discriminatorProperty: string | undefined;
 
       if (isPrecomputed) {
@@ -329,9 +335,18 @@ export const renderInput = (
             required: ((node as OpenAPIV3.SchemaObject).required || []).includes(subName)
           }));
 
+      const headingLevel = typeof uiExtensions?.['x-ui-headingLevel'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingLevel']) 
+        ? uiExtensions['x-ui-headingLevel'] 
+        : 'h4';
+      const headingVariant = typeof uiExtensions?.['x-ui-headingVariant'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingVariant']) 
+        ? uiExtensions['x-ui-headingVariant'] 
+        : 'h4';
+
       return (
         <div key={key} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
-          <h4>{title || source.split('.').pop() || source}</h4>
+          <Typography variant={headingVariant as any} component={headingLevel as ElementType}>
+            {title || source.split('.').pop() || source}
+          </Typography>
           {isPrecomputed 
             ? (childrenNodes as PrecomputedInputDescriptor[]).map((child, index) => 
                 renderInput(child, `${key}.${child.source || index}`, child.isRequired, depth + 1, `${key}.${child.source || index}`))
@@ -408,7 +423,7 @@ export const renderInput = (
       candidateWidgetId={candidateWidgetId}
       fallbackWidgetId={source}
       widgetProps={widgetProps}
-      schemaNode={node as PrecomputedInputDescriptor}
+      schemaNode={normalizedSchemaNode}
       fallback={fallback}
     />
   );
