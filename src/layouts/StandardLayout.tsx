@@ -14,13 +14,8 @@ export const StandardLayout = ({ children, ...props }: React.ComponentProps<type
     if (location.pathname !== prevPathnameRef.current) {
       prevPathnameRef.current = location.pathname;
       
-      // Announce the route change
-      announce(`Navigated to ${location.pathname}`);
-      
-      // Move focus to the main content container
-      if (mainContentRef.current) {
-        mainContentRef.current.focus();
-      }
+      // Announce the route change and coordinate focus shift
+      announce(`Navigated to ${location.pathname}`, 'polite', mainContentRef);
     }
   }, [location.pathname, announce]);
 
