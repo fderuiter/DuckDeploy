@@ -1,3 +1,5 @@
+import { FULL_HTTP_METHODS } from '../../../src/core/discovery.ts';
+
 export interface AllowedOperation {
   pattern: RegExp;
   methods: Set<string>;
@@ -18,7 +20,7 @@ export const parseAllowedOperations = (parsedSpec: any): AllowedOperation[] => {
     const methods = new Set(
       Object.keys(pathItem)
         .filter((method) =>
-          ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'].includes(method.toLowerCase())
+          FULL_HTTP_METHODS.has(method.toLowerCase())
         )
         .map((method) => method.toUpperCase())
     );

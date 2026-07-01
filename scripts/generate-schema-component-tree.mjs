@@ -12,6 +12,7 @@ import {
   determineSchemaKindForInput,
 } from '../src/utils/heuristics.ts';
 import { resolveResourceName, compileSpec, normalizeSchema } from '@duckdeploy/openapi';
+import { HTTP_METHODS } from '../src/core/discovery.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -181,7 +182,7 @@ const buildPrecomputedResourceTrees = (spec) => {
     if (!pathItem || typeof pathItem !== 'object') continue;
 
     const methods = Object.keys(pathItem).filter((method) =>
-      ['get', 'post', 'put', 'patch', 'delete'].includes(method.toLowerCase()),
+      HTTP_METHODS.has(method.toLowerCase()),
     );
 
     const resourceName = resolveResourceName(apiPath, pathItem, methods);
