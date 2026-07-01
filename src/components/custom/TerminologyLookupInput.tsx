@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import type { EngineContext } from '../../core/WidgetRegistry';
+import { VisuallyHidden, getStatusMessage } from '../AccessibilityUtils';
 
 const resolveDomain = (widgetProps: Record<string, unknown>): string | undefined => {
   const domain = widgetProps?.domain;
@@ -23,6 +24,14 @@ export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value,
       options={options}
       value={typeof value === 'string' && value ? value : null}
       onChange={(_event, newValue) => setValue(newValue || '')}
+      noOptionsText={
+        <>
+          No options
+          <VisuallyHidden aria-live="polite">
+            {getStatusMessage('empty')}
+          </VisuallyHidden>
+        </>
+      }
       renderInput={(params) => (
         <TextField
           {...params}
