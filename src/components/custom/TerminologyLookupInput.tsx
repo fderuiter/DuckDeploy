@@ -3,6 +3,7 @@ import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import type { EngineContext } from '../../core/WidgetRegistry';
 import { VisuallyHidden, getStatusMessage } from '../AccessibilityUtils';
+import { useSchemaMetadata } from '../../core/useSchemaMetadata';
 
 const resolveDomain = (widgetProps: Record<string, unknown>): string | undefined => {
   const domain = widgetProps?.domain;
@@ -22,6 +23,7 @@ const mockTerminologyDb: Record<string, string[]> = {
 export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value, setValue, widgetProps, schemaNode }) => {
   const domain = resolveDomain(widgetProps) || 'AE';
   const options = useMemo(() => mockTerminologyDb[domain] || [], [domain]);
+  const { description } = useSchemaMetadata(schemaNode);
 
   return (
     <Autocomplete
@@ -55,7 +57,7 @@ export const TerminologyLookupInput: React.FC<EngineContext> = ({ source, value,
           }}
           inputProps={{
             ...params.inputProps,
-            'aria-description': schemaNode?.description,
+            'aria-description': description,
           }}
         />
       )}

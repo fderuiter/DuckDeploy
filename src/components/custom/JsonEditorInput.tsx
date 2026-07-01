@@ -1,11 +1,13 @@
 import { TextInput } from 'react-admin';
 import type { EngineContext } from '../../core/WidgetRegistry';
+import { useSchemaMetadata } from '../../core/useSchemaMetadata';
 
 /**
  * Generated description.
  *
  */
 export const JsonEditorInput: React.FC<EngineContext> = ({ source, value, setValue, schemaNode }) => {
+  const { description } = useSchemaMetadata(schemaNode);
   return (
     <TextInput
       source={source}
@@ -13,7 +15,7 @@ export const JsonEditorInput: React.FC<EngineContext> = ({ source, value, setVal
       onChange={(event) => setValue(event.target.value)}
       multiline
       fullWidth
-      aria-description={schemaNode?.description}
+      aria-description={description}
     />
   );
 };

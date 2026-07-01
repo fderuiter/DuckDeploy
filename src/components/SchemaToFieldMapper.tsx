@@ -226,6 +226,75 @@ const WidgetOverrideInput = ({
  * Generated description.
  *
  */
+
+export const ComponentMappingFactory: Record<string, {
+  Field: React.FC<any>;
+  Input: React.FC<any>;
+}> = {
+  reference: {
+    Field: ({ commonProps, reference, trackerNodes }) => (
+      <ReferenceField {...commonProps} reference={reference}>
+        <TextField source="id" />
+        {trackerNodes}
+      </ReferenceField>
+    ),
+    Input: ({ commonProps, reference, trackerNodes }) => (
+      <>
+        <ReferenceInput {...commonProps} reference={reference}>
+          <SelectInput optionText="id" />
+        </ReferenceInput>
+        {trackerNodes}
+      </>
+    )
+  },
+  enum: {
+    Field: ({ commonProps, choices, trackerNodes }) => <><SelectField {...commonProps} choices={choices} />{trackerNodes}</>,
+    Input: ({ commonProps, choices, trackerNodes }) => <><SelectInput {...commonProps} choices={choices} />{trackerNodes}</>
+  },
+  boolean: {
+    Field: ({ commonProps, trackerNodes }) => <><BooleanField {...commonProps} />{trackerNodes}</>,
+    Input: ({ commonProps, trackerNodes }) => <><BooleanInput {...commonProps} />{trackerNodes}</>
+  },
+  number: {
+    Field: ({ commonProps, trackerNodes }) => <><NumberField {...commonProps} />{trackerNodes}</>,
+    Input: ({ commonProps, trackerNodes }) => <><NumberInput {...commonProps} />{trackerNodes}</>
+  },
+  date: {
+    Field: ({ commonProps, trackerNodes }) => <><DateField {...commonProps} />{trackerNodes}</>,
+    Input: ({ commonProps, trackerNodes }) => <><DateInput {...commonProps} />{trackerNodes}</>
+  },
+  array: {
+    Field: ({ commonProps, trackerNodes }) => (
+      <ArrayField {...commonProps}>
+        <SingleFieldList>
+          <ChipField source="id" />
+        </SingleFieldList>
+        {trackerNodes}
+      </ArrayField>
+    ),
+    Input: ({ commonProps, itemNodes, trackerNodes }) => (
+      <ArrayInput {...commonProps}>
+        <SimpleFormIterator inline>
+          {itemNodes}
+        </SimpleFormIterator>
+        {trackerNodes}
+      </ArrayInput>
+    )
+  },
+  link: {
+    Field: ({ commonProps, trackerNodes }) => <><AccessibleLinkField {...commonProps} />{trackerNodes}</>,
+    Input: ({ commonProps, trackerNodes }) => <><TextInput {...commonProps} />{trackerNodes}</>
+  },
+  default: {
+    Field: ({ commonProps, trackerNodes }) => <><TextField {...commonProps} />{trackerNodes}</>,
+    Input: ({ commonProps, trackerNodes }) => <><TextInput {...commonProps} />{trackerNodes}</>
+  }
+};
+
+/**
+ * Generated description.
+ *
+ */
 export const renderPrecomputedField = (
   node: PrecomputedFieldDescriptor,
   keyPrefix: string = node.source,
@@ -249,49 +318,9 @@ export const renderPrecomputedField = (
     </>
   );
 
-  if (node.kind === 'reference') {
-    const reference = node.reference || getReferenceTarget(node.source);
-    return (
-      <ReferenceField {...commonProps} reference={reference}>
-        <TextField source="id" />
-        {trackerNodes}
-      </ReferenceField>
-    );
-  }
-
-  if (node.kind === 'enum') {
-    return <><SelectField {...commonProps} choices={node.choices || []} />{trackerNodes}</>;
-  }
-
-  if (node.kind === 'boolean') {
-    return <><BooleanField {...commonProps} />{trackerNodes}</>;
-  }
-
-  if (node.kind === 'number') {
-    return <><NumberField {...commonProps} />{trackerNodes}</>;
-  }
-
-  if (node.kind === 'date') {
-    return <><DateField {...commonProps} />{trackerNodes}</>;
-  }
-
-  if (node.kind === 'array') {
-    return (
-      <ArrayField {...commonProps}>
-        <SingleFieldList>
-          <ChipField source="id" />
-        </SingleFieldList>
-        {trackerNodes}
-      </ArrayField>
-    );
-  }
-
-
-  if (node.kind === 'link') {
-    return <><AccessibleLinkField {...commonProps} />{trackerNodes}</>;
-  }
-
-  return <><TextField {...commonProps} />{trackerNodes}</>;
+    const ComponentDef = ComponentMappingFactory[node.kind] || ComponentMappingFactory.default;
+  const reference = node.kind === 'reference' ? (node.reference || getReferenceTarget(node.source)) : undefined;
+  return <ComponentDef.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />;
 };
 
 
@@ -319,50 +348,10 @@ export const mapSchemaToField = (name: string, property: any) => {
     </>
   );
 
-  if (kind === 'reference') {
-    const target = getReferenceTarget(name);
-    return (
-      <ReferenceField {...commonProps} reference={target}>
-        <TextField source="id" />
-        {trackerNodes}
-      </ReferenceField>
-    );
-  }
-
-  if (kind === 'enum') {
-    const choices = property.enum.map((val: string) => ({ id: val, name: val }));
-    return <><SelectField {...commonProps} choices={choices} />{trackerNodes}</>;
-  }
-
-  if (kind === 'boolean') {
-    return <><BooleanField {...commonProps} />{trackerNodes}</>;
-  }
-
-  if (kind === 'number') {
-    return <><NumberField {...commonProps} />{trackerNodes}</>;
-  }
-
-  if (kind === 'date') {
-    return <><DateField {...commonProps} />{trackerNodes}</>;
-  }
-
-  if (kind === 'array') {
-    return (
-      <ArrayField {...commonProps}>
-        <SingleFieldList>
-          <ChipField source="id" />
-        </SingleFieldList>
-        {trackerNodes}
-      </ArrayField>
-    );
-  }
-
-
-  if (kind === 'link') {
-    return <><AccessibleLinkField {...commonProps} />{trackerNodes}</>;
-  }
-
-  return <><TextField {...commonProps} />{trackerNodes}</>;
+    const ComponentDef = ComponentMappingFactory[kind] || ComponentMappingFactory.default;
+  const reference = kind === 'reference' ? getReferenceTarget(name) : undefined;
+  const choices = kind === 'enum' ? property.enum.map((val: any) => ({ id: val, name: val })) : undefined;
+  return <ComponentDef.Field commonProps={commonProps} reference={reference} choices={choices} trackerNodes={trackerNodes} />;
 };
 
 
@@ -517,27 +506,18 @@ export const renderInput = (
       const referenceTarget = isPrecomputed 
         ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
         : getReferenceTarget(source);
-      return (
-        <>
-          <ReferenceInput {...commonProps} reference={referenceTarget}>
-            <SelectInput optionText="id" />
-          </ReferenceInput>
-          {trackerNodes}
-        </>
-      );
+      return <ComponentMappingFactory.reference.Input commonProps={commonProps} reference={referenceTarget} trackerNodes={trackerNodes} />;
     }
 
     if (kind === 'enum') {
       const choices = isPrecomputed 
         ? ((node as PrecomputedInputDescriptor).choices || [])
         : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
-      return <><SelectInput {...commonProps} choices={choices} />{trackerNodes}</>;
+      return <ComponentMappingFactory.enum.Input commonProps={commonProps} choices={choices} trackerNodes={trackerNodes} />;
     }
 
-    if (kind === 'boolean') return <><BooleanInput {...commonProps} />{trackerNodes}</>;
-    if (kind === 'number') return <><NumberInput {...commonProps} />{trackerNodes}</>;
-    if (kind === 'date') return <><DateInput {...commonProps} />{trackerNodes}</>;
-    return <><TextInput {...commonProps} />{trackerNodes}</>;
+    const ComponentDef = ComponentMappingFactory[kind] || ComponentMappingFactory.default;
+    return <ComponentDef.Input commonProps={commonProps} trackerNodes={trackerNodes} itemNodes={itemNodes} />;
   };
 
   const fallback = renderDefault();
