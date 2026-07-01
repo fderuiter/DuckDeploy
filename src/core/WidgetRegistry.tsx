@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useMemo, type ReactNode } from 'react';
+import { useSafeContext } from '../utils/context';
 import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 
 export interface EngineContext {
@@ -39,11 +40,5 @@ export const WidgetRegistryProvider: React.FC<{ children: ReactNode }> = ({ chil
 };
 
 export const useWidgetRegistry = (): WidgetRegistryValue => {
-  const context = useContext(WidgetRegistryContext);
-
-  if (!context) {
-    throw new Error('useWidgetRegistry must be used within a WidgetRegistryProvider');
-  }
-
-  return context;
+  return useSafeContext(WidgetRegistryContext, 'useWidgetRegistry must be used within a WidgetRegistryProvider');
 };
