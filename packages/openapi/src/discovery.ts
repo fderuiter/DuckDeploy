@@ -78,13 +78,30 @@ export const discoverResources = (spec: any): ResourceDefinition[] => {
           res.hasShow = true;
           res.showPath = path;
           res.showOperationId = operationKey;
-          res.showResponseSchema = getResponseSchema();
+          const schema = getResponseSchema();
+          res.showResponseSchema = schema;
+          if (operation['x-record-id'] || schema?.['x-record-id']) {
+            res.xRecordId = operation['x-record-id'] || schema?.['x-record-id'];
+          }
         } else {
           res.hasList = true;
           res.listPath = path;
           res.listOperationId = operationKey;
-          res.listResponseSchema = getResponseSchema();
+          const schema = getResponseSchema();
+          res.listResponseSchema = schema;
           res.listQueryParams = getQueryParams();
+          if (operation['x-pagination-total'] || schema?.['x-pagination-total']) {
+            res.xPaginationTotal = operation['x-pagination-total'] || schema?.['x-pagination-total'];
+          }
+          if (operation['x-hal-embedded'] || schema?.['x-hal-embedded']) {
+            res.xHalEmbedded = operation['x-hal-embedded'] || schema?.['x-hal-embedded'];
+          }
+          if (operation['x-data-collection'] || schema?.['x-data-collection']) {
+            res.xDataCollection = operation['x-data-collection'] || schema?.['x-data-collection'];
+          }
+          if (operation['x-record-id'] || schema?.['x-record-id']) {
+            res.xRecordId = operation['x-record-id'] || schema?.['x-record-id'];
+          }
         }
       } else if (method === 'post' && !isInstancePath) {
         res.hasCreate = true;

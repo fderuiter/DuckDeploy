@@ -21,6 +21,10 @@ export interface ResourceDefinition {
   createRequestBodySchema?: any;
   editRequestBodySchema?: any;
   listQueryParams?: string[];
+  xPaginationTotal?: string;
+  xHalEmbedded?: string;
+  xRecordId?: string;
+  xDataCollection?: string;
 }
 
 export const HTTP_METHODS = new Set([
