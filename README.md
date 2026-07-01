@@ -46,7 +46,8 @@ The environment variables required for frontend, proxy, and testing are describe
 | `CDISC_PROXY_TIMEOUT_MS` | `number` | No | `15000` | Upstream request timeout in milliseconds. |
 | `CDISC_TRUSTED_INGRESS_HEADER_NAME` | `string` | No |  | Header name for trusted ingress assertion. |
 | `CDISC_TRUSTED_INGRESS_HEADER_VALUE` | `string` | No |  | Header value for trusted ingress assertion. |
-| `CDISC_ALLOWED_ORIGINS` | `string` | No |  | Comma-separated list of allowed CORS origins. |
+| `CDISC_ALLOWED_ORIGINS` | `string` | No | `http://localhost:5173, http://127.0.0.1:5173` | Comma-separated list of allowed CORS origins. |
+| `PROXY_ALLOWED_HEADERS` | `string` | No | `` | Comma-separated list of additional allowed headers. |
 | `CDISC_ALLOW_UNTRUSTED_ORIGINS` | `boolean` | No | `false` | Set to true to allow unrestricted CORS access. |
 | `CDISC_UPSTREAM_BASE_URL` | `string` | No | `https://api.library.cdisc.org` | The base URL of the upstream CDISC API. |
 | `VITE_TOTAL_COUNT_HEADER` | `string` | No |  | Header to read total count from (frontend). |
