@@ -27,9 +27,11 @@ src/api/*
 !src/api/custom-instance.ts
 
 public/schema.json
+public/ui-manifest.json
 public/ui-manifest.sha256
 schemathesis-junit.xml
 manifest-generation-log.json
 contract-validation-report.json
 traceability-matrix.json
 junit.xml
+src/generated/
