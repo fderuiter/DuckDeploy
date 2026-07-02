@@ -37,9 +37,9 @@ function normalizePrefix(value) {
 }
 
 const proxyPrefix = normalizePrefix(config.CDISC_PROXY_PREFIX);
-const defaultProxyUrl = `http://localhost:${config.PORT}${proxyPrefix}`;
+const defaultProxyUrl = `http://127.0.0.1:${config.PORT || 8787}${proxyPrefix}`;
 
-const apiBaseUrl = process.env.SCHEMATHESIS_BASE_URL || defaultProxyUrl;
+const apiBaseUrl = process.env.SCHEMATHESIS_BASE_URL || process.env.VITE_API_BASE_URL || defaultProxyUrl;
 const maxExamples = process.env.SCHEMATHESIS_MAX_EXAMPLES || '1000';
 const strictMode = process.env.SCHEMATHESIS_STRICT === 'true';
 
