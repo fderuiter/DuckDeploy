@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "allowJs": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "packages/openapi/src/**/*.ts",
+    "server/**/*.mjs",
+    "scripts/compiler/**/*.mjs"
+  ]
+}

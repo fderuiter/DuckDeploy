@@ -3,7 +3,9 @@
     "src/core",
     "src/utils",
     "src/components",
-    "packages/openapi/src"
+    "packages/openapi/src",
+    "server",
+    "scripts/compiler"
   ],
   "entryPointStrategy": "expand",
   "out": "docs",
@@ -11,7 +13,6 @@
   "readme": "none",
   "excludePrivate": true,
   "excludeProtected": true,
-  "compilerOptions": {
-    "allowJs": true
-  }
+  "tsconfig": "tsconfig.docs.json",
+  "skipErrorChecking": true
 }

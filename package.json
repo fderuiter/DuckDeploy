@@ -25,7 +25,7 @@
     "test:watch": "vitest",
     "scan:a11y": "node ./scripts/accessibility-scan.mjs",
     "analyze:structure": "knip --include files,exports,duplicates",
-    "docs:build": "typedoc --skipErrorChecking",
+    "docs:build": "typedoc",
     "prepare": "husky"
   },
   "dependencies": {
