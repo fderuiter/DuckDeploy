@@ -11,6 +11,10 @@ const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
 const pkgPath = path.resolve(__dirname, '../../package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
+/**
+ * Generated description.
+ *
+ */
 export function validateEnv(context = 'backend') {
   // Enforce Node.js version
   if (pkg.engines && pkg.engines.node) {

@@ -1,5 +1,9 @@
 import { useMemo } from 'react';
 
+/**
+ * Generated description.
+ *
+ */
 export const useSchemaMetadata = (schemaNode: any) => {
   return useMemo(() => {
     const headingLevel = schemaNode?.uiExtensions?.['x-ui-headingLevel'] as string;

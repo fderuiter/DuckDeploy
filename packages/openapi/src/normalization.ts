@@ -115,7 +115,8 @@ export const normalizeSchema = (schema: any): any => {
         accumulator = mergeSchemas(accumulator, normalized);
       }
     }
-    const { allOf, ...rest } = schema;
+    const rest = { ...schema };
+    delete rest.allOf;
     return normalizeSchema(mergeSchemas(accumulator, rest));
   }
 

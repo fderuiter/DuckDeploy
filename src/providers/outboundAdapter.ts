@@ -1,5 +1,5 @@
 import type { OpenAPIV3 } from 'openapi-types';
-import { UnifiedSchemaWalker, SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
+import { UnifiedSchemaWalker } from '@duckdeploy/openapi';
 
 /**
  * Outbound Adapter – sanitizes UI payloads before dispatch via Orval/Axios.

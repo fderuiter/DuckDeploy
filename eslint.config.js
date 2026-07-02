@@ -8,7 +8,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', 'docs', 'public', '.github']),
+  globalIgnores(['dist', 'node_modules', 'docs', 'public', '.github', 'src/api/generated']),
   jsdoc.configs['flat/recommended-typescript'],
   {
     files: ['**/*.{ts,tsx,js,mjs,cjs}'],
@@ -58,7 +58,7 @@ export default defineConfig([
     ],
     rules: { 
       'react-hooks/set-state-in-effect': 'off',  
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-useless-assignment': 'off',
       'react-refresh/only-export-components': 'off' 

@@ -20,7 +20,6 @@ import {
   ChipField,
   ArrayInput,
   SimpleFormIterator,
-  useDataProvider,
 } from 'react-admin';
 import { Link as RouterLink } from 'react-router-dom';
 import MuiLink from '@mui/material/Link';
@@ -34,7 +33,6 @@ import {
   WidgetMetaContext,
   WidgetRecordContext,
   WidgetMutationContext,
-  useWidgetRegistry,
 } from '../core/WidgetRegistry';
 import Typography from '@mui/material/Typography';
 import type { ElementType } from 'react';
@@ -43,12 +41,10 @@ import {
   getReferenceTarget,
   getWidgetId,
   getWidgetProps,
-  resolveFallbackWidgetId,
   extractUiExtensions,
   extractMetadata,
   type SchemaKind,
 } from '../utils/heuristics';
-import { useAccessibility } from '../core/AccessibilityContext';
 import { useSharedMutationService, buildCommonProps, buildTrackerNodes, useComponentResolver } from '../core/Engine';
 
 type ValidationDescriptor = {

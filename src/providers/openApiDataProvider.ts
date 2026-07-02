@@ -1,7 +1,5 @@
 import { normalizeProviderError, NormalizedHttpError } from "../api/custom-instance";
-import { type AxiosError } from 'axios';
 import { type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
-import { AXIOS_INSTANCE } from '../api/custom-instance';
 import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 

@@ -40,7 +40,7 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
 
   const layoutId = precomputedResource?.listLayout || precomputedResource?.layout;
   const layoutConfig = precomputedResource?.listLayoutConfig || precomputedResource?.layoutConfig;
-  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+  const customLayoutRef = layoutId ? getLayout(layoutId) : undefined;
 
   let fields: React.ReactNode[] = [];
   if (precomputedListFields && precomputedListFields.length > 0) {
@@ -54,12 +54,14 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
     fields = [<TextField key={`${resourceName}.id`} source="id" />];
   }
 
-  if (CustomLayout) {
+  if (customLayoutRef) {
     return (
       <List {...props}>
-        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isList={true}>
-          {fields}
-        </CustomLayout>
+        {React.createElement(
+          customLayoutRef as any,
+          { resourceName, layoutConfig, isList: true },
+          fields
+        )}
       </List>
     );
   }

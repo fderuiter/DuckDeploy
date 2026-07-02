@@ -8,23 +8,16 @@ import {
   resolveAdminResources,
   resolveOperationMappings,
 } from './components/ResourceFactory';
-import { WidgetRegistryProvider, registerWidget } from './core/WidgetRegistry';
+import { WidgetRegistryProvider } from './core/WidgetRegistry';
 import { LayoutRegistryProvider, registerLayout } from './core/LayoutRegistry';
 import { TabbedFormLayout } from './layouts/TabbedFormLayout';
 import { AccordionFormLayout } from './layouts/AccordionFormLayout';
 import { AccessibilityProvider } from './core/AccessibilityContext';
-import { CustomMapWidget } from './components/custom/CustomMapWidget';
-import { TerminologyLookupInput } from './components/custom/TerminologyLookupInput';
-import { FetchUserWidget } from './components/custom/FetchUserWidget';
 import { BootstrapScreen } from './components/BootstrapScreen';
 import { getRuntimeApiConfig } from './core/runtimeConfig';
 import { customInstance } from './api/custom-instance';
 import type { ResourceDefinition } from './core/discovery';
 import { StandardLayout } from './layouts/StandardLayout';
-
-registerWidget('x-ui-custom-map', CustomMapWidget);
-registerWidget('cdisc-terminology', TerminologyLookupInput);
-registerWidget('fetch-user-widget', FetchUserWidget);
 
 registerLayout('TabbedFormLayout', TabbedFormLayout);
 registerLayout('AccordionFormLayout', AccordionFormLayout);
@@ -110,7 +103,7 @@ const AdminApp = () => {
       setIsProxyLoading(true);
 
       try {
-                const _payload = await customInstance<ProxyHealthResponse>({
+                await customInstance<ProxyHealthResponse>({
           url: healthUrl,
           method: 'GET',
           headers: { Accept: 'application/json' }

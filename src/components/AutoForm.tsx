@@ -31,7 +31,7 @@ export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCr
   const precomputedResource = uiManifest?.resources?.[resourceName];
   const layoutId = precomputedResource?.createLayout || precomputedResource?.layout;
   const layoutConfig = precomputedResource?.createLayoutConfig || precomputedResource?.layoutConfig;
-  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+  const customLayoutRef = layoutId ? getLayout(layoutId) : undefined;
 
   const precomputedNodes = precomputedResource?.createForm as PrecomputedInputDescriptor[] | undefined;
   let contentNodes: React.ReactNode[] = [];
@@ -45,13 +45,15 @@ export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCr
 
   const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={true} />;
 
-  if (CustomLayout) {
+  if (customLayoutRef) {
     return (
       <Create {...props}>
-        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={true}>
-          {errorSummary}
-          {contentNodes}
-        </CustomLayout>
+        {React.createElement(
+          customLayoutRef as any,
+          { resourceName, layoutConfig, isCreate: true },
+          errorSummary,
+          contentNodes
+        )}
       </Create>
     );
   }
@@ -91,7 +93,7 @@ export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEdit
   const precomputedResource = uiManifest?.resources?.[resourceName];
   const layoutId = precomputedResource?.editLayout || precomputedResource?.layout;
   const layoutConfig = precomputedResource?.editLayoutConfig || precomputedResource?.layoutConfig;
-  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+  const customLayoutRef = layoutId ? getLayout(layoutId) : undefined;
 
   const precomputedNodes = precomputedResource?.editForm as PrecomputedInputDescriptor[] | undefined;
   let contentNodes: React.ReactNode[] = [];
@@ -106,14 +108,16 @@ export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEdit
   const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={false} />;
   const idInput = <TextInput key="id-disabled" source="id" disabled />;
 
-  if (CustomLayout) {
+  if (customLayoutRef) {
     return (
       <Edit {...props}>
-        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={false}>
-          {errorSummary}
-          {idInput}
-          {contentNodes}
-        </CustomLayout>
+        {React.createElement(
+          customLayoutRef as any,
+          { resourceName, layoutConfig, isCreate: false },
+          errorSummary,
+          idInput,
+          contentNodes
+        )}
       </Edit>
     );
   }
