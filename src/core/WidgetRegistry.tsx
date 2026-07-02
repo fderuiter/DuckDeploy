@@ -1,5 +1,4 @@
 import React, { createContext, useState, useCallback, useContext } from 'react';
-import { useSafeContext } from '../utils/context';
 import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 import { createRegistry } from './RegistryFactory';
 
