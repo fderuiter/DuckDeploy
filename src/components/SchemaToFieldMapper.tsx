@@ -175,6 +175,7 @@ type WidgetOverrideInputProps = {
   fallbackWidgetId?: string;
   widgetProps?: Record<string, unknown>;
   schemaNode: PrecomputedInputDescriptor;
+  commonProps?: Record<string, unknown>;
   fallback: React.ReactNode;
 };
 
@@ -184,6 +185,7 @@ const WidgetOverrideInput = ({
   fallbackWidgetId,
   widgetProps,
   schemaNode,
+  commonProps,
   fallback,
 }: WidgetOverrideInputProps) => {
   const { getWidget } = useWidgetRegistry();
@@ -213,13 +215,11 @@ const WidgetOverrideInput = ({
       throw new Error(`Data provider does not support operation: ${operation}`);
     }
     
-    // Map standard RA data provider signatures (resource, params)
     if (payload && typeof payload === 'object' && 'resource' in payload) {
       const { resource, params } = payload;
       return dp[operation](resource, params || payload);
     }
     
-    // Fallback for custom data provider methods
     return dp[operation](payload);
   };
 
@@ -233,7 +233,7 @@ const WidgetOverrideInput = ({
       <WidgetRecordContext.Provider value={recordProps}>
         <WidgetMetaContext.Provider value={metaProps}>
           <WidgetValueContext.Provider value={valueProps}>
-            {createElement(Widget, { ...valueProps, ...metaProps })}
+            {createElement(Widget, { ...valueProps, ...metaProps, ...(commonProps || {}) })}
           </WidgetValueContext.Provider>
         </WidgetMetaContext.Provider>
       </WidgetRecordContext.Provider>
@@ -247,6 +247,7 @@ type WidgetOverrideFieldProps = {
   fallbackWidgetId?: string;
   widgetProps?: Record<string, unknown>;
   schemaNode: PrecomputedFieldDescriptor;
+  commonProps?: Record<string, unknown>;
   fallback: React.ReactNode;
 };
 
@@ -256,6 +257,7 @@ const WidgetOverrideField = ({
   fallbackWidgetId,
   widgetProps,
   schemaNode,
+  commonProps,
   fallback,
 }: WidgetOverrideFieldProps) => {
   const { getWidget } = useWidgetRegistry();
@@ -277,6 +279,7 @@ const WidgetOverrideField = ({
     source,
     value,
     widgetProps: widgetProps || {},
+    ...(commonProps || {}),
     mutate: async (operation: string, payload?: any) => {
       const dp = dataProvider as any;
       if (typeof dp[operation] !== 'function') {
@@ -312,7 +315,7 @@ export const ComponentMappingFactory: Record<string, {
     Input: ({ commonProps, reference, trackerNodes }) => (
       <>
         <ReferenceInput {...commonProps} reference={reference}>
-          <SelectInput optionText="id" />
+          <SelectInput optionText={(choice) => choice?.name || choice?.title || choice?.id} />
         </ReferenceInput>
         {trackerNodes}
       </>
@@ -379,6 +382,7 @@ export const renderPrecomputedField = (
     label: title,
   };
   if (description) {
+    commonProps.helperText = description;
     commonProps['aria-description'] = description;
   }
 
@@ -401,6 +405,7 @@ export const renderPrecomputedField = (
       fallbackWidgetId={node.source}
       widgetProps={node.widgetProps}
       schemaNode={node}
+      commonProps={commonProps}
       fallback={fallback}
     />
   );
@@ -421,6 +426,7 @@ export const mapSchemaToField = (name: string, property: any) => {
     label: title,
   };
   if (description) {
+    commonProps.helperText = description;
     commonProps['aria-description'] = description;
   }
 
@@ -475,6 +481,7 @@ export const renderInput = (
     label: title,
   };
   if (description) {
+    commonProps.helperText = description;
     commonProps['aria-description'] = description;
   }
 
@@ -542,7 +549,12 @@ export const renderInput = (
         : 'h4';
 
       return (
-        <div key={key} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
+        <div 
+          key={key} 
+          role="group" 
+          aria-label={title || source.split('.').pop() || source}
+          style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}
+        >
           <Typography variant={headingVariant as any} component={headingLevel as ElementType}>
             {title || source.split('.').pop() || source}
           </Typography>
@@ -619,6 +631,7 @@ export const renderInput = (
       fallbackWidgetId={source}
       widgetProps={widgetProps}
       schemaNode={normalizedSchemaNode}
+      commonProps={commonProps}
       fallback={fallback}
     />
   );
