@@ -24,6 +24,7 @@
     "test": "vitest run --reporter=default --reporter=junit --outputFile.junit=junit.xml",
     "test:watch": "vitest",
     "scan:a11y": "node ./scripts/accessibility-scan.mjs",
+    "analyze:structure": "knip --include files,exports,duplicates",
     "docs:build": "typedoc --skipErrorChecking",
     "prepare": "husky"
   },
@@ -67,6 +68,7 @@
     "husky": "^9.1.7",
     "jest-axe": "^10.0.0",
     "jsdom": "^29.1.1",
+    "knip": "^6.24.0",
     "lint-staged": "^17.0.8",
     "openapi-types": "^12.1.3",
     "orval": "^8.18.0",

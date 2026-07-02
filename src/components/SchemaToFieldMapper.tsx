@@ -366,32 +366,6 @@ export const renderPrecomputedField = (
  * Generated description.
  *
  */
-export const mapSchemaToField = (name: string, property: any) => {
-  const kind = determineSchemaKind(name, property);
-  const { title, description, isHeuristicTitle } = extractMetadata(property, name);
-
-  const commonProps = buildCommonProps({ source: name, title, description });
-  const trackerNodes = buildTrackerNodes(name, isHeuristicTitle, description);
-
-  const reference = kind === 'reference' ? getReferenceTarget(name) : undefined;
-  const choices = kind === 'enum' ? property.enum.map((val: any) => ({ id: val, name: val })) : undefined;
-  return (
-    <WidgetOverrideField
-      key={name}
-      source={name}
-      fallbackWidgetId={name}
-      schemaNode={{ kind, source: name } as any}
-      fallbackProps={{ commonProps, reference, choices, trackerNodes }}
-      fallback={<ComponentMappingFactory.default.Field commonProps={commonProps} reference={reference} choices={choices} trackerNodes={trackerNodes} />}
-    />
-  );
-};
-
-
-/**
- * Generated description.
- *
- */
 export const renderInput = (
   node: PrecomputedInputDescriptor | OpenAPIV3.SchemaObject,
   sourceContext?: string,
@@ -574,6 +548,5 @@ export const renderInput = (
 };
 
 // Also export deprecated aliases if needed, but since we are refactoring, we might just update the imports
-export const renderPrecomputedInput = renderInput;
-export const mapSchemaToInput = renderInput;
+
 

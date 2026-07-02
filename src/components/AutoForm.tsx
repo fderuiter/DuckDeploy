@@ -2,7 +2,7 @@
 import React from 'react';
 import { Create, Edit, SimpleForm, TextInput, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
 import { useSpec } from '../core/SpecContext';
-import { renderPrecomputedInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
+import { renderInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { SchemaErrorSummary } from './SchemaErrorSummary';
 import { useLayoutRegistry } from '../core/LayoutRegistry';
 
@@ -37,7 +37,7 @@ export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCr
   let contentNodes: React.ReactNode[] = [];
   if (precomputedNodes && precomputedNodes.length > 0) {
     contentNodes = precomputedNodes.map((node, index) => 
-      renderPrecomputedInput(node, `${resourceName}.${node.source || index}`)
+      renderInput(node, `${resourceName}.${node.source || index}`)
     );
   } else {
     contentNodes = [<TextInput key="id" source="id" />];
@@ -97,7 +97,7 @@ export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEdit
   let contentNodes: React.ReactNode[] = [];
   if (precomputedNodes && precomputedNodes.length > 0) {
     contentNodes = precomputedNodes.map((node, index) => 
-      renderPrecomputedInput(node, `${resourceName}.${node.source || index}`)
+      renderInput(node, `${resourceName}.${node.source || index}`)
     );
   } else {
     contentNodes = [<TextInput key="id-fallback" source="id" />];
