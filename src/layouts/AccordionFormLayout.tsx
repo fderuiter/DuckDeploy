@@ -19,7 +19,7 @@ import { useLayoutOrchestrator } from './useLayoutOrchestrator';
  *   ]
  * }
  */
-export const AccordionFormLayout: React.FC<LayoutProps> = ({ children, layoutConfig, resourceName, isCreate, ...rest }) => {
+export const AccordionFormLayout: React.FC<LayoutProps> = ({ children, layoutConfig, ...rest }) => {
   const sections = (layoutConfig?.sections as Array<{ label: string; fields: string[] }>) || [];
 
   const orchestratedSections = useLayoutOrchestrator(children, sections);

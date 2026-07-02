@@ -110,7 +110,7 @@ const AdminApp = () => {
       setIsProxyLoading(true);
 
       try {
-                const _payload = await customInstance<ProxyHealthResponse>({
+        await customInstance<ProxyHealthResponse>({
           url: healthUrl,
           method: 'GET',
           headers: { Accept: 'application/json' }

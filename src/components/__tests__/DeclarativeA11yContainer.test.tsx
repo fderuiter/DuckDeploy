@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
 import { DeclarativeA11yContainer } from '../DeclarativeA11yContainer';
 import { AccessibilityProvider } from '../../core/AccessibilityContext';
