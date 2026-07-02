@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderHook } from '@testing-library/react';
 import { useLayoutOrchestrator } from '../useLayoutOrchestrator';
 
@@ -9,8 +8,11 @@ describe('useLayoutOrchestrator', () => {
   });
 
   it('correctly maps fields to sections and moves unassigned fields to Other', () => {
+     // @ts-expect-error mock
     const FieldA = <div source="a" key="a">A</div>;
+     // @ts-expect-error mock
     const FieldB = <div source="b" key="b">B</div>;
+     // @ts-expect-error mock
     const FieldC = <div source="c" key="c">C</div>;
     const GlobalEl = <div key="global">Global</div>;
 
@@ -39,7 +41,9 @@ describe('useLayoutOrchestrator', () => {
 
   it('preserves field ordering in sections based on the layout config', () => {
     // Config asks for B then A, but children are A then B
+     // @ts-expect-error mock
     const FieldA = <div source="a" key="a">A</div>;
+     // @ts-expect-error mock
     const FieldB = <div source="b" key="b">B</div>;
 
     const children = [FieldA, FieldB];

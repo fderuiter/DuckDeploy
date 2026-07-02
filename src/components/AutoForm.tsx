@@ -26,7 +26,7 @@ export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCr
   const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource: props.resource, mode: 'create' });
 
   const precomputedNodes = precomputedResource?.createForm as PrecomputedInputDescriptor[] | undefined;
-  let contentNodes: React.ReactNode[] = [];
+  let contentNodes: React.ReactNode[];
   if (precomputedNodes && precomputedNodes.length > 0) {
     contentNodes = precomputedNodes.map((node, index) => 
       renderInput(node, `${resourceName}.${node.source || index}`)
@@ -79,7 +79,7 @@ export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEdit
   const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource: props.resource, mode: 'edit' });
 
   const precomputedNodes = precomputedResource?.editForm as PrecomputedInputDescriptor[] | undefined;
-  let contentNodes: React.ReactNode[] = [];
+  let contentNodes: React.ReactNode[];
   if (precomputedNodes && precomputedNodes.length > 0) {
     contentNodes = precomputedNodes.map((node, index) => 
       renderInput(node, `${resourceName}.${node.source || index}`)

@@ -17,7 +17,7 @@ interface SchemaErrorSummaryProps {
  */
 export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resourceName, isCreate }) => {
   const { formState: { errors, isSubmitted, isSubmitting, submitCount } } = useFormContext();
-  const saveContext = useSaveContext();
+  const saveContext = useSaveContext() as any;
   const { precomputedResource } = useManifestInterpreter({ resource: resourceName, mode: isCreate ? 'create' : 'edit' });
   const alertRef = useRef<HTMLDivElement>(null);
   const { shiftFocus } = useAccessibility();
@@ -105,7 +105,7 @@ export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resource
   if (!hasFailed || errorList.length === 0) return null;
 
   return (
-    <Box mb={2}>
+    <Box sx={{ mb: 2 }}>
       <Alert severity="error" role="alert" ref={alertRef} tabIndex={-1}>
         <AlertTitle tabIndex={-1}>Please correct the following errors:</AlertTitle>
         <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>

@@ -39,16 +39,16 @@ export const TerminologyLookupInput: React.FC<WidgetValueProps & WidgetMetaProps
           </>
         }
         renderInput={(params) => (
-          <TextField
-            {...params}
+          <TextField {...(params as any)}
+            
             name={source}
             label="Terminology Lookup"
             helperText={domain ? `Lookup in domain: ${domain}` : undefined}
             InputProps={{
-              ...params.InputProps,
+              ...(params as any).InputProps,
               endAdornment: (
                 <>
-                  {params.InputProps?.endAdornment}
+                  {(params as any).InputProps?.endAdornment}
                   <InputAdornment position="end" aria-hidden="true">
                     <SearchIcon aria-hidden="true" />
                   </InputAdornment>

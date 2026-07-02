@@ -26,8 +26,8 @@ export const useManifestInterpreter = (options: UseManifestInterpreterOptions = 
     const specSchema = spec?.components?.schemas?.[resourceName];
     
     // Fallbacks based on specific-then-generic layout prioritization
-    let layoutId = undefined;
-    let layoutConfig = undefined;
+    let layoutId;
+    let layoutConfig;
 
     if (options.mode === 'create') {
       layoutId = precomputedResource?.createLayout || precomputedResource?.layout;

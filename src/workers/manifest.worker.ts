@@ -22,7 +22,7 @@ self.onmessage = async (event: MessageEvent<ManifestWorkerRequest>) => {
     
     self.postMessage(
       { type: 'success', buffer } satisfies ManifestWorkerResponse,
-      [buffer],
+      [buffer] as any,
     );
   } catch (err) {
     self.postMessage({

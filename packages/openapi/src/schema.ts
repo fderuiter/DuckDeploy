@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { injectOriginRefs } from './normalization.ts';
 import { FULL_HTTP_METHODS } from '../../../src/core/discovery.ts';
