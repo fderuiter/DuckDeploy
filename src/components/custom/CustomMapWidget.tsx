@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { TextInput } from 'react-admin';
 import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
 import PlaceIcon from '@mui/icons-material/Place';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -10,9 +9,8 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import type { ElementType } from 'react';
 import { useAccessibility } from '../../core/AccessibilityContext';
-import { useSchemaMetadata } from '../../core/useSchemaMetadata';
+import { BaseWidget } from './BaseWidget';
 
 /**
  * Generated description.
@@ -24,7 +22,6 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
   const [listView, setListView] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { announce } = useAccessibility();
-  const { headingLevel, headingVariant, description } = useSchemaMetadata(schemaNode);
 
   const handleSelect = (marker: typeof markers[0]) => {
     setSelectedId(marker.id);
@@ -36,11 +33,7 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
   };
 
   return (
-    <div style={{ border: '1px solid #89a', borderRadius: 4, padding: 12 }}>
-      <Typography variant={headingVariant as any} component={headingLevel as ElementType} style={{ marginTop: 0 }}>
-        Custom Map Widget
-      </Typography>
-      
+    <BaseWidget schemaNode={schemaNode}>
       <FormControlLabel
         control={<Switch checked={listView} onChange={(e) => setListView(e.target.checked)} />}
         label="View as List"
@@ -82,8 +75,7 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
         helperText="Sample override widget (lat,lng)."
         defaultValue={typeof value === 'string' ? value : undefined}
         onChange={(event) => setValue(event.target.value)}
-        aria-description={description}
       />
-    </div>
+    </BaseWidget>
   );
 };

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Button, CircularProgress } from '@mui/material';
 import { useWidgetMutation } from '../../core/WidgetRegistry';
-import type { WidgetValueProps } from '../../core/WidgetRegistry';
+import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
+import { BaseWidget } from './BaseWidget';
 
 /**
  * FetchUserWidget component.
  * @param props The widget value props.
  */
-export const FetchUserWidget: React.FC<WidgetValueProps> = (props) => {
+export const FetchUserWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 'schemaNode'>> = (props) => {
   const { execute, isLoading, error } = useWidgetMutation({
     onSuccess: (data) => {
       // Use the backward compatible setValue pattern to update the field
@@ -24,7 +25,7 @@ export const FetchUserWidget: React.FC<WidgetValueProps> = (props) => {
   };
 
   return (
-    <div>
+    <BaseWidget schemaNode={props.schemaNode}>
       <Button 
         variant="contained" 
         onClick={handleClick}
@@ -36,6 +37,6 @@ export const FetchUserWidget: React.FC<WidgetValueProps> = (props) => {
       <div style={{ marginTop: '10px' }}>
         Current Value: {props.value as string}
       </div>
-    </div>
+    </BaseWidget>
   );
 };
