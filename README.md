@@ -9,6 +9,7 @@ For a detailed understanding of how DuckDeploy works under the hood, please refe
 - [Architecture](./docs/architecture.md): API data flow and custom providers.
 - [Extensibility](./docs/extensibility.md): Customizing UI resources and Auto components.
 - [Audit Guide](./docs/audit-guide.md): ISO 29148 Traceability & Compliance and integrity hashes.
+- [Accessibility Guide](./docs/accessibility.md): Guidelines for semantic HTML, logical tab order, and resolving a11y linting errors.
 
 ## How it works
 
