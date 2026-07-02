@@ -107,17 +107,6 @@ export const getWidgetProps = (node: any): Record<string, unknown> | undefined =
     : undefined;
 };
 
-/**
- * Generated description.
- *
- */
-export const resolveFallbackWidgetId = (
-  candidateWidgetId?: string,
-  fallbackWidgetId?: string,
-): string | undefined => {
-  return candidateWidgetId || fallbackWidgetId;
-};
-
 export type SchemaKind =
   | 'reference'
   | 'enum'
