@@ -24,7 +24,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '../..');
 
-const apiBaseUrl = process.env.SCHEMATHESIS_BASE_URL || process.env.VITE_API_BASE_URL || 'https://api.library.cdisc.org';
+const apiBaseUrl = process.env.SCHEMATHESIS_BASE_URL || process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8787/api/cdisc';
 const maxExamples = process.env.SCHEMATHESIS_MAX_EXAMPLES || '1000';
 const strictMode = process.env.SCHEMATHESIS_STRICT === 'true';
 

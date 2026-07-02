@@ -4,6 +4,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
 import { isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
+import Ajv from 'ajv';
 
 const PORT = config.PORT;
 const PROXY_PREFIX = normalizePrefix(config.CDISC_PROXY_PREFIX);
@@ -32,6 +33,7 @@ try {
 }
 
 const MANIFEST_URL = new URL('../public/ui-manifest.json', import.meta.url);
+const SCHEMA_URL = new URL('../public/schema.json', import.meta.url);
 
 async function loadAllowedOperations(manifestUrl) {
   const source = await readFile(manifestUrl, 'utf8');
@@ -42,7 +44,78 @@ async function loadAllowedOperations(manifestUrl) {
   }));
 }
 
+async function initSchemaValidation(schemaUrl) {
+  const source = await readFile(schemaUrl, 'utf8');
+  const schemaData = JSON.parse(source);
+  schemaData.$id = 'openapi.json';
+  
+  const ajv = new Ajv({ strict: false, coerceTypes: true, allErrors: true });
+  ajv.addFormat('uri', () => true);
+  ajv.addFormat('url', () => true);
+  ajv.addFormat('date', () => true);
+  ajv.addSchema(schemaData);
+
+  const matchers = [];
+
+  if (schemaData.paths) {
+    for (const [pathStr, pathItem] of Object.entries(schemaData.paths)) {
+      const regexStr = '^' + pathStr.replace(/{[^}]+}/g, '[^/]+') + '$';
+      const pattern = new RegExp(regexStr);
+      const escPath = pathStr.replace(/~/g, '~0').replace(/\//g, '~1');
+
+      for (const [method, operation] of Object.entries(pathItem)) {
+        if (!['get', 'post', 'put', 'patch', 'delete'].includes(method.toLowerCase())) continue;
+        
+        let requestValidator = null;
+        if (operation.requestBody?.content) {
+          const contentType = operation.requestBody.content['application/json'] ? 'application/json' : '*/*';
+          if (operation.requestBody.content[contentType]?.schema) {
+            const escContentType = contentType.replace(/~/g, '~0').replace(/\//g, '~1');
+            const ref = `openapi.json#/paths/${escPath}/${method}/requestBody/content/${escContentType}/schema`;
+            requestValidator = ajv.compile({ $ref: ref });
+          }
+        }
+        
+        const responseValidators = {};
+        if (operation.responses) {
+          for (const [statusCode, response] of Object.entries(operation.responses)) {
+            if (response.content) {
+              const contentType = response.content['application/json'] ? 'application/json' : '*/*';
+              if (response.content[contentType]?.schema) {
+                const escContentType = contentType.replace(/~/g, '~0').replace(/\//g, '~1');
+                const ref = `openapi.json#/paths/${escPath}/${method}/responses/${statusCode}/content/${escContentType}/schema`;
+                responseValidators[statusCode] = ajv.compile({ $ref: ref });
+              }
+            }
+          }
+        }
+        
+        matchers.push({
+          pattern,
+          method: method.toUpperCase(),
+          requestValidator,
+          responseValidators,
+        });
+      }
+    }
+  }
+  return matchers;
+}
+
 const allowedOperations = await loadAllowedOperations(MANIFEST_URL);
+const routeMatchers = await initSchemaValidation(SCHEMA_URL).catch((err) => {
+  console.warn('Failed to initialize schema validation:', err);
+  return [];
+});
+
+function getRouteMatcher(method, pathname) {
+  for (const matcher of routeMatchers) {
+    if (matcher.method === method && matcher.pattern.test(pathname)) {
+      return matcher;
+    }
+  }
+  return null;
+}
 
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
@@ -286,6 +359,32 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
       ? undefined
       : await readRequestBody(request);
 
+  const routeMatcher = getRouteMatcher(request.method ?? 'GET', upstreamPath);
+
+  if (routeMatcher && routeMatcher.requestValidator && body && body.length > 0) {
+    let jsonBody;
+    try {
+      jsonBody = JSON.parse(body.toString('utf8'));
+    } catch (e) {
+      sendJson(response, 400, {
+        ok: false,
+        code: 'PROXY_SCHEMA_VALIDATION_FAILED',
+        message: 'Invalid JSON request body.',
+      }, requestOrigin);
+      return;
+    }
+    
+    if (!routeMatcher.requestValidator(jsonBody)) {
+      sendJson(response, 400, {
+        ok: false,
+        code: 'PROXY_SCHEMA_VALIDATION_FAILED',
+        message: 'Request body does not match the OpenAPI schema.',
+        errors: routeMatcher.requestValidator.errors,
+      }, requestOrigin);
+      return;
+    }
+  }
+
   const queryParams = new URLSearchParams(url.searchParams);
   for (const keyName of ['api-key', 'apikey', 'apiKey', 'API-KEY', 'APIKEY']) {
     queryParams.delete(keyName);
@@ -313,6 +412,37 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     }
   }
 
+  const upstreamResponseBuffer = Buffer.from(await upstreamResponse.arrayBuffer());
+  const statusCodeStr = upstreamResponse.status.toString();
+
+  if (routeMatcher && routeMatcher.responseValidators) {
+    let resValidator = routeMatcher.responseValidators[statusCodeStr] || routeMatcher.responseValidators['default'];
+    
+    if (resValidator && upstreamResponseBuffer.length > 0) {
+      const contentType = upstreamResponse.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        let jsonRes;
+        let canParse = true;
+        try {
+          jsonRes = JSON.parse(upstreamResponseBuffer.toString('utf8'));
+        } catch (e) {
+          canParse = false;
+        }
+        
+        if (canParse && !resValidator(jsonRes)) {
+           console.error(`Response validation failed for ${upstreamPath}:`, resValidator.errors);
+           sendJson(response, 502, {
+             ok: false,
+             code: 'PROXY_SCHEMA_VALIDATION_FAILED',
+             message: 'Upstream response body does not match the OpenAPI schema.',
+             errors: resValidator.errors,
+           }, requestOrigin);
+           return;
+        }
+      }
+    }
+  }
+
   setCorsHeaders(response, requestOrigin);
   response.statusCode = upstreamResponse.status;
 
@@ -323,7 +453,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
   }
 
   response.setHeader('Cache-Control', 'no-store');
-  response.end(Buffer.from(await upstreamResponse.arrayBuffer()));
+  response.end(upstreamResponseBuffer);
 }
 
 const server = http.createServer(async (request, response) => {
