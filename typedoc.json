@@ -14,7 +14,5 @@
   "excludePrivate": true,
   "excludeProtected": true,
   "tsconfig": "tsconfig.docs.json",
-  "compilerOptions": {
-    "allowJs": true
-  }
+  "skipErrorChecking": true
 }
