@@ -1,6 +1,7 @@
-import React, { createContext, useMemo, useState, useCallback, useContext, type ReactNode } from 'react';
+import React, { createContext, useState, useCallback, useContext } from 'react';
 import { useSafeContext } from '../utils/context';
 import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
+import { createRegistry } from './RegistryFactory';
 
 export interface WidgetValueProps {
   source: string;
@@ -110,23 +111,13 @@ export function useWidgetMutation(
 
 export type WidgetComponent = React.FC<any>;
 
-interface WidgetRegistryValue {
-  getWidget: (id: string) => WidgetComponent | undefined;
-}
-
-// Global singleton registry shared by the app runtime.
-// Register widgets during startup before rendering provider consumers.
-const registry = new Map<string, WidgetComponent>();
-
-const WidgetRegistryContext = createContext<WidgetRegistryValue | undefined>(undefined);
+const widgetRegistry = createRegistry<WidgetComponent>('WidgetRegistryProvider');
 
 /**
  * Generated description.
  *
  */
-export const registerWidget = (id: string, Component: WidgetComponent) => {
-  registry.set(id, Component);
-};
+export const registerWidget = widgetRegistry.register;
 
 /**
  * Bridge HOC to map granular contexts to existing monolithic widgets.
@@ -154,21 +145,13 @@ export function withEngineContext<P extends EngineContext>(Component: React.Comp
  * Generated description.
  *
  */
-export const WidgetRegistryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const value = useMemo<WidgetRegistryValue>(
-    () => ({
-      getWidget: (id: string) => registry.get(id),
-    }),
-    [],
-  );
-
-  return <WidgetRegistryContext.Provider value={value}>{children}</WidgetRegistryContext.Provider>;
-};
+export const WidgetRegistryProvider = widgetRegistry.Provider;
 
 /**
  * Generated description.
  *
  */
-export const useWidgetRegistry = (): WidgetRegistryValue => {
-  return useSafeContext(WidgetRegistryContext, 'useWidgetRegistry must be used within a WidgetRegistryProvider');
+export const useWidgetRegistry = () => {
+  const { get } = widgetRegistry.useRegistry();
+  return { getWidget: get };
 };

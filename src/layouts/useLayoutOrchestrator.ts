@@ -10,6 +10,14 @@ export type OrchestratedSection = {
   elements: React.ReactNode[];
 };
 
+/**
+ * Orchestrates layout children into distinct sections based on a configuration.
+ * Groups unmatched fields into an "Other" section.
+ *
+ * @param children - The layout children elements
+ * @param sectionsConfig - The section configuration
+ * @returns The orchestrated layout sections
+ */
 export const useLayoutOrchestrator = (
   children: React.ReactNode,
   sectionsConfig: SectionConfig[] | undefined
