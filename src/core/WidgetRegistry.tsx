@@ -29,25 +29,6 @@ export const WidgetMetaContext = createContext<WidgetMetaProps | undefined>(unde
 export const WidgetRecordContext = createContext<WidgetRecordProps | undefined>(undefined);
 export const WidgetMutationContext = createContext<WidgetMutationProps | undefined>(undefined);
 
-/**
- * Hook to access widget value props.
- */
-export const useWidgetValue = () => useSafeContext(WidgetValueContext, 'useWidgetValue must be used within a WidgetValueProvider');
-
-/**
- * Hook to access widget metadata props.
- */
-export const useWidgetMeta = () => useSafeContext(WidgetMetaContext, 'useWidgetMeta must be used within a WidgetMetaProvider');
-
-/**
- * Hook to access widget record props.
- */
-export const useWidgetRecord = () => useSafeContext(WidgetRecordContext, 'useWidgetRecord must be used within a WidgetRecordProvider');
-
-/**
- * Hook to access widget mutation props.
- */
-export const useWidgetMutationService = () => useSafeContext(WidgetMutationContext, 'useWidgetMutationService must be used within a WidgetMutationProvider');
 
 export interface UseWidgetMutationOptions {
   onSuccess?: (data: any) => void;
@@ -119,27 +100,6 @@ const widgetRegistry = createRegistry<WidgetComponent>('WidgetRegistryProvider')
  */
 export const registerWidget = widgetRegistry.register;
 
-/**
- * Bridge HOC to map granular contexts to existing monolithic widgets.
- */
-export function withEngineContext<P extends EngineContext>(Component: React.ComponentType<P>) {
-  return function EngineContextBridge(props: Omit<P, keyof EngineContext>) {
-    const value = useWidgetValue();
-    const meta = useWidgetMeta();
-    const record = useWidgetRecord();
-    const mutation = useWidgetMutationService();
-
-    const mergedProps = {
-      ...props,
-      ...value,
-      ...meta,
-      ...record,
-      ...mutation,
-    } as unknown as P;
-
-    return <Component {...mergedProps} />;
-  };
-}
 
 /**
  * Generated description.

@@ -7,6 +7,18 @@ on:
     branches: ["main"]
 
 jobs:
+  structural-analysis:
+    name: Structural Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run analyze:structure
+
   lint-a11y:
     name: Accessibility Linting
     runs-on: ubuntu-latest
@@ -22,7 +34,7 @@ jobs:
   
   build-and-test:
     name: Build and Test
-    needs: lint-a11y
+    needs: [lint-a11y, structural-analysis]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

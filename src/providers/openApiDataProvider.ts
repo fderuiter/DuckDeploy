@@ -74,13 +74,6 @@ export const getNormalizedErrorStatus = (error: unknown): number | undefined => 
   return undefined;
 };
 
-/**
- * Generated description.
- *
- */
-export const resetErrorInterceptor = () => {
-  // No-op since interceptor is now managed in custom-instance.ts
-};
 
 /**
  * Generated description.

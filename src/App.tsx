@@ -193,7 +193,7 @@ const AdminApp = () => {
  * Generated description.
  *
  */
-export const App = () => (
+const App = () => (
   <AccessibilityProvider>
     <LayoutRegistryProvider>
       <WidgetRegistryProvider>
