@@ -19,12 +19,27 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateEnv } from '../config/validate.mjs';
+
+const config = validateEnv('backend');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '../..');
 
-const apiBaseUrl = process.env.SCHEMATHESIS_BASE_URL || process.env.VITE_API_BASE_URL || 'https://api.library.cdisc.org';
+function normalizePrefix(value) {
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  if (!trimmed) {
+    return '/api/cdisc';
+  }
+  const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return withLeadingSlash.replace(/\/+$/, '');
+}
+
+const proxyPrefix = normalizePrefix(config.CDISC_PROXY_PREFIX);
+const defaultProxyUrl = `http://localhost:${config.PORT}${proxyPrefix}`;
+
+const apiBaseUrl = process.env.SCHEMATHESIS_BASE_URL || defaultProxyUrl;
 const maxExamples = process.env.SCHEMATHESIS_MAX_EXAMPLES || '1000';
 const strictMode = process.env.SCHEMATHESIS_STRICT === 'true';
 

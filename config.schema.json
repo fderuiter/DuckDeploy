@@ -72,7 +72,7 @@
     },
     "CDISC_UPSTREAM_BASE_URL": {
       "type": "string",
-      "default": "https://api.library.cdisc.org",
+      "default": "https://api.library.cdisc.org/api",
       "description": "The base URL of the upstream CDISC API.",
       "public": false
     },
