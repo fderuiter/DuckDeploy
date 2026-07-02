@@ -1,7 +1,5 @@
 import { normalizeProviderError, NormalizedHttpError } from "../api/custom-instance";
-import { type AxiosError } from 'axios';
 import { type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
-import { AXIOS_INSTANCE } from '../api/custom-instance';
 import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
 
@@ -281,7 +279,7 @@ export const openApiDataProvider: DataProvider = {
     const resourceDefinition = resourceMap[resource];
     if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.editRequestBodySchema);
+    const outboundData = adaptOutboundPayload(params.data);
     const response = await callApiFunction(resourceDefinition.editOperationId, String(params.id), outboundData);
     const transformed = transformResponse(response, resourceDefinition);
 
@@ -303,7 +301,7 @@ export const openApiDataProvider: DataProvider = {
     const resourceDefinition = resourceMap[resource];
     if (!resourceDefinition) throw new Error(`Unknown resource ${resource}`);
 
-    const outboundData = adaptOutboundPayload(params.data, resourceDefinition.createRequestBodySchema);
+    const outboundData = adaptOutboundPayload(params.data);
     const response = await callApiFunction(resourceDefinition.createOperationId, outboundData);
     const transformed = transformResponse(response, resourceDefinition);
     const payload = transformed.data ?? outboundData;

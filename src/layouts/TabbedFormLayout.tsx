@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { TabbedForm } from 'react-admin';
 import type { LayoutProps } from '../core/LayoutRegistry';
 import { useLayoutOrchestrator } from './useLayoutOrchestrator';
@@ -14,7 +14,7 @@ import { useLayoutOrchestrator } from './useLayoutOrchestrator';
  *   ]
  * }
  */
-export const TabbedFormLayout: React.FC<LayoutProps> = ({ children, layoutConfig, resourceName, isCreate, ...rest }) => {
+export const TabbedFormLayout: React.FC<LayoutProps> = ({ children, layoutConfig, ...rest }) => {
   const tabs = (layoutConfig?.tabs as Array<{ label: string; fields: string[] }>) || [];
 
   const orchestratedTabs = useLayoutOrchestrator(children, tabs);
