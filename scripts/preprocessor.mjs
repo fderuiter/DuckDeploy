@@ -90,6 +90,16 @@ const validateDocsAndInjectMetadata = () => {
     }
   }
 
+  for (const comp of components) {
+    if (!comp.implementationPath) {
+      throw new Error(`Build failed: Component '${comp.name}' (${comp.id}) is missing an implementationPath in the manifest.`);
+    }
+    const implPath = path.join(repoRoot, comp.implementationPath);
+    if (!fs.existsSync(implPath) || !fs.statSync(implPath).isDirectory()) {
+      throw new Error(`Build failed: Implementation path '${comp.implementationPath}' for component '${comp.name}' does not exist.`);
+    }
+  }
+
   const archFile = path.join(DOCS_DIR, 'architecture.md');
   if (fs.existsSync(archFile)) {
     const content = fs.readFileSync(archFile, 'utf8');
