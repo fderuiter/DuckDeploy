@@ -60,8 +60,31 @@ export const extractUiExtensions = (node: any): Record<string, unknown> => {
  *
  */
 export const getPrimaryField = (node: any): string | undefined => {
+  if (!node || typeof node !== 'object') return undefined;
+
   const ext = extractUiExtensions(node);
-  return typeof ext['x-ui-primary-field'] === 'string' ? ext['x-ui-primary-field'] : undefined;
+  if (typeof ext['x-ui-primary-field'] === 'string') {
+    return ext['x-ui-primary-field'];
+  }
+
+  if (node.properties && typeof node.properties === 'object') {
+    for (const key of Object.keys(node.properties)) {
+      const propExt = extractUiExtensions(node.properties[key]);
+      if (propExt['x-ui-primary-field'] === true) {
+        return key;
+      }
+    }
+  }
+
+  if (node.properties && typeof node.properties === 'object') {
+    const keys = Object.keys(node.properties);
+    const fallbacks = ['name', 'title', 'label', 'description', 'summary'];
+    for (const fb of fallbacks) {
+      if (keys.includes(fb)) return fb;
+    }
+  }
+
+  return 'id';
 };
 
 /**

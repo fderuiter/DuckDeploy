@@ -41,6 +41,7 @@ import type { ElementType } from 'react';
 import {
   determineSchemaKind,
   getReferenceTarget,
+  getPrimaryField,
   getWidgetId,
   getWidgetProps,
   resolveFallbackWidgetId,
@@ -50,6 +51,7 @@ import {
 } from '../utils/heuristics';
 import { useAccessibility } from '../core/AccessibilityContext';
 import { useSharedMutationService, buildCommonProps, buildTrackerNodes, useComponentResolver } from '../core/Engine';
+import { useSpec } from '../core/SpecContext';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -272,20 +274,30 @@ export const ComponentMappingFactory: Record<string, {
   Input: React.FC<any>;
 }> = {
   reference: {
-    Field: ({ commonProps, reference, trackerNodes }) => (
-      <ReferenceField {...commonProps} reference={reference}>
-        <TextField source="id" />
-        {trackerNodes}
-      </ReferenceField>
-    ),
-    Input: ({ commonProps, reference, trackerNodes }) => (
-      <>
-        <ReferenceInput {...commonProps} reference={reference}>
-          <SelectInput optionText={(choice) => choice?.name || choice?.title || choice?.id} />
-        </ReferenceInput>
-        {trackerNodes}
-      </>
-    )
+    Field: ({ commonProps, reference, trackerNodes }) => {
+      const { spec } = useSpec();
+      const schema = spec?.components?.schemas?.[reference];
+      const primaryField = schema ? getPrimaryField(schema) : 'id';
+      return (
+        <ReferenceField {...commonProps} reference={reference}>
+          <TextField source={primaryField} />
+          {trackerNodes}
+        </ReferenceField>
+      );
+    },
+    Input: ({ commonProps, reference, trackerNodes }) => {
+      const { spec } = useSpec();
+      const schema = spec?.components?.schemas?.[reference];
+      const primaryField = schema ? getPrimaryField(schema) : 'id';
+      return (
+        <>
+          <ReferenceInput {...commonProps} reference={reference}>
+            <SelectInput optionText={primaryField} />
+          </ReferenceInput>
+          {trackerNodes}
+        </>
+      );
+    }
   },
   enum: {
     Field: ({ commonProps, choices, trackerNodes }) => <><SelectField {...commonProps} choices={choices} />{trackerNodes}</>,

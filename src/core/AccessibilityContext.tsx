@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useMemo, ReactNode, useRef } from 'react';
 import { useSafeContext } from '../utils/context';
 
 type FocusTarget = string | HTMLElement | React.RefObject<HTMLElement>;
@@ -13,6 +13,7 @@ interface Announcement {
 interface AccessibilityContextType {
   announce: (message: string, mode?: 'polite' | 'assertive', focusTarget?: FocusTarget) => void;
   shiftFocus: (target: FocusTarget) => void;
+  reset: () => void;
   trackMissingMetadata: (fieldPath: string, missingType: 'title' | 'description') => void;
   missingMetadataLog: Array<{ fieldPath: string; missingType: 'title' | 'description'; timestamp: number }>;
 }
@@ -30,6 +31,7 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
   const [queue, setQueue] = useState<Announcement[]>([]);
   const [current, setCurrent] = useState<Announcement | null>(null);
   const [missingMetadataLog, setMissingMetadataLog] = useState<Array<{ fieldPath: string; missingType: 'title' | 'description'; timestamp: number }>>([]);
+  const timeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
   const trackMissingMetadata = useCallback((fieldPath: string, missingType: 'title' | 'description') => {
     setMissingMetadataLog((prev) => {
@@ -43,7 +45,8 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
 
   const shiftFocus = useCallback((target: FocusTarget) => {
     // Delay to let the DOM settle before shifting focus
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
+      timeoutsRef.current.delete(timeoutId);
       let element: HTMLElement | null = null;
       if (typeof target === 'string') {
         element = document.querySelector(target) as HTMLElement;
@@ -69,6 +72,14 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
         element.focus();
       }
     }, 50);
+    timeoutsRef.current.add(timeoutId);
+  }, []);
+
+  const reset = useCallback(() => {
+    setQueue([]);
+    setCurrent(null);
+    timeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+    timeoutsRef.current.clear();
   }, []);
 
   useEffect(() => {
@@ -132,13 +143,24 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
       };
 
       // Check shortly after submit (for sync validation errors)
-      setTimeout(() => {
+      const timeout100 = setTimeout(() => {
+        timeoutsRef.current.delete(timeout100);
         if (!checkErrors()) {
           // Check again later for async validation/server errors
-          setTimeout(checkErrors, 500);
-          setTimeout(checkErrors, 1000);
+          const timeout500 = setTimeout(() => {
+            timeoutsRef.current.delete(timeout500);
+            checkErrors();
+          }, 500);
+          timeoutsRef.current.add(timeout500);
+
+          const timeout1000 = setTimeout(() => {
+            timeoutsRef.current.delete(timeout1000);
+            checkErrors();
+          }, 1000);
+          timeoutsRef.current.add(timeout1000);
         }
       }, 100);
+      timeoutsRef.current.add(timeout100);
     };
 
     document.addEventListener('submit', handleFormSubmit, true);
@@ -148,7 +170,7 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
     };
   }, [shiftFocus]);
 
-  const contextValue = useMemo(() => ({ announce, shiftFocus, trackMissingMetadata, missingMetadataLog }), [announce, shiftFocus, trackMissingMetadata, missingMetadataLog]);
+  const contextValue = useMemo(() => ({ announce, shiftFocus, reset, trackMissingMetadata, missingMetadataLog }), [announce, shiftFocus, reset, trackMissingMetadata, missingMetadataLog]);
 
   return (
     <AccessibilityContext.Provider value={contextValue}>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import { getPrimaryField } from '../utils/heuristics';
 
 export const visuallyHiddenStyle = {
   position: 'absolute',
@@ -67,19 +68,7 @@ export const resolveRecordLabel = (
   let primaryField = manifestPrimaryField;
 
   if (!primaryField && specSchema) {
-    const ext = specSchema['x-ui-primary-field'];
-    if (typeof ext === 'string') {
-      primaryField = ext;
-    } else if (specSchema.properties) {
-      // Check if any property has x-ui-primary-field: true
-      const propKeys = Object.keys(specSchema.properties);
-      for (const key of propKeys) {
-        if (specSchema.properties[key]?.['x-ui-primary-field'] === true) {
-          primaryField = key;
-          break;
-        }
-      }
-    }
+    primaryField = getPrimaryField(specSchema);
   }
 
   const primaryValue = (primaryField && record[primaryField] !== undefined && record[primaryField] !== null) 
