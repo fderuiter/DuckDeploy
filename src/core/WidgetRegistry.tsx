@@ -22,8 +22,6 @@ export interface WidgetMutationProps {
   mutate: (operation: string, payload?: unknown) => Promise<unknown>;
 }
 
-export interface EngineContext extends WidgetValueProps, WidgetMetaProps, WidgetRecordProps, WidgetMutationProps {}
-
 export const WidgetValueContext = createContext<WidgetValueProps | undefined>(undefined);
 export const WidgetMetaContext = createContext<WidgetMetaProps | undefined>(undefined);
 export const WidgetRecordContext = createContext<WidgetRecordProps | undefined>(undefined);
@@ -44,11 +42,6 @@ export const useWidgetMeta = () => useSafeContext(WidgetMetaContext, 'useWidgetM
  */
 export const useWidgetRecord = () => useSafeContext(WidgetRecordContext, 'useWidgetRecord must be used within a WidgetRecordProvider');
 
-/**
- * Hook to access widget mutation props.
- */
-export const useWidgetMutationService = () => useSafeContext(WidgetMutationContext, 'useWidgetMutationService must be used within a WidgetMutationProvider');
-
 export interface UseWidgetMutationOptions {
   onSuccess?: (data: any) => void;
   onError?: (error: Error) => void;
@@ -59,12 +52,12 @@ export interface UseWidgetMutationOptions {
  *
  */
 export function useWidgetMutation(options?: UseWidgetMutationOptions): { execute: (operation: string, payload?: unknown) => Promise<unknown>, isLoading: boolean, error: Error | null };
-export function useWidgetMutation(mutate: EngineContext['mutate'], options?: UseWidgetMutationOptions): { execute: (operation: string, payload?: unknown) => Promise<unknown>, isLoading: boolean, error: Error | null };
+export function useWidgetMutation(mutate: WidgetMutationProps['mutate'], options?: UseWidgetMutationOptions): { execute: (operation: string, payload?: unknown) => Promise<unknown>, isLoading: boolean, error: Error | null };
 export function useWidgetMutation(
-  mutateOrOptions?: EngineContext['mutate'] | UseWidgetMutationOptions,
+  mutateOrOptions?: WidgetMutationProps['mutate'] | UseWidgetMutationOptions,
   options?: UseWidgetMutationOptions
 ) {
-  let mutateFn: EngineContext['mutate'] | undefined;
+  let mutateFn: WidgetMutationProps['mutate'] | undefined;
   let opts: UseWidgetMutationOptions | undefined;
 
   if (typeof mutateOrOptions === 'function') {
@@ -118,28 +111,6 @@ const widgetRegistry = createRegistry<WidgetComponent>('WidgetRegistryProvider')
  *
  */
 export const registerWidget = widgetRegistry.register;
-
-/**
- * Bridge HOC to map granular contexts to existing monolithic widgets.
- */
-export function withEngineContext<P extends EngineContext>(Component: React.ComponentType<P>) {
-  return function EngineContextBridge(props: Omit<P, keyof EngineContext>) {
-    const value = useWidgetValue();
-    const meta = useWidgetMeta();
-    const record = useWidgetRecord();
-    const mutation = useWidgetMutationService();
-
-    const mergedProps = {
-      ...props,
-      ...value,
-      ...meta,
-      ...record,
-      ...mutation,
-    } as unknown as P;
-
-    return <Component {...mergedProps} />;
-  };
-}
 
 /**
  * Generated description.
