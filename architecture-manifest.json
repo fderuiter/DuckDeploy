@@ -4,6 +4,7 @@
       "id": "PROXY",
       "name": "Enterprise Proxy",
       "mandatory": true,
+      "implementationPath": "server",
       "metadata": {
         "role": "Routing and Policy Enforcement",
         "version": "1.0.0"
@@ -13,9 +14,30 @@
       "id": "COMPILER",
       "name": "Schema Compiler",
       "mandatory": true,
+      "implementationPath": "scripts/compiler",
       "metadata": {
         "role": "Manifest Generation",
         "version": "2.1.0"
+      }
+    },
+    {
+      "id": "UI_ENGINE",
+      "name": "UI Engine",
+      "mandatory": true,
+      "implementationPath": "src/core",
+      "metadata": {
+        "role": "Dynamic UI Rendering",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "id": "API_CLIENT",
+      "name": "API Client Generation",
+      "mandatory": true,
+      "implementationPath": "src/api",
+      "metadata": {
+        "role": "Code Generation",
+        "version": "1.0.0"
       }
     }
   ]
