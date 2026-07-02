@@ -51,6 +51,9 @@ async function loadRouteValidators(schemaUrl) {
   const source = await readFile(schemaUrl, 'utf8');
   const openapiSchema = JSON.parse(source);
   const ajv = new Ajv({ strict: false, coerceTypes: false, logger: false });
+  ajv.addFormat('uri', () => true);
+  ajv.addFormat('url', () => true);
+  ajv.addFormat('date', () => true);
   ajv.addSchema(openapiSchema, "root");
   const paths = openapiSchema.paths || {};
 
