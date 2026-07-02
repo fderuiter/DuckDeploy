@@ -10,7 +10,7 @@ import { useAccessibility } from '../core/AccessibilityContext';
  */
 export const StandardLayout = ({ children, ...props }: React.ComponentProps<typeof Layout>) => {
   const location = useLocation();
-  const { announce } = useAccessibility();
+  const { announce, reset } = useAccessibility();
   const mainContentRef = useRef<HTMLDivElement>(null);
   const prevPathnameRef = useRef(location.pathname);
 
@@ -18,10 +18,13 @@ export const StandardLayout = ({ children, ...props }: React.ComponentProps<type
     if (location.pathname !== prevPathnameRef.current) {
       prevPathnameRef.current = location.pathname;
       
+      // Clear pending announcements and focus shifts from previous route
+      reset();
+      
       // Announce the route change and coordinate focus shift
       announce(`Navigated to ${location.pathname}`, 'polite', mainContentRef);
     }
-  }, [location.pathname, announce]);
+  }, [location.pathname, announce, reset]);
 
   return (
     <>
