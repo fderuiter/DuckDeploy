@@ -49,14 +49,7 @@ import {
   type SchemaKind,
 } from '../utils/heuristics';
 import { useAccessibility } from '../core/AccessibilityContext';
-
-const MetadataTracker = ({ source, missingType }: { source: string, missingType: 'title' | 'description' }) => {
-  const { trackMissingMetadata } = useAccessibility();
-  React.useEffect(() => {
-    if (source) trackMissingMetadata(source, missingType);
-  }, [source, missingType, trackMissingMetadata]);
-  return null;
-};
+import { useSharedMutationService, buildCommonProps, buildTrackerNodes, useComponentResolver } from '../core/Engine';
 
 type ValidationDescriptor = {
   minLength?: number;
@@ -175,7 +168,8 @@ type WidgetOverrideInputProps = {
   fallbackWidgetId?: string;
   widgetProps?: Record<string, unknown>;
   schemaNode: PrecomputedInputDescriptor;
-  fallback: React.ReactNode;
+  fallbackProps?: any;
+  fallback?: React.ReactNode;
 };
 
 const WidgetOverrideInput = ({
@@ -184,20 +178,21 @@ const WidgetOverrideInput = ({
   fallbackWidgetId,
   widgetProps,
   schemaNode,
+  fallbackProps,
   fallback,
 }: WidgetOverrideInputProps) => {
-  const { getWidget } = useWidgetRegistry();
   const form = useFormContext();
-  const dataProvider = useDataProvider();
+  const handleMutate = useSharedMutationService();
+  const { resolveInput } = useComponentResolver(ComponentMappingFactory);
 
-  const widgetId = resolveFallbackWidgetId(candidateWidgetId, fallbackWidgetId) && [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
-  const Widget = widgetId ? getWidget(widgetId) : undefined;
+  const Widget = resolveInput(schemaNode.kind, candidateWidgetId, fallbackWidgetId);
 
   const value = useWatch({ control: form.control, name: source });
 
-  if (!Widget || !source) {
+  if (!Widget) {
     return <>{fallback}</>;
   }
+  if (!source) return null;
 
   const handleSetValue = (nextValue: any) => {
     form.setValue(source, nextValue, {
@@ -205,22 +200,6 @@ const WidgetOverrideInput = ({
       shouldTouch: true,
       shouldValidate: true,
     });
-  };
-
-  const handleMutate = async (operation: string, payload?: any) => {
-    const dp = dataProvider as any;
-    if (typeof dp[operation] !== 'function') {
-      throw new Error(`Data provider does not support operation: ${operation}`);
-    }
-    
-    // Map standard RA data provider signatures (resource, params)
-    if (payload && typeof payload === 'object' && 'resource' in payload) {
-      const { resource, params } = payload;
-      return dp[operation](resource, params || payload);
-    }
-    
-    // Fallback for custom data provider methods
-    return dp[operation](payload);
   };
 
   const valueProps = { source, value, setValue: handleSetValue };
@@ -233,7 +212,7 @@ const WidgetOverrideInput = ({
       <WidgetRecordContext.Provider value={recordProps}>
         <WidgetMetaContext.Provider value={metaProps}>
           <WidgetValueContext.Provider value={valueProps}>
-            {createElement(Widget, { ...valueProps, ...metaProps })}
+            {createElement(Widget as any, { ...valueProps, ...metaProps, ...fallbackProps })}
           </WidgetValueContext.Provider>
         </WidgetMetaContext.Provider>
       </WidgetRecordContext.Provider>
@@ -247,7 +226,8 @@ type WidgetOverrideFieldProps = {
   fallbackWidgetId?: string;
   widgetProps?: Record<string, unknown>;
   schemaNode: PrecomputedFieldDescriptor;
-  fallback: React.ReactNode;
+  fallbackProps?: any;
+  fallback?: React.ReactNode;
 };
 
 const WidgetOverrideField = ({
@@ -256,40 +236,30 @@ const WidgetOverrideField = ({
   fallbackWidgetId,
   widgetProps,
   schemaNode,
+  fallbackProps,
   fallback,
 }: WidgetOverrideFieldProps) => {
-  const { getWidget } = useWidgetRegistry();
   const record = useRecordContext();
-  const dataProvider = useDataProvider();
+  const handleMutate = useSharedMutationService();
+  const { resolveField } = useComponentResolver(ComponentMappingFactory);
 
-  const widgetId = resolveFallbackWidgetId(candidateWidgetId, fallbackWidgetId) && [candidateWidgetId, fallbackWidgetId].find((candidate) => Boolean(candidate) && Boolean(getWidget(candidate)));
-  const Widget = widgetId ? getWidget(widgetId) : undefined;
+  const Widget = resolveField(schemaNode.kind, candidateWidgetId, fallbackWidgetId);
 
   const value = record ? record[source] : undefined;
 
-  if (!Widget || !source) {
+  if (!Widget) {
     return <>{fallback}</>;
   }
+  if (!source) return null;
 
-  return createElement(Widget, {
+  return createElement(Widget as any, {
     record: record || {},
     schemaNode,
     source,
     value,
     widgetProps: widgetProps || {},
-    mutate: async (operation: string, payload?: any) => {
-      const dp = dataProvider as any;
-      if (typeof dp[operation] !== 'function') {
-        throw new Error(`Data provider does not support operation: ${operation}`);
-      }
-      
-      if (payload && typeof payload === 'object' && 'resource' in payload) {
-        const { resource, params } = payload;
-        return dp[operation](resource, params || payload);
-      }
-      
-      return dp[operation](payload);
-    },
+    mutate: handleMutate,
+    ...fallbackProps,
   });
 };
 
@@ -373,25 +343,10 @@ export const renderPrecomputedField = (
   const key = keyPrefix || node.source || 'field';
   const { title, description, isHeuristicTitle } = extractMetadata(node, node.source);
   
-  const commonProps: any = {
-    key,
-    source: node.source,
-    label: title,
-  };
-  if (description) {
-    commonProps['aria-description'] = description;
-  }
+  const commonProps = buildCommonProps({ source: node.source, title, description, key });
+  const trackerNodes = buildTrackerNodes(node.source, isHeuristicTitle, description);
 
-  const trackerNodes = (
-    <>
-      {isHeuristicTitle && <MetadataTracker source={node.source} missingType="title" />}
-      {!description && <MetadataTracker source={node.source} missingType="description" />}
-    </>
-  );
-
-  const ComponentDef = ComponentMappingFactory[node.kind] || ComponentMappingFactory.default;
   const reference = node.kind === 'reference' ? (node.reference || getReferenceTarget(node.source)) : undefined;
-  const fallback = <ComponentDef.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />;
 
   return (
     <WidgetOverrideField
@@ -401,7 +356,8 @@ export const renderPrecomputedField = (
       fallbackWidgetId={node.source}
       widgetProps={node.widgetProps}
       schemaNode={node}
-      fallback={fallback}
+      fallbackProps={{ commonProps, reference, choices: node.choices || [], trackerNodes }}
+      fallback={<ComponentMappingFactory.default.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />}
     />
   );
 };
@@ -415,26 +371,21 @@ export const mapSchemaToField = (name: string, property: any) => {
   const kind = determineSchemaKind(name, property);
   const { title, description, isHeuristicTitle } = extractMetadata(property, name);
 
-  const commonProps: any = {
-    key: name,
-    source: name,
-    label: title,
-  };
-  if (description) {
-    commonProps['aria-description'] = description;
-  }
+  const commonProps = buildCommonProps({ source: name, title, description });
+  const trackerNodes = buildTrackerNodes(name, isHeuristicTitle, description);
 
-  const trackerNodes = (
-    <>
-      {isHeuristicTitle && <MetadataTracker source={name} missingType="title" />}
-      {!description && <MetadataTracker source={name} missingType="description" />}
-    </>
-  );
-
-    const ComponentDef = ComponentMappingFactory[kind] || ComponentMappingFactory.default;
   const reference = kind === 'reference' ? getReferenceTarget(name) : undefined;
   const choices = kind === 'enum' ? property.enum.map((val: any) => ({ id: val, name: val })) : undefined;
-  return <ComponentDef.Field commonProps={commonProps} reference={reference} choices={choices} trackerNodes={trackerNodes} />;
+  return (
+    <WidgetOverrideField
+      key={name}
+      source={name}
+      fallbackWidgetId={name}
+      schemaNode={{ kind, source: name } as any}
+      fallbackProps={{ commonProps, reference, choices, trackerNodes }}
+      fallback={<ComponentMappingFactory.default.Field commonProps={commonProps} reference={reference} choices={choices} trackerNodes={trackerNodes} />}
+    />
+  );
 };
 
 
@@ -467,23 +418,16 @@ export const renderInput = (
     : buildValidators(node as OpenAPIV3.SchemaObject, isRequired);
 
   const key = keyPrefix || source || 'input';
-  const commonProps: any = {
-    key,
+  const commonProps = buildCommonProps({
     source,
-    validate: validators,
+    title,
+    description,
     isRequired,
-    label: title,
-  };
-  if (description) {
-    commonProps['aria-description'] = description;
-  }
+    key,
+    validators,
+  });
 
-  const trackerNodes = (
-    <>
-      {isHeuristicTitle && <MetadataTracker source={source} missingType="title" />}
-      {!description && <MetadataTracker source={source} missingType="description" />}
-    </>
-  );
+  const trackerNodes = buildTrackerNodes(source, isHeuristicTitle, description);
 
   const renderDefault = () => {
     if (kind === 'polymorphic') {
@@ -619,6 +563,7 @@ export const renderInput = (
       fallbackWidgetId={source}
       widgetProps={widgetProps}
       schemaNode={normalizedSchemaNode}
+      fallbackProps={{ commonProps, trackerNodes }} // itemNodes?
       fallback={fallback}
     />
   );
