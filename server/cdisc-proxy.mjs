@@ -4,6 +4,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
 import { isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
+import Ajv from 'ajv';
 
 const PORT = config.PORT;
 const PROXY_PREFIX = normalizePrefix(config.CDISC_PROXY_PREFIX);
@@ -32,6 +33,7 @@ try {
 }
 
 const MANIFEST_URL = new URL('../public/ui-manifest.json', import.meta.url);
+const SCHEMA_URL = new URL('../public/schema.json', import.meta.url);
 
 async function loadAllowedOperations(manifestUrl) {
   const source = await readFile(manifestUrl, 'utf8');
@@ -43,6 +45,64 @@ async function loadAllowedOperations(manifestUrl) {
 }
 
 const allowedOperations = await loadAllowedOperations(MANIFEST_URL);
+
+const routeValidators = [];
+async function loadRouteValidators(schemaUrl) {
+  const source = await readFile(schemaUrl, 'utf8');
+  const openapiSchema = JSON.parse(source);
+  const ajv = new Ajv({ strict: false, coerceTypes: false, logger: false });
+  ajv.addSchema(openapiSchema, "root");
+  const paths = openapiSchema.paths || {};
+
+  const pathToRegExp = (pathTemplate) => {
+    const escaped = pathTemplate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`^${escaped.replace(/\\\{.*?\\\}/g, '[^/]+')}$`);
+  };
+
+  for (const [pathTemplate, pathItem] of Object.entries(paths)) {
+    const pattern = pathToRegExp(pathTemplate);
+    const pathPointer = pathTemplate.replace(/~/g, '~0').replace(/\//g, '~1');
+    for (const [method, operation] of Object.entries(pathItem)) {
+      if (['get', 'post', 'put', 'delete', 'patch', 'head', 'options'].includes(method.toLowerCase())) {
+        let requestValidator = null;
+        if (operation.requestBody?.content?.['application/json']?.schema) {
+          requestValidator = ajv.compile({
+            $ref: `root#/paths/${pathPointer}/${method}/requestBody/content/application~1json/schema`
+          });
+        }
+
+        const responseValidators = {};
+        if (operation.responses) {
+          for (const [statusCode, response] of Object.entries(operation.responses)) {
+            if (response.content?.['application/json']?.schema) {
+              responseValidators[statusCode] = ajv.compile({
+                $ref: `root#/paths/${pathPointer}/${method}/responses/${statusCode}/content/application~1json/schema`
+              });
+            }
+          }
+        }
+
+        routeValidators.push({
+          pattern,
+          method: method.toUpperCase(),
+          requestValidator,
+          responseValidators,
+        });
+      }
+    }
+  }
+}
+await loadRouteValidators(SCHEMA_URL);
+
+function getValidators(method, upstreamPath) {
+  const normalizedMethod = method.toUpperCase();
+  for (const rv of routeValidators) {
+    if (rv.method === normalizedMethod && rv.pattern.test(upstreamPath)) {
+      return rv;
+    }
+  }
+  return null;
+}
 
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
@@ -286,6 +346,34 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
       ? undefined
       : await readRequestBody(request);
 
+  const validators = getValidators(request.method ?? 'GET', upstreamPath);
+  if (body && body.length > 0 && request.headers['content-type']?.includes('application/json')) {
+    if (validators?.requestValidator) {
+      let parsedBody;
+      try {
+        parsedBody = JSON.parse(body.toString('utf8'));
+      } catch (e) {
+        sendJson(response, 400, {
+          ok: false,
+          code: 'PROXY_INVALID_JSON',
+          message: 'Request body must be valid JSON.',
+        }, requestOrigin);
+        return;
+      }
+      
+      const valid = validators.requestValidator(parsedBody);
+      if (!valid) {
+        sendJson(response, 400, {
+          ok: false,
+          code: 'PROXY_REQUEST_VALIDATION_FAILED',
+          message: 'Request body schema validation failed.',
+          errors: validators.requestValidator.errors
+        }, requestOrigin);
+        return;
+      }
+    }
+  }
+
   const queryParams = new URLSearchParams(url.searchParams);
   for (const keyName of ['api-key', 'apikey', 'apiKey', 'API-KEY', 'APIKEY']) {
     queryParams.delete(keyName);
@@ -313,6 +401,34 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     }
   }
 
+  const responseBuffer = Buffer.from(await upstreamResponse.arrayBuffer());
+
+  const contentType = upstreamResponse.headers.get('content-type');
+
+  if (contentType?.includes('application/json')) {
+    const status = String(upstreamResponse.status);
+    const responseValidator = validators?.responseValidators?.[status] || validators?.responseValidators?.['default'];
+    if (responseValidator) {
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(responseBuffer.toString('utf8'));
+        const valid = responseValidator(parsedResponse);
+        if (!valid) {
+          console.error(`Response schema validation failed for ${request.method} ${upstreamPath} - Status ${status}`);
+          sendJson(response, 502, {
+            ok: false,
+            code: 'PROXY_RESPONSE_VALIDATION_FAILED',
+            message: 'Upstream response schema validation failed.',
+            errors: responseValidator.errors
+          }, requestOrigin);
+          return;
+        }
+      } catch (e) {
+        console.error(`Failed to parse JSON response for validation:`, e);
+      }
+    }
+  }
+
   setCorsHeaders(response, requestOrigin);
   response.statusCode = upstreamResponse.status;
 
@@ -323,7 +439,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
   }
 
   response.setHeader('Cache-Control', 'no-store');
-  response.end(Buffer.from(await upstreamResponse.arrayBuffer()));
+  response.end(responseBuffer);
 }
 
 const server = http.createServer(async (request, response) => {
