@@ -40,6 +40,7 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
 
   const layoutId = precomputedResource?.listLayout || precomputedResource?.layout;
   const layoutConfig = precomputedResource?.listLayoutConfig || precomputedResource?.layoutConfig;
+  // eslint-disable-next-line react-hooks/static-components
   const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
 
   let fields: React.ReactNode[] = [];

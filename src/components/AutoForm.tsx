@@ -31,6 +31,7 @@ export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCr
   const precomputedResource = uiManifest?.resources?.[resourceName];
   const layoutId = precomputedResource?.createLayout || precomputedResource?.layout;
   const layoutConfig = precomputedResource?.createLayoutConfig || precomputedResource?.layoutConfig;
+  // eslint-disable-next-line react-hooks/static-components
   const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
 
   const precomputedNodes = precomputedResource?.createForm as PrecomputedInputDescriptor[] | undefined;
@@ -91,6 +92,7 @@ export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEdit
   const precomputedResource = uiManifest?.resources?.[resourceName];
   const layoutId = precomputedResource?.editLayout || precomputedResource?.layout;
   const layoutConfig = precomputedResource?.editLayoutConfig || precomputedResource?.layoutConfig;
+  // eslint-disable-next-line react-hooks/static-components
   const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
 
   const precomputedNodes = precomputedResource?.editForm as PrecomputedInputDescriptor[] | undefined;
