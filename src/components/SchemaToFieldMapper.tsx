@@ -20,7 +20,6 @@ import {
   ChipField,
   ArrayInput,
   SimpleFormIterator,
-  useDataProvider,
 } from 'react-admin';
 import { Link as RouterLink } from 'react-router-dom';
 import MuiLink from '@mui/material/Link';
@@ -29,27 +28,24 @@ import type { OpenAPIV3 } from 'openapi-types';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { buildValidators } from './validators';
 import { UnifiedPolymorphicInput } from './UnifiedPolymorphicInput';
+import { SchemaLifecycleWrapper } from './SchemaLifecycleWrapper';
 import {
   WidgetValueContext,
   WidgetMetaContext,
   WidgetRecordContext,
   WidgetMutationContext,
-  useWidgetRegistry,
 } from '../core/WidgetRegistry';
 import Typography from '@mui/material/Typography';
-import type { ElementType } from 'react';
 import {
   determineSchemaKind,
   getReferenceTarget,
   getPrimaryField,
   getWidgetId,
   getWidgetProps,
-  resolveFallbackWidgetId,
   extractUiExtensions,
   extractMetadata,
   type SchemaKind,
 } from '../utils/heuristics';
-import { useAccessibility } from '../core/AccessibilityContext';
 import { useSharedMutationService, buildCommonProps, buildTrackerNodes, useComponentResolver } from '../core/Engine';
 import { useSpec } from '../core/SpecContext';
 
@@ -172,6 +168,8 @@ type WidgetOverrideInputProps = {
   schemaNode: PrecomputedInputDescriptor;
   fallbackProps?: any;
   fallback?: React.ReactNode;
+  parse?: (val: any) => any;
+  format?: (val: any) => any;
 };
 
 const WidgetOverrideInput = ({
@@ -182,6 +180,8 @@ const WidgetOverrideInput = ({
   schemaNode,
   fallbackProps,
   fallback,
+  parse,
+  format,
 }: WidgetOverrideInputProps) => {
   const form = useFormContext();
   const handleMutate = useSharedMutationService();
@@ -189,7 +189,8 @@ const WidgetOverrideInput = ({
 
   const Widget = resolveInput(schemaNode.kind, candidateWidgetId, fallbackWidgetId);
 
-  const value = useWatch({ control: form.control, name: source });
+  const rawValue = useWatch({ control: form.control, name: source });
+  const value = format ? format(rawValue) : rawValue;
 
   if (!Widget) {
     return <>{fallback}</>;
@@ -197,7 +198,8 @@ const WidgetOverrideInput = ({
   if (!source) return null;
 
   const handleSetValue = (nextValue: any) => {
-    form.setValue(source, nextValue, {
+    const parsedValue = parse ? parse(nextValue) : nextValue;
+    form.setValue(source, parsedValue, {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
@@ -403,141 +405,8 @@ export const renderInput = (
     : buildValidators(node as OpenAPIV3.SchemaObject, isRequired);
 
   const key = keyPrefix || source || 'input';
-  const commonProps = buildCommonProps({
-    source,
-    title,
-    description,
-    isRequired,
-    key,
-    validators,
-  });
 
   const trackerNodes = buildTrackerNodes(source, isHeuristicTitle, description);
-
-  const renderDefault = () => {
-    if (kind === 'polymorphic') {
-      let options: Array<{ label: string; discriminatorValue?: string; node: any }>;
-      let discriminatorProperty: string | undefined;
-
-      if (isPrecomputed) {
-        options = (node as PrecomputedInputDescriptor).options || [];
-        discriminatorProperty = (node as PrecomputedInputDescriptor).discriminatorProperty;
-      } else {
-        const schema = node as OpenAPIV3.SchemaObject;
-        const schemas = (schema.oneOf || schema.anyOf) as OpenAPIV3.SchemaObject[];
-        const discriminatorMetadata = resolveDiscriminatorMetadata(schema, schemas);
-        discriminatorProperty = discriminatorMetadata?.propertyName;
-        options = schemas.map((s, index) => {
-          const optMeta = extractMetadata(s, `Option ${index + 1}`);
-          return {
-            label: optMeta.title || `Option ${index + 1} (${s.type})`,
-            discriminatorValue: discriminatorMetadata?.values?.[index],
-            node: s,
-          };
-        });
-      }
-
-      if (options && options.length > 0) {
-        return (
-          <>
-            <UnifiedPolymorphicInput
-              keyPrefix={key}
-              source={source}
-              options={options}
-              discriminatorProperty={discriminatorProperty}
-              isRequired={isRequired}
-              depth={depth + 1}
-            />
-            {trackerNodes}
-          </>
-        );
-      }
-    }
-
-    if (kind === 'object') {
-      const childrenNodes = isPrecomputed 
-        ? ((node as PrecomputedInputDescriptor).children || [])
-        : Object.entries((node as OpenAPIV3.SchemaObject).properties || {}).map(([subName, subProp]) => ({
-            name: subName,
-            prop: subProp,
-            required: ((node as OpenAPIV3.SchemaObject).required || []).includes(subName)
-          }));
-
-      const headingLevel = typeof uiExtensions?.['x-ui-headingLevel'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingLevel']) 
-        ? uiExtensions['x-ui-headingLevel'] 
-        : 'h4';
-      const headingVariant = typeof uiExtensions?.['x-ui-headingVariant'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingVariant']) 
-        ? uiExtensions['x-ui-headingVariant'] 
-        : 'h4';
-
-      return (
-        <div 
-          key={key} 
-          role="group" 
-          aria-label={title || source.split('.').pop() || source}
-          style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}
-        >
-          <Typography variant={headingVariant as any} component={headingLevel as ElementType}>
-            {title || source.split('.').pop() || source}
-          </Typography>
-          {trackerNodes}
-          {isPrecomputed 
-            ? (childrenNodes as PrecomputedInputDescriptor[]).map((child, index) => 
-                renderInput(child, `${key}.${child.source || index}`, child.isRequired, depth + 1, `${key}.${child.source || index}`))
-            : (childrenNodes as any[]).map((child) => {
-                const nestedSource = source ? `${source}.${child.name}` : child.name;
-                return renderInput(child.prop, nestedSource, child.required, depth + 1, `${key}.${child.name}`);
-              })
-          }
-        </div>
-      );
-    }
-
-    if (kind === 'array') {
-      let itemNodes: React.ReactNode[] = [];
-      if (isPrecomputed) {
-        const items = (node as PrecomputedInputDescriptor).items || [];
-        itemNodes = items.map((item, index) => renderInput(item, `${key}.item.${index}`, item.isRequired, depth + 1, `${key}.item.${index}`));
-      } else {
-        const itemSchema = (node as OpenAPIV3.SchemaObject).items as OpenAPIV3.SchemaObject;
-        if (itemSchema && itemSchema.type === 'object' && itemSchema.properties) {
-          itemNodes = Object.entries(itemSchema.properties).map(([subName, subProp]) => 
-            renderInput(subProp as OpenAPIV3.SchemaObject, subName, (itemSchema.required || []).includes(subName), depth + 1, `${key}.item.${subName}`)
-          );
-        } else if (itemSchema) {
-          itemNodes = [renderInput(itemSchema, '', false, depth + 1, `${key}.item`)];
-        }
-      }
-
-      return (
-        <ArrayInput {...commonProps}>
-          <SimpleFormIterator inline>
-            {itemNodes}
-          </SimpleFormIterator>
-          {trackerNodes}
-        </ArrayInput>
-      );
-    }
-
-    if (kind === 'reference') {
-      const referenceTarget = isPrecomputed 
-        ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
-        : getReferenceTarget(source);
-      return <ComponentMappingFactory.reference.Input commonProps={commonProps} reference={referenceTarget} trackerNodes={trackerNodes} />;
-    }
-
-    if (kind === 'enum') {
-      const choices = isPrecomputed 
-        ? ((node as PrecomputedInputDescriptor).choices || [])
-        : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
-      return <ComponentMappingFactory.enum.Input commonProps={commonProps} choices={choices} trackerNodes={trackerNodes} />;
-    }
-
-    const ComponentDef = ComponentMappingFactory[kind] || ComponentMappingFactory.default;
-    return <ComponentDef.Input commonProps={commonProps} trackerNodes={trackerNodes} itemNodes={itemNodes} />;
-  };
-
-  const fallback = renderDefault();
 
   const candidateWidgetId = isPrecomputed 
     ? (node as PrecomputedInputDescriptor).widgetId 
@@ -547,15 +416,159 @@ export const renderInput = (
     : (getWidgetProps(node) || {});
 
   return (
-    <WidgetOverrideInput
-      source={source}
-      candidateWidgetId={candidateWidgetId}
-      fallbackWidgetId={source}
-      widgetProps={widgetProps}
-      schemaNode={normalizedSchemaNode}
-      fallbackProps={{ commonProps, trackerNodes }}
-      fallback={fallback}
-    />
+    <SchemaLifecycleWrapper schemaNode={normalizedSchemaNode} key={key}>
+      {({ parse, format }) => {
+        const commonProps = buildCommonProps({
+          source,
+          title,
+          description,
+          isRequired,
+          key,
+          validators,
+        });
+        (commonProps as any).parse = parse;
+        (commonProps as any).format = format;
+
+        const renderDefault = () => {
+          if (kind === 'polymorphic') {
+            let options: Array<{ label: string; discriminatorValue?: string; node: any }>;
+            let discriminatorProperty: string | undefined;
+
+            if (isPrecomputed) {
+              options = (node as PrecomputedInputDescriptor).options || [];
+              discriminatorProperty = (node as PrecomputedInputDescriptor).discriminatorProperty;
+            } else {
+              const schema = node as OpenAPIV3.SchemaObject;
+              const schemas = (schema.oneOf || schema.anyOf) as OpenAPIV3.SchemaObject[];
+              const discriminatorMetadata = resolveDiscriminatorMetadata(schema, schemas);
+              discriminatorProperty = discriminatorMetadata?.propertyName;
+              options = schemas.map((s, index) => {
+                const optMeta = extractMetadata(s, `Option ${index + 1}`);
+                return {
+                  label: optMeta.title || `Option ${index + 1} (${s.type})`,
+                  discriminatorValue: discriminatorMetadata?.values?.[index],
+                  node: s,
+                };
+              });
+            }
+
+            if (options && options.length > 0) {
+              return (
+                <>
+                  <UnifiedPolymorphicInput
+                    keyPrefix={key}
+                    source={source}
+                    options={options}
+                    discriminatorProperty={discriminatorProperty}
+                    isRequired={isRequired}
+                    depth={depth + 1}
+                  />
+                  {trackerNodes}
+                </>
+              );
+            }
+          }
+
+          if (kind === 'object') {
+            const childrenNodes = isPrecomputed 
+              ? ((node as PrecomputedInputDescriptor).children || [])
+              : Object.entries((node as OpenAPIV3.SchemaObject).properties || {}).map(([subName, subProp]) => ({
+                  name: subName,
+                  prop: subProp,
+                  required: ((node as OpenAPIV3.SchemaObject).required || []).includes(subName)
+                }));
+
+            const headingLevel = typeof uiExtensions?.['x-ui-headingLevel'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingLevel']) 
+              ? uiExtensions['x-ui-headingLevel'] 
+              : 'h4';
+            const headingVariant = typeof uiExtensions?.['x-ui-headingVariant'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingVariant']) 
+              ? uiExtensions['x-ui-headingVariant'] 
+              : 'h4';
+
+            return (
+              <div 
+                key={key} 
+                role="group" 
+                aria-label={title || source.split('.').pop() || source}
+                style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}
+              >
+                <Typography variant={headingVariant as any} component={headingLevel as React.ElementType}>
+                  {title || source.split('.').pop() || source}
+                </Typography>
+                {trackerNodes}
+                {isPrecomputed 
+                  ? (childrenNodes as PrecomputedInputDescriptor[]).map((child, index) => 
+                      renderInput(child, `${key}.${child.source || index}`, child.isRequired, depth + 1, `${key}.${child.source || index}`))
+                  : (childrenNodes as any[]).map((child) => {
+                      const nestedSource = source ? `${source}.${child.name}` : child.name;
+                      return renderInput(child.prop, nestedSource, child.required, depth + 1, `${key}.${child.name}`);
+                    })
+                }
+              </div>
+            );
+          }
+
+          if (kind === 'array') {
+            let itemNodes: React.ReactNode[] = [];
+            if (isPrecomputed) {
+              const items = (node as PrecomputedInputDescriptor).items || [];
+              itemNodes = items.map((item, index) => renderInput(item, `${key}.item.${index}`, item.isRequired, depth + 1, `${key}.item.${index}`));
+            } else {
+              const itemSchema = (node as OpenAPIV3.SchemaObject).items as OpenAPIV3.SchemaObject;
+              if (itemSchema && itemSchema.type === 'object' && itemSchema.properties) {
+                itemNodes = Object.entries(itemSchema.properties).map(([subName, subProp]) => 
+                  renderInput(subProp as OpenAPIV3.SchemaObject, subName, (itemSchema.required || []).includes(subName), depth + 1, `${key}.item.${subName}`)
+                );
+              } else if (itemSchema) {
+                itemNodes = [renderInput(itemSchema, '', false, depth + 1, `${key}.item`)];
+              }
+            }
+
+            return (
+              <ArrayInput {...commonProps}>
+                <SimpleFormIterator inline>
+                  {itemNodes}
+                </SimpleFormIterator>
+                {trackerNodes}
+              </ArrayInput>
+            );
+          }
+
+          if (kind === 'reference') {
+            const referenceTarget = isPrecomputed 
+              ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
+              : getReferenceTarget(source);
+            return <ComponentMappingFactory.reference.Input commonProps={commonProps} reference={referenceTarget} trackerNodes={trackerNodes} />;
+          }
+
+          if (kind === 'enum') {
+            const choices = isPrecomputed 
+              ? ((node as PrecomputedInputDescriptor).choices || [])
+              : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
+            return <ComponentMappingFactory.enum.Input commonProps={commonProps} choices={choices} trackerNodes={trackerNodes} />;
+          }
+
+          const ComponentDef = ComponentMappingFactory[kind] || ComponentMappingFactory.default;
+          return <ComponentDef.Input commonProps={commonProps} trackerNodes={trackerNodes} itemNodes={[]} />;
+        };
+
+        const fallback = renderDefault();
+
+        return (
+          <WidgetOverrideInput
+            source={source}
+            candidateWidgetId={candidateWidgetId}
+            fallbackWidgetId={source}
+            widgetProps={widgetProps}
+            schemaNode={normalizedSchemaNode}
+            fallbackProps={{ commonProps, trackerNodes }}
+            fallback={fallback}
+            parse={parse}
+            format={format}
+          />
+        );
+      }}
+    </SchemaLifecycleWrapper>
   );
 };
 
