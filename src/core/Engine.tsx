@@ -5,7 +5,6 @@ import { useWidgetRegistry } from './WidgetRegistry';
 
 /**
  * Tracker for missing metadata to warn users.
- * @param props Tracker props.
  * @returns Null.
  */
 export const MetadataTracker = ({ source, missingType }: { source: string, missingType: 'title' | 'description' }) => {
@@ -40,7 +39,6 @@ export const useSharedMutationService = () => {
 
 /**
  * Builds common accessibility and mapping props for fields/inputs.
- * @param args Options.
  * @returns React props.
  */
 export const buildCommonProps = ({
@@ -101,14 +99,14 @@ export const useComponentResolver = (ComponentMappingFactory: Record<string, { F
   
   return {
     resolveField: (kind: string, candidateId?: string, fallbackId?: string) => {
-      const Widget = [candidateId, fallbackId].find(id => Boolean(id) && Boolean(getWidget(id)));
+      const Widget = [candidateId, fallbackId].find(id => Boolean(id) && Boolean(getWidget(id as string)));
       if (Widget) return getWidget(Widget);
 
       const ComponentDef = ComponentMappingFactory[kind];
       return ComponentDef ? ComponentDef.Field : null;
     },
     resolveInput: (kind: string, candidateId?: string, fallbackId?: string) => {
-      const Widget = [candidateId, fallbackId].find(id => Boolean(id) && Boolean(getWidget(id)));
+      const Widget = [candidateId, fallbackId].find(id => Boolean(id) && Boolean(getWidget(id as string)));
       if (Widget) return getWidget(Widget);
 
       const ComponentDef = ComponentMappingFactory[kind];

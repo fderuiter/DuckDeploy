@@ -13,21 +13,28 @@ export class NormalizedHttpError extends Error {
   public title?: string;
   public details?: string[];
 
+  public readonly message: string;
+  public readonly status: number;
+  public readonly body: any;
+
   /**
    * Generated description.
    *
    */
   constructor(
-    public readonly message: string,
-    public readonly status: number,
-    public readonly body: any = null,
+    message: string,
+    status: number,
+    body: any = null,
   ) {
     super(message);
+    this.message = message;
+    this.status = status;
+    this.body = body;
     this.name = 'HttpError';
     
     // Polyfill for Error.captureStackTrace
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, this.constructor);
+    if (typeof (Error as any).captureStackTrace === 'function') {
+      (Error as any).captureStackTrace(this, this.constructor);
     } else {
       this.stack = (new Error(message)).stack;
     }

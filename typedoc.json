@@ -13,6 +13,5 @@
   "readme": "none",
   "excludePrivate": true,
   "excludeProtected": true,
-  "tsconfig": "tsconfig.docs.json",
-  "skipErrorChecking": true
+  "tsconfig": "tsconfig.docs.json"
 }

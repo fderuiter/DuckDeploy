@@ -33,7 +33,7 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
   const precomputedListFields = precomputedResource?.listFields as PrecomputedFieldDescriptor[] | undefined;
   const manifestPrimaryField = precomputedResource?.primaryField;
 
-  let fields: React.ReactNode[] = [];
+  let fields: React.ReactNode[];
   if (precomputedListFields && precomputedListFields.length > 0) {
     const idField = precomputedListFields.find(field => field.source === 'id');
     const nonIdFields = precomputedListFields.filter(field => field.source !== 'id');
@@ -59,6 +59,7 @@ export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoList
     <List {...props}>
       <Datagrid 
         rowClick="edit" 
+        // @ts-expect-error Datagrid types in RA5 omit row prop but it is supported
         row={<CustomDatagridRow resourceName={resourceName} manifestPrimaryField={manifestPrimaryField} specSchema={specSchema} />}
       >
         {fields}

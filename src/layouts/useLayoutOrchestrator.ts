@@ -53,7 +53,7 @@ export const useLayoutOrchestrator = (
       }).filter(Boolean);
 
       if (index === 0 && globalElements.length > 0) {
-        sectionChildren.unshift(...globalElements);
+        sectionChildren.unshift(...(globalElements as any[]));
       }
 
       return {

@@ -26,7 +26,7 @@ export const AccordionFormLayout: React.FC<LayoutProps> = ({ children, layoutCon
 
   const [expanded, setExpanded] = useState<string | false>(sections[0]?.label || false);
 
-  const handleExpand = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleExpand = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
 

@@ -12,8 +12,6 @@ export interface DeclarativeA11yContainerProps {
 /**
  * Declarative container that automatically shifts focus when its dependent content changes.
  * Used primarily for polymorphic schema transitions to maintain accessibility focus context.
- *
- * @param props Component properties
  */
 export const DeclarativeA11yContainer: React.FC<DeclarativeA11yContainerProps> = ({
   children,
@@ -58,7 +56,7 @@ export const DeclarativeA11yContainer: React.FC<DeclarativeA11yContainerProps> =
         setTimeout(() => {
           if (!containerRef.current) return;
 
-          let targetElement: HTMLElement | null = null;
+          let targetElement: HTMLElement | null;
           if (focusTarget === 'first-input') {
             targetElement = containerRef.current.querySelector(
               'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])'

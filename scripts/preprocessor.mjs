@@ -15,10 +15,6 @@ import {
 import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator, UnifiedSchemaWalker } from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
-/**
- * @typedef {import('../src/core/discovery.ts').ResourceDefinition} ResourceDefinition
- */
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
@@ -464,7 +460,6 @@ const buildUiManifest = (spec) => {
   }
 
   const visitor = new OpenApiVisitor(spec);
-  /** @type {Record<string, ResourceDefinition>} */
   const resources = {};
   const discovered = discoverResources(spec);
   const discoveredByName = new Map(discovered.map(d => [d.name, d]));

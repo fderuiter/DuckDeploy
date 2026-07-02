@@ -128,7 +128,7 @@ const AdminApp = () => {
           'title' in issue &&
           'message' in issue
         ) {
-          setProxyIssue(issue as BootstrapIssue);
+          setProxyIssue(issue as unknown as BootstrapIssue);
         } else {
           setProxyIssue({
             title: 'API proxy is unreachable',
@@ -165,7 +165,7 @@ const AdminApp = () => {
   }
 
     if (error) {
-    const issue = (error as any).title ? (error as BootstrapIssue) : {
+    const issue = (error as any).title ? (error as unknown as BootstrapIssue) : {
       title: 'Application bootstrap failed',
       message: 'DuckDeploy could not load the compiled schema or UI manifest required to start.',
       details: [error.message],

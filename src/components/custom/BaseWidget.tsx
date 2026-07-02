@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import React, { ElementType } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';

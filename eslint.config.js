@@ -61,7 +61,7 @@ export default defineConfig([
       'react-hooks/static-components': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'off',
-      'no-useless-assignment': 'off',
+      'no-useless-assignment': 'error',
       'react-refresh/only-export-components': 'off' 
     }
   }
