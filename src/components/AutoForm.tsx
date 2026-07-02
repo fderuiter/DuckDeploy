@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { Create, Edit, SimpleForm, TextInput, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
-import { useSpec } from '../core/SpecContext';
+import { useManifestInterpreter } from '../core/useManifestInterpreter';
 import { renderInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import { SchemaErrorSummary } from './SchemaErrorSummary';
-import { useLayoutRegistry } from '../core/LayoutRegistry';
 
 /**
  * Props for the AutoCreate component.
@@ -24,14 +23,7 @@ export interface AutoCreateProps<RecordType extends RaRecord = RaRecord> extends
  * @param props - Component props
  */
 export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCreateProps<RecordType>) => {
-  const { uiManifest } = useSpec();
-  const { getLayout } = useLayoutRegistry();
-  const resourceName = props.resource || '';
-  
-  const precomputedResource = uiManifest?.resources?.[resourceName];
-  const layoutId = precomputedResource?.createLayout || precomputedResource?.layout;
-  const layoutConfig = precomputedResource?.createLayoutConfig || precomputedResource?.layoutConfig;
-  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+  const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource: props.resource, mode: 'create' });
 
   const precomputedNodes = precomputedResource?.createForm as PrecomputedInputDescriptor[] | undefined;
   let contentNodes: React.ReactNode[] = [];
@@ -84,14 +76,7 @@ export interface AutoEditProps<RecordType extends RaRecord = RaRecord> extends O
  * @param props - Component props
  */
 export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEditProps<RecordType>) => {
-  const { uiManifest } = useSpec();
-  const { getLayout } = useLayoutRegistry();
-  const resourceName = props.resource || '';
-
-  const precomputedResource = uiManifest?.resources?.[resourceName];
-  const layoutId = precomputedResource?.editLayout || precomputedResource?.layout;
-  const layoutConfig = precomputedResource?.editLayoutConfig || precomputedResource?.layoutConfig;
-  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
+  const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource: props.resource, mode: 'edit' });
 
   const precomputedNodes = precomputedResource?.editForm as PrecomputedInputDescriptor[] | undefined;
   let contentNodes: React.ReactNode[] = [];

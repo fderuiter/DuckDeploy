@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Alert, AlertTitle, Link, Box } from '@mui/material';
 import { useFormContext } from 'react-hook-form';
 import { useSaveContext } from 'react-admin';
-import { useSpec } from '../core/SpecContext';
+import { useManifestInterpreter } from '../core/useManifestInterpreter';
 import { useAccessibility } from '../core/AccessibilityContext';
 import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 
@@ -18,17 +18,16 @@ interface SchemaErrorSummaryProps {
 export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resourceName, isCreate }) => {
   const { formState: { errors, isSubmitted, isSubmitting, submitCount } } = useFormContext();
   const saveContext = useSaveContext();
-  const { uiManifest } = useSpec();
+  const { precomputedResource } = useManifestInterpreter({ resource: resourceName, mode: isCreate ? 'create' : 'edit' });
   const alertRef = useRef<HTMLDivElement>(null);
   const { shiftFocus } = useAccessibility();
   const [hasFailed, setHasFailed] = useState(false);
 
   const precomputedNodes = useMemo(() => {
-    const precomputedResource = uiManifest?.resources?.[resourceName];
     return (isCreate ? precomputedResource?.createForm : precomputedResource?.editForm) as
       | PrecomputedInputDescriptor[]
       | undefined;
-  }, [uiManifest, resourceName, isCreate]);
+  }, [precomputedResource, isCreate]);
 
   // Flatten precomputed nodes to easily look up descriptions
   const schemaMap = useMemo(() => {
