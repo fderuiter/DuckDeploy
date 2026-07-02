@@ -3,7 +3,7 @@ import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
 import { VisuallyHidden, getStatusMessage } from '../AccessibilityUtils';
-import { useSchemaMetadata } from '../../core/useSchemaMetadata';
+import { BaseWidget } from './BaseWidget';
 
 const resolveDomain = (widgetProps: Record<string, unknown>): string | undefined => {
   const domain = widgetProps?.domain;
@@ -23,44 +23,41 @@ const mockTerminologyDb: Record<string, string[]> = {
 export const TerminologyLookupInput: React.FC<WidgetValueProps & WidgetMetaProps> = ({ source, value, setValue, widgetProps, schemaNode }) => {
   const domain = resolveDomain(widgetProps) || 'AE';
   const options = useMemo(() => mockTerminologyDb[domain] || [], [domain]);
-  const { description } = useSchemaMetadata(schemaNode);
 
   return (
-    <Autocomplete
-      options={options}
-      value={typeof value === 'string' && value ? value : null}
-      onChange={(_event, newValue) => setValue(newValue || '')}
-      noOptionsText={
-        <>
-          No options
-          <VisuallyHidden aria-live="polite">
-            {getStatusMessage('empty')}
-          </VisuallyHidden>
-        </>
-      }
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          name={source}
-          label="Terminology Lookup"
-          helperText={domain ? `Lookup in domain: ${domain}` : undefined}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {params.InputProps?.endAdornment}
-                <InputAdornment position="end" aria-hidden="true">
-                  <SearchIcon aria-hidden="true" />
-                </InputAdornment>
-              </>
-            ),
-          }}
-          inputProps={{
-            ...params.inputProps,
-            'aria-description': description,
-          }}
-        />
-      )}
-    />
+    <BaseWidget schemaNode={schemaNode}>
+      <Autocomplete
+        options={options}
+        value={typeof value === 'string' && value ? value : null}
+        onChange={(_event, newValue) => setValue(newValue || '')}
+        noOptionsText={
+          <>
+            No options
+            <VisuallyHidden aria-live="polite">
+              {getStatusMessage('empty')}
+            </VisuallyHidden>
+          </>
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            name={source}
+            label="Terminology Lookup"
+            helperText={domain ? `Lookup in domain: ${domain}` : undefined}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {params.InputProps?.endAdornment}
+                  <InputAdornment position="end" aria-hidden="true">
+                    <SearchIcon aria-hidden="true" />
+                  </InputAdornment>
+                </>
+              ),
+            }}
+          />
+        )}
+      />
+    </BaseWidget>
   );
 };
