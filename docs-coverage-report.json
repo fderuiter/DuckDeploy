@@ -1,0 +1,12 @@
+{
+  "PROXY": {
+    "name": "Enterprise Proxy",
+    "documented": true,
+    "mandatory": true
+  },
+  "COMPILER": {
+    "name": "Schema Compiler",
+    "documented": true,
+    "mandatory": true
+  }
+}

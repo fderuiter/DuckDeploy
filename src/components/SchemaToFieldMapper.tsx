@@ -201,7 +201,6 @@ const WidgetOverrideInput = ({
       shouldValidate: true,
     });
   };
-
   const valueProps = { source, value, setValue: handleSetValue };
   const metaProps = { schemaNode, widgetProps: widgetProps || {} };
   const recordProps = { record: (form.getValues() as Record<string, unknown>) ?? {} };
@@ -282,7 +281,7 @@ export const ComponentMappingFactory: Record<string, {
     Input: ({ commonProps, reference, trackerNodes }) => (
       <>
         <ReferenceInput {...commonProps} reference={reference}>
-          <SelectInput optionText="id" />
+          <SelectInput optionText={(choice) => choice?.name || choice?.title || choice?.id} />
         </ReferenceInput>
         {trackerNodes}
       </>
@@ -486,7 +485,12 @@ export const renderInput = (
         : 'h4';
 
       return (
-        <div key={key} style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}>
+        <div 
+          key={key} 
+          role="group" 
+          aria-label={title || source.split('.').pop() || source}
+          style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}
+        >
           <Typography variant={headingVariant as any} component={headingLevel as ElementType}>
             {title || source.split('.').pop() || source}
           </Typography>
@@ -563,7 +567,7 @@ export const renderInput = (
       fallbackWidgetId={source}
       widgetProps={widgetProps}
       schemaNode={normalizedSchemaNode}
-      fallbackProps={{ commonProps, trackerNodes }} // itemNodes?
+      fallbackProps={{ commonProps, trackerNodes }}
       fallback={fallback}
     />
   );
