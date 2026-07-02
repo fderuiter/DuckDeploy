@@ -1,8 +1,7 @@
 import { List, Datagrid, DatagridRow, useRecordContext, TextField, type ListProps, type RaRecord } from 'react-admin';
-import { useSpec } from '../core/SpecContext';
+import { useManifestInterpreter } from '../core/useManifestInterpreter';
 import { renderPrecomputedField, type PrecomputedFieldDescriptor } from './SchemaToFieldMapper';
 import { resolveRecordLabel } from './AccessibilityUtils';
-import { useLayoutRegistry } from '../core/LayoutRegistry';
 import React from 'react';
 
 const CustomDatagridRow = (props: any) => {
@@ -30,17 +29,9 @@ export interface AutoListProps<RecordType extends RaRecord = RaRecord> extends O
  * @param props - Component props
  */
 export const AutoList = <RecordType extends RaRecord = RaRecord>(props: AutoListProps<RecordType>) => {
-  const { uiManifest, spec } = useSpec();
-  const { getLayout } = useLayoutRegistry();
-  const resourceName = props.resource || '';
-  const precomputedResource = uiManifest?.resources?.[resourceName];
+  const { resourceName, precomputedResource, layoutConfig, CustomLayout, specSchema } = useManifestInterpreter({ resource: props.resource, mode: 'list' });
   const precomputedListFields = precomputedResource?.listFields as PrecomputedFieldDescriptor[] | undefined;
   const manifestPrimaryField = precomputedResource?.primaryField;
-  const specSchema = spec?.components?.schemas?.[resourceName];
-
-  const layoutId = precomputedResource?.listLayout || precomputedResource?.layout;
-  const layoutConfig = precomputedResource?.listLayoutConfig || precomputedResource?.layoutConfig;
-  const CustomLayout = layoutId ? getLayout(layoutId) : undefined;
 
   let fields: React.ReactNode[] = [];
   if (precomputedListFields && precomputedListFields.length > 0) {
