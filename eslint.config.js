@@ -58,6 +58,7 @@ export default defineConfig([
     ],
     rules: { 
       'react-hooks/set-state-in-effect': 'off',  
+      'react-hooks/static-components': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-useless-assignment': 'off',
