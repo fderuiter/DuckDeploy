@@ -1,5 +1,4 @@
 import type { OpenAPIV3 } from 'openapi-types';
-import { UnifiedSchemaWalker, SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
 
 /**
  * Outbound Adapter – sanitizes UI payloads before dispatch via Orval/Axios.
@@ -12,17 +11,7 @@ export const adaptOutboundPayload = (
     return {};
   }
 
-  if (!schema) {
-    return payload;
-  }
-
-  const walker = new UnifiedSchemaWalker(
-    {
-      visitNode: (context, defaultVisit) => defaultVisit(),
-    },
-    { walkPayload: true }
-  );
-
-  const result = walker.walk(schema, payload);
-  return (result && typeof result === 'object' && !Array.isArray(result)) ? result : {};
+  // Schema-based transformations have been moved upstream to the field level via SchemaLifecycleWrapper.
+  // This ensures the form state is always in sync with the payload expected by the API.
+  return payload;
 };
