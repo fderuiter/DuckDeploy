@@ -1,5 +1,10 @@
 import { useMemo } from 'react';
 
+/**
+ * Hook to extract and sanitize schema metadata (headings, titles, descriptions).
+ * @param {any} schemaNode - The OpenAPI schema node.
+ * @returns {object} Extracted metadata properties.
+ */
 export const useSchemaMetadata = (schemaNode: any) => {
   return useMemo(() => {
     const headingLevel = schemaNode?.uiExtensions?.['x-ui-headingLevel'] as string;

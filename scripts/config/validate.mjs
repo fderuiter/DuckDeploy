@@ -11,6 +11,11 @@ const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
 const pkgPath = path.resolve(__dirname, '../../package.json');
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 
+/**
+ * Validates the environment configuration against the schema.
+ * @param {string} [context='backend'] - The validation context ('frontend' or 'backend').
+ * @returns {Record<string, unknown>} The validated environment config.
+ */
 export function validateEnv(context = 'backend') {
   // Enforce Node.js version
   if (pkg.engines && pkg.engines.node) {
