@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { getPrimaryField } from '../utils/heuristics';
+import { getPrimaryField } from '@duckdeploy/openapi';
 
 export const visuallyHiddenStyle = {
   position: 'absolute',

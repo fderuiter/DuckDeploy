@@ -3,15 +3,18 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import {
+  resolveResourceName,
+  compileSpec,
+  normalizeSchema,
   isReferenceField,
   getReferenceTarget,
   extractUiExtensions,
   getWidgetId,
   getWidgetProps,
-  determineSchemaKindForField,
-  determineSchemaKindForInput,
-} from '../src/utils/heuristics.ts';
-import { resolveResourceName, compileSpec, normalizeSchema } from '@duckdeploy/openapi';
+  determineSchemaKind,
+  extractValidation,
+  extractListProperties,
+} from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,63 +34,20 @@ const getSchemaFromContent = (content) => {
   return null;
 };
 
-const extractListProperties = (schema) => {
-  if (!schema || typeof schema !== 'object') return {};
-  const normalizedRoot = normalizeSchema(schema) || schema;
-
-  if (normalizedRoot.type === 'array' && normalizedRoot.items) {
-    const normalizedItems = normalizeSchema(normalizedRoot.items);
-    if (normalizedItems?.properties) {
-      return normalizedItems.properties;
-    }
-  }
-
-  const wrapperItems = normalizedRoot.properties?.items?.items;
-  if (wrapperItems) {
-    const normalizedWrapperItems = normalizeSchema(wrapperItems);
-    if (normalizedWrapperItems?.properties) {
-      return normalizedWrapperItems.properties;
-    }
-  }
-
-  const wrapperData = normalizedRoot.properties?.data?.items;
-  if (wrapperData) {
-    const normalizedWrapperData = normalizeSchema(wrapperData);
-    if (normalizedWrapperData?.properties) {
-      return normalizedWrapperData.properties;
-    }
-  }
-
-  if (normalizedRoot.properties) {
-    return normalizedRoot.properties;
-  }
-
-  return {};
-};
-
 class SchemaAstVisitor {
   constructor(spec) {
     this.spec = spec;
   }
 
   getValidation(schema) {
-    if (!schema || typeof schema !== 'object') return undefined;
-
-    const validation = {};
-    if (schema.minLength !== undefined) validation.minLength = schema.minLength;
-    if (schema.maxLength !== undefined) validation.maxLength = schema.maxLength;
-    if (schema.minimum !== undefined) validation.minimum = schema.minimum;
-    if (schema.maximum !== undefined) validation.maximum = schema.maximum;
-    if (schema.pattern) validation.pattern = schema.pattern;
-
-    return Object.keys(validation).length ? validation : undefined;
+    return extractValidation(schema);
   }
 
   visitFieldNode(name, schema) {
     const node = normalizeSchema(schema);
     if (!node) return null;
 
-    const kind = determineSchemaKindForField(name, node);
+    const kind = determineSchemaKind(name, node);
 
     if (kind === 'reference') {
       return { kind: 'reference', source: name, reference: getReferenceTarget(name) };
@@ -120,7 +80,7 @@ class SchemaAstVisitor {
       uiExtensions: hasUiExtensions ? uiExtensions : undefined,
     };
 
-    const kind = determineSchemaKindForInput(source, node);
+    const kind = determineSchemaKind(source, node);
 
     if (kind === 'polymorphic') {
       const options = (node.oneOf || node.anyOf)

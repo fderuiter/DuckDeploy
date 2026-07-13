@@ -4,6 +4,14 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import {
+  resolveResourceName,
+  getSchemaFromContent,
+  discoverResources,
+  parseAllowedOperations,
+  compileSpec,
+  normalizeSchema,
+  resolveDiscriminator,
+  UnifiedSchemaWalker,
   isReferenceField,
   getReferenceTarget,
   extractUiExtensions,
@@ -11,8 +19,7 @@ import {
   getWidgetId,
   getWidgetProps,
   determineSchemaKind,
-} from '../src/utils/heuristics.ts';
-import { resolveResourceName, getSchemaFromContent, discoverResources, parseAllowedOperations, compileSpec, normalizeSchema, resolveDiscriminator, UnifiedSchemaWalker } from '@duckdeploy/openapi';
+} from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
 const __filename = fileURLToPath(import.meta.url);
