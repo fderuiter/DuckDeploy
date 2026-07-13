@@ -4,7 +4,7 @@
     ".": {
       "entry": ["index.html"],
       "project": ["src/**/*.{ts,tsx}"],
-      "ignore": []
+      "ignore": ["src/api/generated/**"]
     }
   }
 }

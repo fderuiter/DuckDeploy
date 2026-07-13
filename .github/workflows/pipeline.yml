@@ -19,9 +19,6 @@ concurrency:
 jobs:
   build-and-deploy:
     name: Build, Validate, and Deploy
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     env:
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
@@ -52,6 +49,15 @@ jobs:
         with:
           path: './dist'
           
-      - id: deployment
-        if: github.event_name != 'pull_request'
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-and-deploy
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
