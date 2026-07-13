@@ -417,9 +417,8 @@ const buildGeneratedOperationMap = () => {
     (filePath) => !filePath.includes(`${path.sep}model${path.sep}`),
   );
   if (files.length === 0) {
-    throw new Error(
-      `No generated API client files found at ${GENERATED_CLIENT_PATH}. Run "npm run generate:api" before build:manifest.`,
-    );
+    console.warn(`No generated API client files found at ${GENERATED_CLIENT_PATH}. Emitting empty manifest.`);
+    return { clientPaths: {}, operationCount: 0 };
   }
 
   let operationCount = 0;
