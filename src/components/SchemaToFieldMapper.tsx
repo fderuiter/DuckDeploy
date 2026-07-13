@@ -46,6 +46,7 @@ import {
   getWidgetProps,
   extractUiExtensions,
   extractMetadata,
+  validateHeading,
   type SchemaKind,
 } from '@duckdeploy/openapi';
 import { useSharedMutationService, buildCommonProps, buildTrackerNodes, useComponentResolver } from '../core/Engine';
@@ -480,22 +481,18 @@ export const renderInput = (
                   required: ((node as OpenAPIV3.SchemaObject).required || []).includes(subName)
                 }));
 
-            const headingLevel = typeof uiExtensions?.['x-ui-headingLevel'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingLevel']) 
-              ? uiExtensions['x-ui-headingLevel'] 
-              : 'h4';
-            const headingVariant = typeof uiExtensions?.['x-ui-headingVariant'] === 'string' && /^h[1-6]$/.test(uiExtensions['x-ui-headingVariant']) 
-              ? uiExtensions['x-ui-headingVariant'] 
-              : 'h4';
+            const headingLevel = validateHeading(uiExtensions?.['x-ui-headingLevel']);
+            const headingVariant = validateHeading(uiExtensions?.['x-ui-headingVariant']);
 
             return (
               <div 
                 key={key} 
                 role="group" 
-                aria-label={title || source.split('.').pop() || source}
+                aria-label={title}
                 style={{ marginLeft: '1rem', borderLeft: '2px solid #eee', paddingLeft: '1rem' }}
               >
                 <Typography variant={headingVariant as any} component={headingLevel as React.ElementType}>
-                  {title || source.split('.').pop() || source}
+                  {title}
                 </Typography>
                 {trackerNodes}
                 {isPrecomputed 
