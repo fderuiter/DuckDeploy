@@ -3,7 +3,7 @@ const config = validateEnv('backend');
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
-import { isOperationAllowed as libIsOperationAllowed } from '@duckdeploy/openapi';
+import { isOperationAllowed as libIsOperationAllowed, pathToRegExp } from '@duckdeploy/openapi';
 import Ajv from 'ajv';
 
 const PORT = config.PORT;
@@ -56,11 +56,6 @@ async function loadRouteValidators(schemaUrl) {
   ajv.addFormat('date', () => true);
   ajv.addSchema(openapiSchema, "root");
   const paths = openapiSchema.paths || {};
-
-  const pathToRegExp = (pathTemplate) => {
-    const escaped = pathTemplate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`^${escaped.replace(/\\\{.*?\\\}/g, '[^/]+')}$`);
-  };
 
   for (const [pathTemplate, pathItem] of Object.entries(paths)) {
     const pattern = pathToRegExp(pathTemplate);
