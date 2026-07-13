@@ -47,7 +47,7 @@ import {
   extractUiExtensions,
   extractMetadata,
   type SchemaKind,
-} from '../utils/heuristics';
+} from '@duckdeploy/openapi';
 import { useSharedMutationService, buildCommonProps, buildTrackerNodes, useComponentResolver } from '../core/Engine';
 import { useSpec } from '../core/SpecContext';
 

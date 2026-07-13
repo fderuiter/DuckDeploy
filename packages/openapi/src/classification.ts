@@ -1,21 +1,21 @@
+import { normalizeSchema } from './normalization.ts';
+
 /**
- * Generated description.
- *
+ * Checks if a field is a reference field.
  */
 export const isReferenceField = (name: string): boolean => {
   return name.endsWith('_id') || name.endsWith('Id');
 };
 
 /**
- * Generated description.
- *
+ * Extracts the target of a reference field.
  */
 export const getReferenceTarget = (name: string): string => {
   return name.replace(/_id$/i, '').replace(/Id$/, '');
 };
 
 /**
- * Generates a human-readable label from a property key (camelCase, snake_case, kebab-case).
+ * Generates a human-readable label from a property key.
  */
 export const generateHeuristicLabel = (key: string): string => {
   if (!key) return '';
@@ -31,7 +31,6 @@ export const generateHeuristicLabel = (key: string): string => {
 
 /**
  * Standardizes metadata extraction to ensure both title and description are preserved.
- * Falls back to heuristic labels if title is missing.
  */
 export const extractMetadata = (node: any, sourceName: string) => {
   const isHeuristicTitle = !node?.title;
@@ -42,7 +41,6 @@ export const extractMetadata = (node: any, sourceName: string) => {
 
 /**
  * Extracts all UI extension metadata from a schema node.
- * This looks for any property starting with 'x-ui-' and aggregates them.
  */
 export const extractUiExtensions = (node: any): Record<string, unknown> => {
   if (!node || typeof node !== 'object') return {};
@@ -56,8 +54,7 @@ export const extractUiExtensions = (node: any): Record<string, unknown> => {
 };
 
 /**
- * Generated description.
- *
+ * Determines the primary field for a given schema node.
  */
 export const getPrimaryField = (node: any): string | undefined => {
   if (!node || typeof node !== 'object') return undefined;
@@ -88,8 +85,7 @@ export const getPrimaryField = (node: any): string | undefined => {
 };
 
 /**
- * Generated description.
- *
+ * Retrieves the widget ID from the UI extensions of a schema node.
  */
 export const getWidgetId = (node: any): string | undefined => {
   const ext = extractUiExtensions(node);
@@ -97,8 +93,7 @@ export const getWidgetId = (node: any): string | undefined => {
 };
 
 /**
- * Generated description.
- *
+ * Retrieves the widget props from the UI extensions of a schema node.
  */
 export const getWidgetProps = (node: any): Record<string, unknown> | undefined => {
   const ext = extractUiExtensions(node);
@@ -121,15 +116,7 @@ export type SchemaKind =
   | 'unknown';
 
 /**
- * Determines the primary data kind of a schema field by traversing its properties.
- * 
- * Conditional Path Explanation:
- * 1. Link / ID Check: If the field is named "id" or explicitly marked with widget="link", it's treated as a link.
- * 2. Pre-computed Kind: If the node already has a `kind` field (e.g. from the AST walker), it uses that.
- * 3. Polymorphism: If `oneOf` or `anyOf` are present, it implies multiple possible types (polymorphism).
- * 4. Structured Data: Checks for explicit 'object' or 'array' types.
- * 5. References: Checks if the name implies a relationship (e.g. ending in "_id") or has an OpenAPI `$ref`.
- * 6. Primitives: Maps remaining standard OpenAPI primitive types to 'enum', 'boolean', 'number', 'date', or 'text'.
+ * Determines the schema kind for a field or input.
  */
 export const determineSchemaKind = (name: string, node: any): SchemaKind => {
   if (!node || typeof node !== 'object') return 'unknown';
@@ -175,4 +162,57 @@ export const determineSchemaKind = (name: string, node: any): SchemaKind => {
   }
 
   return 'text';
+};
+
+/**
+ * Extracts validation rules from a schema node.
+ */
+export const extractValidation = (schema: any): Record<string, any> | undefined => {
+  if (!schema || typeof schema !== 'object') return undefined;
+
+  const validation: Record<string, any> = {};
+  if (schema.minLength !== undefined) validation.minLength = schema.minLength;
+  if (schema.maxLength !== undefined) validation.maxLength = schema.maxLength;
+  if (schema.minimum !== undefined) validation.minimum = schema.minimum;
+  if (schema.maximum !== undefined) validation.maximum = schema.maximum;
+  if (schema.pattern) validation.pattern = schema.pattern;
+
+  return Object.keys(validation).length ? validation : undefined;
+};
+
+/**
+ * Extracts the list properties from an array schema.
+ */
+export const extractListProperties = (schema: any): Record<string, any> => {
+  if (!schema || typeof schema !== 'object') return {};
+  const normalizedRoot = normalizeSchema(schema) || schema;
+
+  if (normalizedRoot.type === 'array' && normalizedRoot.items) {
+    const normalizedItems = normalizeSchema(normalizedRoot.items);
+    if (normalizedItems?.properties) {
+      return normalizedItems.properties;
+    }
+  }
+
+  const wrapperItems = normalizedRoot.properties?.items?.items;
+  if (wrapperItems) {
+    const normalizedWrapperItems = normalizeSchema(wrapperItems);
+    if (normalizedWrapperItems?.properties) {
+      return normalizedWrapperItems.properties;
+    }
+  }
+
+  const wrapperData = normalizedRoot.properties?.data?.items;
+  if (wrapperData) {
+    const normalizedWrapperData = normalizeSchema(wrapperData);
+    if (normalizedWrapperData?.properties) {
+      return normalizedWrapperData.properties;
+    }
+  }
+
+  if (normalizedRoot.properties) {
+    return normalizedRoot.properties;
+  }
+
+  return {};
 };
