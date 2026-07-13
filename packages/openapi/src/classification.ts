@@ -15,11 +15,24 @@ export const getReferenceTarget = (name: string): string => {
 };
 
 /**
+ * Regular expression to validate heading levels h1 through h6.
+ */
+export const HEADING_REGEX = /^h[1-6]$/;
+
+/**
+ * Validates a heading level string, falling back to a default if invalid.
+ */
+export const validateHeading = (value: unknown, fallback: string = 'h4'): string => {
+  return typeof value === 'string' && HEADING_REGEX.test(value) ? value : fallback;
+};
+
+/**
  * Generates a human-readable label from a property key.
  */
 export const generateHeuristicLabel = (key: string): string => {
   if (!key) return '';
-  const words = key
+  const leaf = key.split('.').pop() || key;
+  const words = leaf
     .replace(/([A-Z])/g, ' $1')
     .replace(/[-_]/g, ' ')
     .trim()
