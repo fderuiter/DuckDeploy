@@ -1,9 +1,6 @@
 
-import React from 'react';
-import { Create, Edit, SimpleForm, TextInput, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
-import { useManifestInterpreter } from '../core/useManifestInterpreter';
-import { renderInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
-import { SchemaErrorSummary } from './SchemaErrorSummary';
+import { Create, Edit, SimpleForm, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
+import { useAutoFormSetup } from '../hooks/useAutoFormSetup';
 
 /**
  * Props for the AutoCreate component.
@@ -23,19 +20,7 @@ export interface AutoCreateProps<RecordType extends RaRecord = RaRecord> extends
  * @param props - Component props
  */
 export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCreateProps<RecordType>) => {
-  const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource: props.resource, mode: 'create' });
-
-  const precomputedNodes = precomputedResource?.createForm as PrecomputedInputDescriptor[] | undefined;
-  let contentNodes: React.ReactNode[];
-  if (precomputedNodes && precomputedNodes.length > 0) {
-    contentNodes = precomputedNodes.map((node, index) => 
-      renderInput(node, `${resourceName}.${node.source || index}`)
-    );
-  } else {
-    contentNodes = [<TextInput key="id" source="id" />];
-  }
-
-  const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={true} />;
+  const { resourceName, layoutConfig, CustomLayout, contentNodes, errorSummary } = useAutoFormSetup(props.resource, 'create');
 
   if (CustomLayout) {
     return (
@@ -76,20 +61,7 @@ export interface AutoEditProps<RecordType extends RaRecord = RaRecord> extends O
  * @param props - Component props
  */
 export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEditProps<RecordType>) => {
-  const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource: props.resource, mode: 'edit' });
-
-  const precomputedNodes = precomputedResource?.editForm as PrecomputedInputDescriptor[] | undefined;
-  let contentNodes: React.ReactNode[];
-  if (precomputedNodes && precomputedNodes.length > 0) {
-    contentNodes = precomputedNodes.map((node, index) => 
-      renderInput(node, `${resourceName}.${node.source || index}`)
-    );
-  } else {
-    contentNodes = [<TextInput key="id-fallback" source="id" />];
-  }
-
-  const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={false} />;
-  const idInput = <TextInput key="id-disabled" source="id" disabled />;
+  const { resourceName, layoutConfig, CustomLayout, contentNodes, errorSummary, idInput } = useAutoFormSetup(props.resource, 'edit');
 
   if (CustomLayout) {
     return (
