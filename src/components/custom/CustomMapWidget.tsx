@@ -46,6 +46,7 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
               key={marker.id}
               className="map-marker"
               aria-label={`Map marker for ${marker.label}`}
+              aria-pressed={selectedId === marker.id ? 'true' : 'false'}
               onClick={() => handleSelect(marker)}
               onFocus={() => handleFocus(marker)}
               color={selectedId === marker.id ? 'primary' : 'default'}
@@ -55,10 +56,12 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
           ))}
         </div>
       ) : (
-        <List>
+        <List role="listbox">
           {markers.map(marker => (
             <ListItem key={marker.id} disablePadding>
               <ListItemButton 
+                role="option"
+                aria-selected={selectedId === marker.id ? 'true' : 'false'}
                 selected={selectedId === marker.id}
                 onClick={() => handleSelect(marker)}
               >
