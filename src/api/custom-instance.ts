@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 import type { AxiosRequestConfig, RawAxiosRequestHeaders, AxiosResponse } from 'axios';
 import { getRuntimeApiConfig } from '../core/runtimeConfig';
+import { PROXY_MISSING_API_KEY, ERR_HEALTH, SCHEMA_FILENAME, UI_MANIFEST_FILENAME, AUTHENTICATE_HEADER } from '@duckdeploy/openapi';
 
 type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
@@ -93,7 +94,7 @@ const normalizeErrorStatus = (status: number, message: string, responseData: unk
   if (status !== 404 && (status < 500 || status > 599)) return status;
 
   const errorCode = extractErrorCode(responseData);
-  const hasWwwAuthenticateHeader = typeof getHeaderValue(responseHeaders, 'www-authenticate') === 'string';
+  const hasWwwAuthenticateHeader = typeof getHeaderValue(responseHeaders, AUTHENTICATE_HEADER) === 'string';
   const hasAuthHint =
     AUTH_HINT_PATTERN.test(message) ||
     (typeof errorCode === 'string' && AUTH_HINT_PATTERN.test(errorCode)) ||
@@ -158,7 +159,7 @@ export const normalizeProviderError = (error: unknown): unknown => {
 
   const configUrl = error.config?.url ?? '';
   const isHealthCheck = configUrl === runtimeConfig.healthUrl;
-  const isSpec = configUrl.endsWith('schema.json') || configUrl.endsWith('ui-manifest.json');
+  const isSpec = configUrl.endsWith(SCHEMA_FILENAME) || configUrl.endsWith(UI_MANIFEST_FILENAME);
 
   // Issue Factory logic for Bootstrap phase
   if (isHealthCheck) {
@@ -176,7 +177,7 @@ export const normalizeProviderError = (error: unknown): unknown => {
     } else {
       const payload = responseData as any;
       const fallbackMessage = `Proxy health check returned ${status} ${error.response?.statusText || ''}.`;
-      if (payload?.code === 'PROXY_MISSING_API_KEY') {
+      if (payload?.code === PROXY_MISSING_API_KEY) {
         title = 'Proxy is missing CDISC credentials';
         message = payload.message ?? fallbackMessage;
         details = [
@@ -223,7 +224,7 @@ export const AXIOS_INSTANCE = axios.create({
 });
 
 AXIOS_INSTANCE.interceptors.response.use(
-  (response) => { if (response.config.url === runtimeConfig.healthUrl && response.data?.ok === false) return Promise.reject(new axios.AxiosError("Health check failed", "ERR_HEALTH", response.config, response.request, response)); return response; },
+  (response) => { if (response.config.url === runtimeConfig.healthUrl && response.data?.ok === false) return Promise.reject(new axios.AxiosError("Health check failed", ERR_HEALTH, response.config, response.request, response)); return response; },
   (error) => Promise.reject(normalizeProviderError(error)),
 );
 

@@ -3,18 +3,36 @@ const config = validateEnv('backend');
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
-import { isOperationAllowed as libIsOperationAllowed, pathToRegExp } from '@duckdeploy/openapi';
+import {
+  isOperationAllowed as libIsOperationAllowed,
+  pathToRegExp,
+  HEALTH_PATH_SUFFIX,
+  DEFAULT_LOCAL_PROXY_BASE_URL,
+  PROXY_MISSING_API_KEY,
+  PROXY_READY,
+  PROXY_PATH_NOT_FOUND,
+  PROXY_PATH_NOT_ALLOWED,
+  PROXY_INVALID_JSON,
+  PROXY_REQUEST_VALIDATION_FAILED,
+  PROXY_RESPONSE_VALIDATION_FAILED,
+  PROXY_REQUEST_FORBIDDEN,
+  PROXY_REQUEST_FAILED,
+  CDISC_API_KEY_HEADER,
+  API_KEY_QUERY_PARAMS,
+  PROXY_ALLOWED_HEADERS,
+  BASE_PROXY_ALLOWED_RESPONSE_HEADERS,
+  SCHEMA_FILENAME,
+  UI_MANIFEST_FILENAME
+} from '@duckdeploy/openapi';
 import Ajv from 'ajv';
 
 const PORT = config.PORT;
 const PROXY_PREFIX = normalizePrefix(config.CDISC_PROXY_PREFIX);
-const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
+const HEALTH_PATH = `${PROXY_PREFIX}${HEALTH_PATH_SUFFIX}`;
 const MAX_REQUEST_BODY_BYTES = config.CDISC_PROXY_MAX_BODY_BYTES;
 const REQUEST_TIMEOUT_MS = config.CDISC_PROXY_TIMEOUT_MS;
-const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
 const NORMALIZED_PROXY_ALLOWED_HEADERS = PROXY_ALLOWED_HEADERS.map((header) => header.toLowerCase());
 
-const BASE_PROXY_ALLOWED_RESPONSE_HEADERS = ['content-type', 'content-disposition', 'etag', 'last-modified', 'cache-control', 'content-range', 'x-total-count', 'www-authenticate'];
 const additionalAllowedHeaders = (config.PROXY_ALLOWED_HEADERS || '')
   .split(',')
   .map((header) => header.trim().toLowerCase())
@@ -32,8 +50,8 @@ try {
   throw new Error(`Invalid CDISC_UPSTREAM_BASE_URL: ${config.CDISC_UPSTREAM_BASE_URL}`, { cause: error });
 }
 
-const MANIFEST_URL = new URL('../public/ui-manifest.json', import.meta.url);
-const SCHEMA_URL = new URL('../public/schema.json', import.meta.url);
+const MANIFEST_URL = new URL(`../public/${UI_MANIFEST_FILENAME}`, import.meta.url);
+const SCHEMA_URL = new URL(`../public/${SCHEMA_FILENAME}`, import.meta.url);
 
 async function loadAllowedOperations(manifestUrl) {
   const source = await readFile(manifestUrl, 'utf8');
@@ -105,7 +123,7 @@ function getValidators(method, upstreamPath) {
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (!trimmed) {
-    return '/api/cdisc';
+    return DEFAULT_LOCAL_PROXY_BASE_URL;
   }
 
   const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
@@ -167,7 +185,7 @@ function getProxyHealthPayload() {
   const keys = getKeyChain();
   return {
     ok: keys.length > 0,
-    code: keys.length > 0 ? 'PROXY_READY' : 'PROXY_MISSING_API_KEY',
+    code: keys.length > 0 ? PROXY_READY : PROXY_MISSING_API_KEY,
     message:
       keys.length > 0
         ? 'CDISC proxy is configured.'
@@ -312,7 +330,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
   if (!upstreamPath) {
     sendJson(response, 404, {
       ok: false,
-      code: 'PROXY_PATH_NOT_FOUND',
+      code: PROXY_PATH_NOT_FOUND,
       message: `Expected requests under ${PROXY_PREFIX}.`,
     }, requestOrigin);
     return;
@@ -321,13 +339,13 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
   if (!isOperationAllowed(request.method ?? 'GET', upstreamPath)) {
     sendJson(response, 404, {
       ok: false,
-      code: 'PROXY_PATH_NOT_ALLOWED',
+      code: PROXY_PATH_NOT_ALLOWED,
       message: 'Requested path is not part of the documented CDISC API surface.',
     }, requestOrigin);
     return;
   }
 
-  if (upstreamPath === '/__duckdeploy/health') {
+  if (upstreamPath === HEALTH_PATH_SUFFIX) {
     const health = getProxyHealthPayload();
     sendJson(response, health.ok ? 200 : 503, health, requestOrigin);
     return;
@@ -353,7 +371,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
       } catch (e) {
         sendJson(response, 400, {
           ok: false,
-          code: 'PROXY_INVALID_JSON',
+          code: PROXY_INVALID_JSON,
           message: 'Request body must be valid JSON.',
         }, requestOrigin);
         return;
@@ -363,7 +381,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
       if (!valid) {
         sendJson(response, 400, {
           ok: false,
-          code: 'PROXY_REQUEST_VALIDATION_FAILED',
+          code: PROXY_REQUEST_VALIDATION_FAILED,
           message: 'Request body schema validation failed.',
           errors: validators.requestValidator.errors
         }, requestOrigin);
@@ -373,7 +391,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
   }
 
   const queryParams = new URLSearchParams(url.searchParams);
-  for (const keyName of ['api-key', 'apikey', 'apiKey', 'API-KEY', 'APIKEY']) {
+  for (const keyName of API_KEY_QUERY_PARAMS) {
     queryParams.delete(keyName);
   }
 
@@ -384,7 +402,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
 
   for (const key of keys) {
     const requestHeaders = new Headers(baseHeaders);
-    requestHeaders.set('api-key', key.value);
+    requestHeaders.set(CDISC_API_KEY_HEADER, key.value);
 
     upstreamResponse = await fetch(upstreamUrl, {
       method: request.method,
@@ -415,7 +433,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
           console.error(`Response schema validation failed for ${request.method} ${upstreamPath} - Status ${status}`);
           sendJson(response, 502, {
             ok: false,
-            code: 'PROXY_RESPONSE_VALIDATION_FAILED',
+            code: PROXY_RESPONSE_VALIDATION_FAILED,
             message: 'Upstream response schema validation failed.',
             errors: responseValidator.errors
           }, requestOrigin);
@@ -447,7 +465,7 @@ const server = http.createServer(async (request, response) => {
   if (!isTrustedRequest(request)) {
     sendJson(response, 403, {
       ok: false,
-      code: 'PROXY_REQUEST_FORBIDDEN',
+      code: PROXY_REQUEST_FORBIDDEN,
       message:
         'This proxy only serves loopback traffic unless a trusted ingress header is configured and injected by the reverse proxy.',
     }, requestOrigin);
@@ -467,7 +485,7 @@ const server = http.createServer(async (request, response) => {
     console.error('CDISC proxy request failed:', error);
     sendJson(response, 502, {
       ok: false,
-      code: 'PROXY_REQUEST_FAILED',
+      code: PROXY_REQUEST_FAILED,
       message: 'The proxy could not complete the upstream request.',
     }, requestOrigin);
   }

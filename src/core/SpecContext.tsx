@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState, useMemo, type ReactNode } from 'react';
 import { useSafeContext } from '../utils/context';
+import { SCHEMA_FILENAME, UI_MANIFEST_FILENAME } from '@duckdeploy/openapi';
 import type { ManifestWorkerResponse } from '../workers/manifest.worker';
 // Vite processes the `?worker` suffix at build time and bundles the worker
 // as a separate chunk — must be a static import at the top level.
@@ -30,8 +31,8 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const loadSpec = async () => {
       try {
-        const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
-        const manifestUrl = `${import.meta.env.BASE_URL}ui-manifest.json`;
+        const schemaUrl = `${import.meta.env.BASE_URL}${SCHEMA_FILENAME}`;
+        const manifestUrl = `${import.meta.env.BASE_URL}${UI_MANIFEST_FILENAME}`;
 
         // ── Start both requests concurrently ─────────────────────────────────
         // The worker begins fetching + hashing ui-manifest.json in parallel
