@@ -21,6 +21,7 @@ import { getRuntimeApiConfig } from './core/runtimeConfig';
 import { customInstance } from './api/custom-instance';
 import type { ResourceDefinition } from './core/discovery';
 import { StandardLayout } from './layouts/StandardLayout';
+import { MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
 registerWidget('cdisc-terminology', TerminologyLookupInput);
@@ -64,7 +65,7 @@ const createNoResourcesIssue = (): BootstrapIssue => ({
   title: 'No resources were discovered',
   message: 'DuckDeploy loaded the schema and manifest, but no listable resources were available for React-Admin.',
   details: [
-    'Verify that ui-manifest.json contains list fields for the desired resources.',
+    `Verify that ${MANIFEST_FILENAME} contains list fields for the desired resources.`,
     'If the OpenAPI contract changed, regenerate the manifest with `npm run generate` and rebuild the app.',
   ],
 });

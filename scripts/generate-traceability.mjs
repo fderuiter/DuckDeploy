@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { SCHEMA_FILENAME } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,7 +10,7 @@ const repoRoot = path.resolve(__dirname, '..');
 
 const LOG_PATH = path.join(repoRoot, 'manifest-generation-log.json');
 const VALIDATION_REPORT_PATH = path.join(repoRoot, 'contract-validation-report.json');
-const SCHEMA_PATH = path.join(repoRoot, 'public', 'schema.json');
+const SCHEMA_PATH = path.join(repoRoot, 'public', SCHEMA_FILENAME);
 const FUZZ_REPORT_PATH = path.join(repoRoot, 'schemathesis-junit.xml');
 const OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
 

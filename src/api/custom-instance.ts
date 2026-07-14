@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 import type { AxiosRequestConfig, RawAxiosRequestHeaders, AxiosResponse } from 'axios';
 import { getRuntimeApiConfig } from '../core/runtimeConfig';
+import { SCHEMA_FILENAME, MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
 type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
@@ -158,7 +159,7 @@ export const normalizeProviderError = (error: unknown): unknown => {
 
   const configUrl = error.config?.url ?? '';
   const isHealthCheck = configUrl === runtimeConfig.healthUrl;
-  const isSpec = configUrl.endsWith('schema.json') || configUrl.endsWith('ui-manifest.json');
+  const isSpec = configUrl.endsWith(SCHEMA_FILENAME) || configUrl.endsWith(MANIFEST_FILENAME);
 
   // Issue Factory logic for Bootstrap phase
   if (isHealthCheck) {

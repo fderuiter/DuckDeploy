@@ -1,4 +1,6 @@
-const DEFAULT_LOCAL_PROXY_BASE_URL = '/api/cdisc';
+import { DEFAULT_PROXY_PREFIX, HEALTH_CHECK_PATH } from '@duckdeploy/openapi';
+
+const DEFAULT_LOCAL_PROXY_BASE_URL = DEFAULT_PROXY_PREFIX;
 const LOCALHOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 
 const trimTrailingSlashes = (value: string) => value.replace(/\/+$/, '');
@@ -38,7 +40,7 @@ export const getRuntimeApiConfig = (): RuntimeApiConfig => {
   if (configuredBaseUrl) {
     return {
       apiBaseUrl: configuredBaseUrl,
-      healthUrl: joinRelativeUrl(configuredBaseUrl, '/__duckdeploy/health'),
+      healthUrl: joinRelativeUrl(configuredBaseUrl, HEALTH_CHECK_PATH),
       source: 'env',
     };
   }
@@ -46,7 +48,7 @@ export const getRuntimeApiConfig = (): RuntimeApiConfig => {
   if (isLocalRuntime()) {
     return {
       apiBaseUrl: DEFAULT_LOCAL_PROXY_BASE_URL,
-      healthUrl: joinRelativeUrl(DEFAULT_LOCAL_PROXY_BASE_URL, '/__duckdeploy/health'),
+      healthUrl: joinRelativeUrl(DEFAULT_LOCAL_PROXY_BASE_URL, HEALTH_CHECK_PATH),
       source: 'local-default',
     };
   }
