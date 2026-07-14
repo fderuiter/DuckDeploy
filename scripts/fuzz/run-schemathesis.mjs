@@ -20,6 +20,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEnv } from '../config/validate.mjs';
+import { DEFAULT_PROXY_PREFIX } from '@duckdeploy/openapi';
 
 const config = validateEnv('backend');
 
@@ -30,7 +31,7 @@ const repoRoot = path.resolve(__dirname, '../..');
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (!trimmed) {
-    return '/api/cdisc';
+    return DEFAULT_PROXY_PREFIX;
   }
   const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
   return withLeadingSlash.replace(/\/+$/, '');

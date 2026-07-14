@@ -2,13 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
-import { compileSpec } from '@duckdeploy/openapi';
+import { compileSpec, SCHEMA_FILENAME } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '../..');
 const inputPath = path.join(repoRoot, 'openapi.yaml');
-const outputPath = path.join(repoRoot, 'public', 'schema.json');
+const outputPath = path.join(repoRoot, 'public', SCHEMA_FILENAME);
 
 const compile = async () => {
   const source = await fs.readFile(inputPath, 'utf8');

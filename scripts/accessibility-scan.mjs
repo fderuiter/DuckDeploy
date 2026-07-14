@@ -5,11 +5,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import http from 'http';
+import { MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distDir = path.resolve(__dirname, '../dist');
-const manifestPath = path.resolve(distDir, 'ui-manifest.json');
+const manifestPath = path.resolve(distDir, MANIFEST_FILENAME);
 
 async function waitForServer(url) {
   for (let i = 0; i < 30; i++) {

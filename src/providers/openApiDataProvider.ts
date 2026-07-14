@@ -4,6 +4,7 @@ import { normalizeProviderError, NormalizedHttpError } from "../api/custom-insta
 import { type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
 import type { ResourceDefinition } from '../core/discovery';
 import { adaptOutboundPayload } from './outboundAdapter';
+import { MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
 let resourceMap: Record<string, ResourceDefinition> = {};
 let operationFunctionMap: Record<string, { functionName: string; modulePath: string }> = {};
@@ -99,7 +100,7 @@ const callApiFunction = async (operationKey: string | undefined, ...args: unknow
   if (!mapping) {
     throw new Error(
       `Generated API function mapping for operation "${operationKey}" not found. ` +
-        'Ensure ui-manifest.json is up to date (run npm run generate).',
+        `Ensure ${MANIFEST_FILENAME} is up to date (run npm run generate).`,
     );
   }
 

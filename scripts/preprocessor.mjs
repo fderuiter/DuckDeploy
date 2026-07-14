@@ -19,6 +19,8 @@ import {
   getWidgetId,
   getWidgetProps,
   determineSchemaKind,
+  SCHEMA_FILENAME,
+  MANIFEST_FILENAME,
 } from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
@@ -34,7 +36,7 @@ const INPUT_CANDIDATES = [
   path.join(repoRoot, 'openapi.json'),
 ];
 
-const OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.json');
+const OUTPUT_PATH = path.join(repoRoot, 'public', MANIFEST_FILENAME);
 const MANIFEST_GENERATION_LOG_PATH = path.join(repoRoot, 'manifest-generation-log.json');
 const LEGACY_TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
 const HASH_OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.sha256');
@@ -43,8 +45,8 @@ const DOCS_DIR = path.join(repoRoot, 'docs');
 
 const PROHIBITED_PATTERNS = [
   {
-    regex: /schema\.json.*?\(the UI manifest\)/i,
-    message: "Terminology Error: 'schema.json' is incorrectly described as the UI manifest. Use 'ui-manifest.json'."
+    regex: new RegExp(`${SCHEMA_FILENAME}.*?\\(the UI manifest\\)`, 'i'),
+    message: `Terminology Error: '${SCHEMA_FILENAME}' is incorrectly described as the UI manifest. Use '${MANIFEST_FILENAME}'.`
   },
   {
     regex: /generate.*?ui-manifest\.json.*?via Orval/i,
@@ -114,8 +116,8 @@ const validateDocsAndInjectMetadata = () => {
 - **Resource Discovery Process**: Build-time analysis of OpenAPI paths.
 - **API Client Generation**: Handled by Orval.
 - **Artifacts Generated**:
-  - \`public/ui-manifest.json\`: The UI manifest containing discovered resources and forms.
-  - \`public/schema.json\`: The optimized OpenAPI schema.
+  - \`public/${MANIFEST_FILENAME}\`: The UI manifest containing discovered resources and forms.
+  - \`public/${SCHEMA_FILENAME}\`: The optimized OpenAPI schema.
 `;
     let updatedContent = content.replace(
       /<!-- ARCHITECTURE_START -->[\s\S]*?<!-- ARCHITECTURE_END -->/,

@@ -5,6 +5,7 @@ import type { ManifestWorkerResponse } from '../workers/manifest.worker';
 // as a separate chunk — must be a static import at the top level.
 import ManifestWorkerConstructor from '../workers/manifest.worker?worker';
 import { customInstance } from '../api/custom-instance';
+import { SCHEMA_FILENAME, MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
 export interface SpecContextType {
   spec: any | null;
@@ -30,8 +31,8 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const loadSpec = async () => {
       try {
-        const schemaUrl = `${import.meta.env.BASE_URL}schema.json`;
-        const manifestUrl = `${import.meta.env.BASE_URL}ui-manifest.json`;
+        const schemaUrl = `${import.meta.env.BASE_URL}${SCHEMA_FILENAME}`;
+        const manifestUrl = `${import.meta.env.BASE_URL}${MANIFEST_FILENAME}`;
 
         // ── Start both requests concurrently ─────────────────────────────────
         // The worker begins fetching + hashing ui-manifest.json in parallel

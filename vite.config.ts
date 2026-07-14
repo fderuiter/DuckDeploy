@@ -6,6 +6,7 @@ validateEnv('frontend');
 import path from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { DEFAULT_PROXY_PREFIX } from '@duckdeploy/openapi';
 
 /**
  * Vite plugin that blocks YAML / raw OpenAPI files and build-only scripts from
@@ -50,7 +51,7 @@ export default defineConfig({
   base: '/DuckDeploy/',
   server: {
     proxy: {
-      '/api/cdisc': {
+      [DEFAULT_PROXY_PREFIX]: {
         target: 'http://localhost:8787',
         changeOrigin: true,
       },

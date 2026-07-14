@@ -3,12 +3,12 @@ const config = validateEnv('backend');
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { URL } from 'node:url';
-import { isOperationAllowed as libIsOperationAllowed, pathToRegExp } from '@duckdeploy/openapi';
+import { isOperationAllowed as libIsOperationAllowed, pathToRegExp, HEALTH_CHECK_PATH, DEFAULT_PROXY_PREFIX, SCHEMA_FILENAME, MANIFEST_FILENAME } from '@duckdeploy/openapi';
 import Ajv from 'ajv';
 
 const PORT = config.PORT;
 const PROXY_PREFIX = normalizePrefix(config.CDISC_PROXY_PREFIX);
-const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
+const HEALTH_PATH = `${PROXY_PREFIX}${HEALTH_CHECK_PATH}`;
 const MAX_REQUEST_BODY_BYTES = config.CDISC_PROXY_MAX_BODY_BYTES;
 const REQUEST_TIMEOUT_MS = config.CDISC_PROXY_TIMEOUT_MS;
 const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];
@@ -32,8 +32,8 @@ try {
   throw new Error(`Invalid CDISC_UPSTREAM_BASE_URL: ${config.CDISC_UPSTREAM_BASE_URL}`, { cause: error });
 }
 
-const MANIFEST_URL = new URL('../public/ui-manifest.json', import.meta.url);
-const SCHEMA_URL = new URL('../public/schema.json', import.meta.url);
+const MANIFEST_URL = new URL(`../public/${MANIFEST_FILENAME}`, import.meta.url);
+const SCHEMA_URL = new URL(`../public/${SCHEMA_FILENAME}`, import.meta.url);
 
 async function loadAllowedOperations(manifestUrl) {
   const source = await readFile(manifestUrl, 'utf8');
@@ -105,7 +105,7 @@ function getValidators(method, upstreamPath) {
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (!trimmed) {
-    return '/api/cdisc';
+    return DEFAULT_PROXY_PREFIX;
   }
 
   const withLeadingSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
@@ -327,7 +327,7 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     return;
   }
 
-  if (upstreamPath === '/__duckdeploy/health') {
+  if (upstreamPath === HEALTH_CHECK_PATH) {
     const health = getProxyHealthPayload();
     sendJson(response, health.ok ? 200 : 503, health, requestOrigin);
     return;
