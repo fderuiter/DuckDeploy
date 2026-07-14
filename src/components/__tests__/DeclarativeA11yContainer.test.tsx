@@ -1,6 +1,6 @@
 import { useState } from "react";
 // @ts-nocheck
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
 import { DeclarativeA11yContainer } from '../DeclarativeA11yContainer';
@@ -39,13 +39,17 @@ describe('DeclarativeA11yContainer', () => {
     const evenInput = screen.getByTestId('even-input');
     
     // Simulate user focusing inside the container before the change
-    evenInput.focus();
-    fireEvent.focusIn(evenInput);
+    act(() => {
+      evenInput.focus();
+      fireEvent.focusIn(evenInput);
+    });
     
     expect(screen.queryByTestId('odd-input')).not.toBeInTheDocument();
 
     // Click to change dependency
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
 
     // After state change, focus should shift to the new input in the container
     await waitFor(() => {
