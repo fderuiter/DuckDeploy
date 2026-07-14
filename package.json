@@ -18,7 +18,7 @@
     "build:manifest": "node ./scripts/preprocessor.mjs",
     "build:env": "node ./scripts/config/build.mjs",
     "generate:traceability": "node ./scripts/generate-traceability.mjs",
-    "generate": "npm run build:env && npm run prune:api && npm run generate:api && npm run build:manifest && npm run generate:traceability",
+    "generate": "npm run build:env && npm run prune:api && npm run generate:api && npm run build:manifest",
     "compile:schema": "node ./scripts/compiler/compile-schema.mjs",
     "verify:shadow": "node ./scripts/verify-shadow-build.mjs",
     "validate:contract": "node ./scripts/validate-contract.mjs",
