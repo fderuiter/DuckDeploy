@@ -363,6 +363,8 @@ export const renderPrecomputedField = (
   const trackerNodes = buildTrackerNodes(node.source, isHeuristicTitle, description);
 
   const reference = node.kind === 'reference' ? (node.reference || getReferenceTarget(node.source)) : undefined;
+  
+  const ComponentDef = ComponentMappingFactory[node.kind] || ComponentMappingFactory.default;
 
   return (
     <WidgetOverrideField
@@ -373,7 +375,7 @@ export const renderPrecomputedField = (
       widgetProps={node.widgetProps}
       schemaNode={node}
       fallbackProps={{ commonProps, reference, choices: node.choices || [], trackerNodes }}
-      fallback={<ComponentMappingFactory.default.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />}
+      fallback={<ComponentDef.Field commonProps={commonProps} reference={reference} choices={node.choices || []} trackerNodes={trackerNodes} />}
     />
   );
 };
@@ -431,6 +433,34 @@ export const renderInput = (
         });
         (commonProps as any).parse = parse;
         (commonProps as any).format = format;
+
+        let resolvedItemNodes: React.ReactNode[] = [];
+        let resolvedReference: string | undefined = undefined;
+        let resolvedChoices: Array<{ id: string; name: string }> = [];
+
+        if (kind === 'array') {
+          if (isPrecomputed) {
+            const items = (node as PrecomputedInputDescriptor).items || [];
+            resolvedItemNodes = items.map((item, index) => renderInput(item, `${key}.item.${index}`, item.isRequired, depth + 1, `${key}.item.${index}`));
+          } else {
+            const itemSchema = (node as OpenAPIV3.SchemaObject).items as OpenAPIV3.SchemaObject;
+            if (itemSchema && itemSchema.type === 'object' && itemSchema.properties) {
+              resolvedItemNodes = Object.entries(itemSchema.properties).map(([subName, subProp]) => 
+                renderInput(subProp as OpenAPIV3.SchemaObject, subName, (itemSchema.required || []).includes(subName), depth + 1, `${key}.item.${subName}`)
+              );
+            } else if (itemSchema) {
+              resolvedItemNodes = [renderInput(itemSchema, '', false, depth + 1, `${key}.item`)];
+            }
+          }
+        } else if (kind === 'reference') {
+          resolvedReference = isPrecomputed 
+            ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
+            : getReferenceTarget(source);
+        } else if (kind === 'enum') {
+          resolvedChoices = isPrecomputed 
+            ? ((node as PrecomputedInputDescriptor).choices || [])
+            : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
+        }
 
         const renderDefault = () => {
           if (kind === 'polymorphic') {
@@ -507,48 +537,16 @@ export const renderInput = (
             );
           }
 
-          if (kind === 'array') {
-            let itemNodes: React.ReactNode[] = [];
-            if (isPrecomputed) {
-              const items = (node as PrecomputedInputDescriptor).items || [];
-              itemNodes = items.map((item, index) => renderInput(item, `${key}.item.${index}`, item.isRequired, depth + 1, `${key}.item.${index}`));
-            } else {
-              const itemSchema = (node as OpenAPIV3.SchemaObject).items as OpenAPIV3.SchemaObject;
-              if (itemSchema && itemSchema.type === 'object' && itemSchema.properties) {
-                itemNodes = Object.entries(itemSchema.properties).map(([subName, subProp]) => 
-                  renderInput(subProp as OpenAPIV3.SchemaObject, subName, (itemSchema.required || []).includes(subName), depth + 1, `${key}.item.${subName}`)
-                );
-              } else if (itemSchema) {
-                itemNodes = [renderInput(itemSchema, '', false, depth + 1, `${key}.item`)];
-              }
-            }
-
-            return (
-              <ArrayInput {...commonProps}>
-                <SimpleFormIterator inline>
-                  {itemNodes}
-                </SimpleFormIterator>
-                {trackerNodes}
-              </ArrayInput>
-            );
-          }
-
-          if (kind === 'reference') {
-            const referenceTarget = isPrecomputed 
-              ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
-              : getReferenceTarget(source);
-            return <ComponentMappingFactory.reference.Input commonProps={commonProps} reference={referenceTarget} trackerNodes={trackerNodes} />;
-          }
-
-          if (kind === 'enum') {
-            const choices = isPrecomputed 
-              ? ((node as PrecomputedInputDescriptor).choices || [])
-              : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
-            return <ComponentMappingFactory.enum.Input commonProps={commonProps} choices={choices} trackerNodes={trackerNodes} />;
-          }
-
           const ComponentDef = ComponentMappingFactory[kind] || ComponentMappingFactory.default;
-          return <ComponentDef.Input commonProps={commonProps} trackerNodes={trackerNodes} itemNodes={[]} />;
+          return (
+            <ComponentDef.Input 
+              commonProps={commonProps} 
+              trackerNodes={trackerNodes} 
+              itemNodes={resolvedItemNodes}
+              reference={resolvedReference}
+              choices={resolvedChoices}
+            />
+          );
         };
 
         const fallback = renderDefault();
@@ -560,7 +558,13 @@ export const renderInput = (
             fallbackWidgetId={source}
             widgetProps={widgetProps}
             schemaNode={normalizedSchemaNode}
-            fallbackProps={{ commonProps, trackerNodes }}
+            fallbackProps={{ 
+              commonProps, 
+              trackerNodes, 
+              itemNodes: resolvedItemNodes,
+              reference: resolvedReference,
+              choices: resolvedChoices
+            }}
             fallback={fallback}
             parse={parse}
             format={format}
