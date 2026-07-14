@@ -230,7 +230,7 @@ const ensureRecordId = (record: unknown, resourceDefinition: ResourceDefinition,
 
   const typedRecord = record as Record<string, unknown>;
   const explicitIdKey = resourceDefinition.xRecordId;
-  const idValue = explicitIdKey && explicitIdKey in typedRecord ? typedRecord[explicitIdKey] : typedRecord.id;
+  const idValue = explicitIdKey ? typedRecord[explicitIdKey] : typedRecord.id;
 
   return {
     ...typedRecord,

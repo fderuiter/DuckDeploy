@@ -509,6 +509,7 @@ const buildUiManifest = (spec) => {
       resources[resourceName] = {
         name: resourceName,
         primaryField,
+        xRecordId: discoveredResource?.xRecordId,
         hasList: discoveredResource?.hasList ?? false,
         hasCreate: discoveredResource?.hasCreate ?? false,
         hasShow: discoveredResource?.hasShow ?? false,
