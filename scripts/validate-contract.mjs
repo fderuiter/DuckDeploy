@@ -24,7 +24,7 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'node:url';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
-import { HTTP_METHODS } from '../src/core/discovery.ts';
+import { resolveRef, collectConstraintBearingFields } from '@duckdeploy/openapi';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,127 +66,6 @@ const loadOpenApi = () => {
   }
   const raw = fs.readFileSync(candidate, 'utf8');
   return candidate.endsWith('.json') ? JSON.parse(raw) : yaml.load(raw);
-};
-
-/**
- * Resolve a JSON Reference ($ref) to the schema node it points to within the
- * given spec object.  Returns null when the ref is invalid or unresolvable.
- */
-const resolveRef = (spec, ref) => {
-  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-  const parts = ref.slice(2).split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) return null;
-    current = current[part];
-  }
-  return current;
-};
-
-/**
- * Recursively collect all schema properties that bear constraints we want to
- * validate (enum, minLength, pattern), returning an array of { pointer,
- * constraintType } descriptors.
- *
- * $ref nodes are resolved inline so that constraints defined in shared
- * component schemas are correctly discovered even in $ref-heavy specs.
- */
-const collectConstraintBearingFields = (spec) => {
-  const results = [];
-  // HEAD and OPTIONS are excluded: they do not carry request bodies or
-  // meaningful response payload schemas that drive UI component selection.
-
-  const escapeSegment = (s) => String(s).replace(/~/g, '~0').replace(/\//g, '~1');
-
-  const walk = (schema, pointer, visitedRefs = new Set()) => {
-    if (!schema || typeof schema !== 'object') return;
-
-    // Follow $ref — keep the original pointer so matrix lookups still match
-    // the path-level location where the field appears in the API.
-    if (typeof schema.$ref === 'string') {
-      if (visitedRefs.has(schema.$ref)) return; // prevent infinite loops
-      const resolved = resolveRef(spec, schema.$ref);
-      if (!resolved) return;
-      visitedRefs.add(schema.$ref);
-      walk(resolved, pointer, visitedRefs);
-      visitedRefs.delete(schema.$ref);
-      return;
-    }
-
-    // Merge allOf by walking each member at the same pointer position.
-    if (Array.isArray(schema.allOf)) {
-      for (let i = 0; i < schema.allOf.length; i++) {
-        walk(schema.allOf[i], pointer, visitedRefs);
-      }
-    }
-
-    if (Array.isArray(schema.enum) && schema.enum.length > 0) {
-      results.push({ pointer, constraintType: 'enum' });
-    }
-    if (typeof schema.minLength === 'number') {
-      results.push({ pointer, constraintType: 'minLength' });
-    }
-    if (typeof schema.pattern === 'string') {
-      results.push({ pointer, constraintType: 'pattern' });
-    }
-
-    if (schema.properties && typeof schema.properties === 'object') {
-      for (const [propName, propSchema] of Object.entries(schema.properties)) {
-        walk(propSchema, `${pointer}/properties/${escapeSegment(propName)}`, visitedRefs);
-      }
-    }
-    if (schema.items && typeof schema.items === 'object') {
-      walk(schema.items, `${pointer}/items`, visitedRefs);
-    }
-    if (Array.isArray(schema.oneOf)) {
-      schema.oneOf.forEach((s, i) => walk(s, `${pointer}/oneOf/${i}`, visitedRefs));
-    }
-    if (Array.isArray(schema.anyOf)) {
-      schema.anyOf.forEach((s, i) => walk(s, `${pointer}/anyOf/${i}`, visitedRefs));
-    }
-  };
-
-  if (!spec.paths || typeof spec.paths !== 'object') return results;
-
-  for (const [apiPath, pathItem] of Object.entries(spec.paths)) {
-    if (!pathItem || typeof pathItem !== 'object') continue;
-    const escapedPath = escapeSegment(apiPath);
-
-    for (const [method, operation] of Object.entries(pathItem)) {
-      if (!HTTP_METHODS.has(method.toLowerCase())) continue;
-      if (!operation || typeof operation !== 'object') continue;
-
-      // Request body schemas
-      const rbContent = operation.requestBody?.content;
-      if (rbContent && typeof rbContent === 'object') {
-        for (const [mediaType, mediaObj] of Object.entries(rbContent)) {
-          if (mediaObj?.schema) {
-            walk(
-              mediaObj.schema,
-              `#/paths/${escapedPath}/${method}/requestBody/content/${escapeSegment(mediaType)}/schema`,
-            );
-          }
-        }
-      }
-
-      // Response schemas
-      if (operation.responses && typeof operation.responses === 'object') {
-        for (const [status, response] of Object.entries(operation.responses)) {
-          if (!response?.content || typeof response.content !== 'object') continue;
-          for (const [mediaType, mediaObj] of Object.entries(response.content)) {
-            if (mediaObj?.schema) {
-              walk(
-                mediaObj.schema,
-                `#/paths/${escapedPath}/${method}/responses/${status}/content/${escapeSegment(mediaType)}/schema`,
-              );
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return results;
 };
 
 const validate = async () => {
