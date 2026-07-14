@@ -8,7 +8,6 @@ import Ajv from 'ajv';
 
 const PORT = config.PORT;
 const PROXY_PREFIX = normalizePrefix(config.CDISC_PROXY_PREFIX);
-const HEALTH_PATH = `${PROXY_PREFIX}/__duckdeploy/health`;
 const MAX_REQUEST_BODY_BYTES = config.CDISC_PROXY_MAX_BODY_BYTES;
 const REQUEST_TIMEOUT_MS = config.CDISC_PROXY_TIMEOUT_MS;
 const PROXY_ALLOWED_HEADERS = ['Accept', 'Accept-Language', 'Content-Type', 'If-Match', 'If-None-Match', 'Prefer', 'Range'];

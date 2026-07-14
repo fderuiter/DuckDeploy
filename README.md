@@ -51,7 +51,6 @@ The environment variables required for frontend, proxy, and testing are describe
 | `PROXY_ALLOWED_HEADERS` | `string` | No | `` | Comma-separated list of additional allowed headers. |
 | `CDISC_ALLOW_UNTRUSTED_ORIGINS` | `boolean` | No | `false` | Set to true to allow unrestricted CORS access. |
 | `CDISC_UPSTREAM_BASE_URL` | `string` | No | `https://api.library.cdisc.org/api` | The base URL of the upstream CDISC API. |
-| `VITE_TOTAL_COUNT_HEADER` | `string` | No |  | Header to read total count from (frontend). |
 | `VITE_API_BASE_URL` | `string` | No |  | Deployed CDISC proxy base URL for frontend. |
 | `SCHEMATHESIS_BASE_URL` | `string` | No |  | Base URL for fuzz testing. |
 | `SCHEMATHESIS_MAX_EXAMPLES` | `number` | No | `1000` | Max examples per endpoint for fuzz testing. |

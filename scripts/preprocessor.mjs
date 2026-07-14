@@ -12,7 +12,6 @@ import {
   normalizeSchema,
   resolveDiscriminator,
   UnifiedSchemaWalker,
-  isReferenceField,
   getReferenceTarget,
   extractUiExtensions,
   getPrimaryField,
@@ -36,7 +35,6 @@ const INPUT_CANDIDATES = [
 
 const OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.json');
 const MANIFEST_GENERATION_LOG_PATH = path.join(repoRoot, 'manifest-generation-log.json');
-const LEGACY_TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
 const HASH_OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.sha256');
 const STABLE_JSON_EOL = '\n';
 const DOCS_DIR = path.join(repoRoot, 'docs');
@@ -460,7 +458,7 @@ const buildGeneratedOperationMap = () => {
 const buildUiManifest = (spec) => {
   if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
     return {
-      manifest: { version: 1, depthLimit: 0, resources: {} },
+      manifest: { version: 1, resources: {} },
       traceabilityEntries: [],
     };
   }
@@ -610,7 +608,6 @@ const buildUiManifest = (spec) => {
   return {
     manifest: {
       version: 1,
-      depthLimit: 0,
       resources,
       allowedOperations,
       operationFunctionMap,
@@ -643,14 +640,11 @@ const compile = async () => {
   const manifestHash = crypto.createHash('sha256').update(serializedManifest, 'utf8').digest('hex');
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
-  if (fs.existsSync(LEGACY_TRACEABILITY_OUTPUT_PATH)) {
-    fs.unlinkSync(LEGACY_TRACEABILITY_OUTPUT_PATH);
-  }
   fs.writeFileSync(OUTPUT_PATH, serializedManifest, 'utf8');
   fs.writeFileSync(MANIFEST_GENERATION_LOG_PATH, `${JSON.stringify(manifestGenerationLog, null, 2)}\n`, 'utf8');
   fs.writeFileSync(HASH_OUTPUT_PATH, `${manifestHash}\n`, 'utf8');
 
-  console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)} (depth limit removed)`);
+  console.log(`Generated ${path.relative(repoRoot, OUTPUT_PATH)}`);
   console.log(`Generated ${path.relative(repoRoot, MANIFEST_GENERATION_LOG_PATH)}`);
   console.log(`Generated ${path.relative(repoRoot, HASH_OUTPUT_PATH)}`);
   

@@ -76,11 +76,6 @@
       "description": "The base URL of the upstream CDISC API.",
       "public": false
     },
-    "VITE_TOTAL_COUNT_HEADER": {
-      "type": "string",
-      "description": "Header to read total count from (frontend).",
-      "public": true
-    },
     "VITE_API_BASE_URL": {
       "type": "string",
       "description": "Deployed CDISC proxy base URL for frontend.",
