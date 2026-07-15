@@ -33,7 +33,7 @@ The environment variables required for frontend, proxy, and testing are describe
 <!-- CONFIG_START -->
 
 | Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
+| --- | --- | --- | --- | --- |
 | `PORT` | `number` | No | `8787` | Port for the proxy server to listen on. |
 | `CDISC_PRIMARY_KEY` | `string` | Yes |  | Primary API key for CDISC Library. |
 | `CDISC_SECONDARY_KEY` | `string` | No |  | Secondary API key for CDISC Library. |

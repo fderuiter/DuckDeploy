@@ -31,7 +31,7 @@ async function main() {
   let readme = await fs.readFile(readmePath, 'utf8');
   
   let markdownTable = '| Variable | Type | Required | Default | Description |\n';
-  markdownTable += '|----------|------|----------|---------|-------------|\n';
+  markdownTable += '| --- | --- | --- | --- | --- |\n';
   
   for (const [key, prop] of Object.entries(schema.properties)) {
     const isRequired = (schema.required || []).includes(key) ? 'Yes' : 'No';
