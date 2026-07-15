@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { TerminologyLookupInput } from '../TerminologyLookupInput';
 import { expect, test, describe, vi } from 'vitest';
+import { AccessibilityProvider } from '../../../core/AccessibilityContext';
 
 describe('TerminologyLookupInput', () => {
   const defaultProps: any = {
@@ -14,14 +15,22 @@ describe('TerminologyLookupInput', () => {
   };
 
   test('should not have basic accessibility violations', async () => {
-    const { container } = render(<TerminologyLookupInput {...defaultProps} />);
+    const { container } = render(
+      <AccessibilityProvider>
+        <TerminologyLookupInput {...defaultProps} />
+      </AccessibilityProvider>
+    );
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
 
   test('verifies search results and keyboard selection logic', async () => {
     const setValueMock = vi.fn();
-    render(<TerminologyLookupInput {...defaultProps} setValue={setValueMock} />);
+    render(
+      <AccessibilityProvider>
+        <TerminologyLookupInput {...defaultProps} setValue={setValueMock} />
+      </AccessibilityProvider>
+    );
     
     const input = screen.getByRole('combobox', { name: /Terminology Lookup/i });
     

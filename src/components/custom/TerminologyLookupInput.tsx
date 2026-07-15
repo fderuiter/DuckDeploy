@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Autocomplete, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
-import { VisuallyHidden, getStatusMessage } from '../AccessibilityUtils';
+import { getStatusMessage } from '../AccessibilityUtils';
 import { BaseWidget } from './BaseWidget';
+import { useAccessibility } from '../../core/AccessibilityContext';
 
 const resolveDomain = (widgetProps: Record<string, unknown>): string | undefined => {
   const domain = widgetProps?.domain;
@@ -14,6 +15,14 @@ const resolveDomain = (widgetProps: Record<string, unknown>): string | undefined
 const mockTerminologyDb: Record<string, string[]> = {
   AE: ['Adverse Event 1', 'Adverse Event 2', 'Allergic Reaction'],
   CM: ['Concomitant Medication A', 'Concomitant Medication B'],
+};
+
+const AnnounceEmptyStatus = () => {
+  const { announce } = useAccessibility();
+  useEffect(() => {
+    announce(getStatusMessage('empty'), 'polite');
+  }, [announce]);
+  return <span>{getStatusMessage('empty')}</span>;
 };
 
 /**
@@ -30,14 +39,7 @@ export const TerminologyLookupInput: React.FC<WidgetValueProps & WidgetMetaProps
         options={options}
         value={typeof value === 'string' && value ? value : null}
         onChange={(_event, newValue) => setValue(newValue || '')}
-        noOptionsText={
-          <>
-            No options
-            <VisuallyHidden aria-live="polite">
-              {getStatusMessage('empty')}
-            </VisuallyHidden>
-          </>
-        }
+        noOptionsText={<AnnounceEmptyStatus />}
         renderInput={(params) => (
           <TextField {...(params as any)}
             

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { TextInput } from 'react-admin';
 import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -10,6 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import { BaseWidget } from './BaseWidget';
+import { useAccessibility } from '../../core/AccessibilityContext';
 
 /**
  * Generated description.
@@ -20,21 +21,32 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
 
   const [listView, setListView] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  
+  const { announce, shiftFocus } = useAccessibility();
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const listContainerRef = useRef<HTMLUListElement>(null);
 
   const handleSelect = (marker: typeof markers[0]) => {
     setSelectedId(marker.id);
     setValue(`${marker.lat},${marker.lng}`);
   };
 
+  const handleViewToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isList = e.target.checked;
+    setListView(isList);
+    announce(isList ? 'Switched to list view' : 'Switched to map view', 'polite');
+    shiftFocus(isList ? listContainerRef : mapContainerRef);
+  };
+
   return (
     <BaseWidget schemaNode={schemaNode}>
       <FormControlLabel
-        control={<Switch checked={listView} onChange={(e) => setListView(e.target.checked)} />}
+        control={<Switch checked={listView} onChange={handleViewToggle} />}
         label="View as List"
       />
 
       {!listView ? (
-        <div className="map-markers" style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+        <div ref={mapContainerRef} tabIndex={-1} className="map-markers" style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
           {markers.map(marker => (
             <IconButton
               key={marker.id}
@@ -49,7 +61,7 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
           ))}
         </div>
       ) : (
-        <List role="listbox">
+        <List role="listbox" ref={listContainerRef} tabIndex={-1}>
           {markers.map(marker => (
             <ListItem key={marker.id} disablePadding>
               <ListItemButton 

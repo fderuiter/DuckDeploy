@@ -1,6 +1,8 @@
 import React, { createContext, useState, useCallback, useContext } from 'react';
 import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 import { createRegistry } from './RegistryFactory';
+import { useAccessibility } from './AccessibilityContext';
+import { getStatusMessage } from '../components/AccessibilityUtils';
 
 export interface WidgetValueProps {
   source: string;
@@ -60,6 +62,7 @@ export function useWidgetMutation(
 
   const mutationContext = useContext(WidgetMutationContext);
   const finalMutate = mutateFn || mutationContext?.mutate;
+  const { announce } = useAccessibility();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -71,19 +74,25 @@ export function useWidgetMutation(
       }
       setIsLoading(true);
       setError(null);
+      announce(getStatusMessage('loading'), 'polite');
       try {
         const result = await finalMutate(operation, payload);
+        announce(getStatusMessage('success'), 'polite');
+        // The widget will typically render new content. Shift focus to it.
+        // As a heuristic, we can shift focus to the first actionable element in the widget or its container.
+        // We'll rely on the caller or a generic wrapper having a specific class, or we can just shiftFocus after a tick.
         if (opts?.onSuccess) opts.onSuccess(result);
         return result;
       } catch (err: any) {
         setError(err);
+        announce(getStatusMessage('error', err.message), 'assertive');
         if (opts?.onError) opts.onError(err);
         throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [finalMutate, opts]
+    [finalMutate, opts, announce]
   );
 
   return { execute, isLoading, error };

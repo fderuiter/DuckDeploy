@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FetchUserWidget } from '../FetchUserWidget';
 import { WidgetMutationContext, type WidgetValueProps } from '../../../core/WidgetRegistry';
 import { describe, it, expect, vi } from 'vitest';
+import { AccessibilityProvider } from '../../../core/AccessibilityContext';
 import '@testing-library/jest-dom';
 
 describe('FetchUserWidget', () => {
@@ -20,9 +21,11 @@ describe('FetchUserWidget', () => {
     };
 
     render(
-      <WidgetMutationContext.Provider value={{ mutate: mockMutate }}>
-        <FetchUserWidget {...mockProps} />
-      </WidgetMutationContext.Provider>
+      <AccessibilityProvider>
+        <WidgetMutationContext.Provider value={{ mutate: mockMutate }}>
+          <FetchUserWidget {...mockProps} />
+        </WidgetMutationContext.Provider>
+      </AccessibilityProvider>
     );
 
     // Check initial value
