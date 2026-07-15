@@ -1,6 +1,6 @@
 import { getSchemaFromContent } from './schema.ts';
-import type { ResourceDefinition } from '../../../src/core/discovery.ts';
-import { HTTP_METHODS } from '../../../src/core/discovery.ts';
+import type { ResourceDefinition } from '@duckdeploy/types';
+import { HTTP_METHODS } from '@duckdeploy/types';
 
 /**
  * Generated description.

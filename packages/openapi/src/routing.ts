@@ -1,4 +1,4 @@
-import { FULL_HTTP_METHODS } from '../../../src/core/discovery.ts';
+import { FULL_HTTP_METHODS } from '@duckdeploy/types';
 
 export interface AllowedOperation {
   pattern: RegExp;

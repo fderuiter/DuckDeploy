@@ -2,7 +2,7 @@
 // @ts-nocheck
 import { normalizeProviderError, NormalizedHttpError } from "../api/custom-instance";
 import { type DataProvider, type GetListParams, type GetListResult } from 'react-admin';
-import type { ResourceDefinition } from '../core/discovery';
+import type { ResourceDefinition } from '@duckdeploy/types';
 import { adaptOutboundPayload } from './outboundAdapter';
 import { MANIFEST_FILENAME } from '@duckdeploy/openapi';
 

@@ -22,7 +22,7 @@ import {
   MANIFEST_FILENAME,
   escapeJsonPointer
 } from '@duckdeploy/openapi';
-import { HTTP_METHODS } from '../src/core/discovery.ts';
+import { HTTP_METHODS } from '@duckdeploy/types';
 
 const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
 

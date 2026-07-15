@@ -14,7 +14,7 @@ import {
   extractValidation,
   extractListProperties,
 } from '@duckdeploy/openapi';
-import { HTTP_METHODS } from '../src/core/discovery.ts';
+import { HTTP_METHODS } from '@duckdeploy/types';
 
 const OUTPUT_PATH = path.join(repoRoot, 'src', 'generated', 'schemaComponentTree.ts');
 

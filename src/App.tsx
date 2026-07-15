@@ -19,7 +19,7 @@ import { FetchUserWidget } from './components/custom/FetchUserWidget';
 import { BootstrapScreen } from './components/BootstrapScreen';
 import { getRuntimeApiConfig } from './core/runtimeConfig';
 import { customInstance } from './api/custom-instance';
-import type { ResourceDefinition } from './core/discovery';
+import type { ResourceDefinition } from '@duckdeploy/types';
 import { StandardLayout } from './layouts/StandardLayout';
 import { MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
