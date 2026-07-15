@@ -20,6 +20,7 @@ import {
   determineSchemaKind,
   SCHEMA_FILENAME,
   MANIFEST_FILENAME,
+  escapeJsonPointer
 } from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
@@ -168,10 +169,7 @@ const validateDocsAndInjectMetadata = () => {
   }
 };
 
-const escapeJsonPointer = (segment) =>
-  String(segment)
-    .replace(/~/g, '~0')
-    .replace(/\//g, '~1');
+
 
 class OpenApiVisitor {
   constructor(spec) {

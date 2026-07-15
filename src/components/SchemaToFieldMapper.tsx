@@ -362,7 +362,7 @@ export const renderPrecomputedField = (
   const commonProps = buildCommonProps({ source: node.source, title, description, key });
   const trackerNodes = buildTrackerNodes(node.source, isHeuristicTitle, description);
 
-  const reference = node.kind === 'reference' ? (node.reference || getReferenceTarget(node.source)) : undefined;
+  const reference = node.reference || getReferenceTarget(node.source);
   
   const ComponentDef = ComponentMappingFactory[node.kind] || ComponentMappingFactory.default;
 
@@ -452,15 +452,15 @@ export const renderInput = (
               resolvedItemNodes = [renderInput(itemSchema, '', false, depth + 1, `${key}.item`)];
             }
           }
-        } else if (kind === 'reference') {
-          resolvedReference = isPrecomputed 
-            ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
-            : getReferenceTarget(source);
-        } else if (kind === 'enum') {
-          resolvedChoices = isPrecomputed 
-            ? ((node as PrecomputedInputDescriptor).choices || [])
-            : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
         }
+        
+        resolvedReference = isPrecomputed 
+          ? ((node as PrecomputedInputDescriptor).reference || getReferenceTarget(source))
+          : getReferenceTarget(source);
+
+        resolvedChoices = isPrecomputed 
+          ? ((node as PrecomputedInputDescriptor).choices || [])
+          : ((node as OpenAPIV3.SchemaObject).enum || []).map((val: string) => ({ id: val, name: val }));
 
         const renderDefault = () => {
           if (kind === 'polymorphic') {
