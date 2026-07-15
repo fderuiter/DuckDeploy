@@ -18,15 +18,11 @@
 
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { validateEnv } from '../config/validate.mjs';
+import { resolveSpecPath, repoRoot } from '../openapi-utility.mjs';
 import { DEFAULT_PROXY_PREFIX } from '@duckdeploy/openapi';
 
 const config = validateEnv('backend');
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, '../..');
 
 function normalizePrefix(value) {
   const trimmed = typeof value === 'string' ? value.trim() : '';
@@ -48,7 +44,7 @@ const commandArgs = [
   '-m',
   'schemathesis.cli',
   'run',
-  path.join(repoRoot, 'openapi.yaml'),
+  resolveSpecPath(),
   '--url',
   apiBaseUrl,
   '--max-examples',

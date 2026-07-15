@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
+import { loadSpecSync, repoRoot } from './openapi-utility.mjs';
 import {
   resolveResourceName,
   compileSpec,
@@ -17,11 +16,6 @@ import {
 } from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, '..');
-
-const OPENAPI_PATH = path.join(repoRoot, 'openapi.yaml');
 const OUTPUT_PATH = path.join(repoRoot, 'src', 'generated', 'schemaComponentTree.ts');
 
 const getSchemaFromContent = (content) => {
@@ -204,8 +198,7 @@ const buildPrecomputedResourceTrees = (spec) => {
 };
 
 const compile = async () => {
-  const openApiRaw = fs.readFileSync(OPENAPI_PATH, 'utf8');
-  const parsedSpecRaw = yaml.load(openApiRaw);
+  const parsedSpecRaw = loadSpecSync();
   const parsedSpec = await compileSpec(parsedSpecRaw);
   const precomputedTree = buildPrecomputedResourceTrees(parsedSpec);
 

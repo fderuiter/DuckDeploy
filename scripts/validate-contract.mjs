@@ -21,22 +21,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import yaml from 'js-yaml';
-import { fileURLToPath } from 'node:url';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
+import { loadSpecSync, resolveSpecPath, repoRoot } from './openapi-utility.mjs';
 import { resolveRef, collectConstraintBearingFields } from '@duckdeploy/openapi';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, '..');
 
 const MATRIX_PATH = path.join(repoRoot, 'manifest-generation-log.json');
 const REPORT_PATH = path.join(repoRoot, 'contract-validation-report.json');
-const OPENAPI_CANDIDATES = [
-  path.join(repoRoot, 'openapi.yaml'),
-  path.join(repoRoot, 'openapi.yml'),
-  path.join(repoRoot, 'openapi.json'),
-];
 
 // Components that accept enum constraints.
 const ENUM_COMPONENTS = new Set(['<SelectInput />', '<SelectField />', '<PolymorphicInput />']);
@@ -59,19 +49,10 @@ const loadMatrix = () => {
   return parsed.entries;
 };
 
-const loadOpenApi = () => {
-  const candidate = OPENAPI_CANDIDATES.find((p) => fs.existsSync(p));
-  if (!candidate) {
-    throw new Error('OpenAPI source file not found (checked openapi.yaml / openapi.yml / openapi.json).');
-  }
-  const raw = fs.readFileSync(candidate, 'utf8');
-  return candidate.endsWith('.json') ? JSON.parse(raw) : yaml.load(raw);
-};
-
 const validate = async () => {
   const entries = loadMatrix();
-  const spec = loadOpenApi();
-  const candidate = OPENAPI_CANDIDATES.find((p) => fs.existsSync(p));
+  const spec = loadSpecSync();
+  const candidate = resolveSpecPath();
   const dereferencedSpec = await $RefParser.dereference(candidate, { dereference: { circular: 'ignore' } });
 
   const violations = [];
