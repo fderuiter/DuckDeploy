@@ -4,7 +4,6 @@ import type { ManifestWorkerResponse } from '../workers/manifest.worker';
 // Vite processes the `?worker` suffix at build time and bundles the worker
 // as a separate chunk — must be a static import at the top level.
 import ManifestWorkerConstructor from '../workers/manifest.worker?worker';
-import { customInstance } from '../api/custom-instance';
 import { SCHEMA_FILENAME, MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
 export interface SpecContextType {
@@ -86,11 +85,16 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         });
 
                 // ── 1. Schema fetch (main thread) ─────────────────────────────────────
-        const parsedJson = await customInstance<any>({
-          url: schemaUrl,
-          method: 'GET',
+        const response = await fetch(schemaUrl, {
           headers: { Accept: 'application/json' }
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const parsedJson = await response.json();
+        
         if (!parsedJson || typeof parsedJson !== 'object') {
           console.error('Failed to parse compiled OpenAPI schema');
           throw new Error('Failed to parse compiled OpenAPI schema');
