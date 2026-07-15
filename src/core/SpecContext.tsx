@@ -31,7 +31,7 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const loadSpec = async () => {
       try {
-        const schemaUrl = `${import.meta.env.BASE_URL}${SCHEMA_FILENAME}`;
+        const schemaUrl = new URL(SCHEMA_FILENAME, window.location.origin + import.meta.env.BASE_URL).toString();
         const manifestUrl = `${import.meta.env.BASE_URL}${MANIFEST_FILENAME}`;
 
         // ── Start both requests concurrently ─────────────────────────────────
@@ -96,8 +96,8 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           throw new Error('Failed to parse compiled OpenAPI schema');
         }
 
-        console.log('Schema loaded successfully');
-        if (!cancelled) setSpec(parsedJson);
+        console.log('Schema loaded successfully. Keys:', Object.keys(parsedJson.data || parsedJson));
+        if (!cancelled) setSpec(parsedJson.data || parsedJson);
 
         // ── 2. Await the manifest worker (likely already done by now) ─────────
         console.log('Waiting for manifest worker...');

@@ -7,6 +7,8 @@ type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
 const runtimeConfig = getRuntimeApiConfig();
 
+import { HEALTH_CHECK_PATH } from '@duckdeploy/openapi';
+
 /**
  *
  */
@@ -158,7 +160,7 @@ export const normalizeProviderError = (error: unknown): unknown => {
   let details: string[] | undefined;
 
   const configUrl = error.config?.url ?? '';
-  const isHealthCheck = configUrl === runtimeConfig.healthUrl;
+  const isHealthCheck = configUrl === HEALTH_CHECK_PATH;
   const isSpec = configUrl.endsWith(SCHEMA_FILENAME) || configUrl.endsWith(MANIFEST_FILENAME);
 
   // Issue Factory logic for Bootstrap phase
@@ -224,7 +226,7 @@ export const AXIOS_INSTANCE = axios.create({
 });
 
 AXIOS_INSTANCE.interceptors.response.use(
-  (response) => { if (response.config.url === runtimeConfig.healthUrl && response.data?.ok === false) return Promise.reject(new axios.AxiosError("Health check failed", "ERR_HEALTH", response.config, response.request, response)); return response; },
+  (response) => { if (response.config.url === HEALTH_CHECK_PATH && response.data?.ok === false) return Promise.reject(new axios.AxiosError("Health check failed", "ERR_HEALTH", response.config, response.request, response)); return response; },
   (error) => Promise.reject(normalizeProviderError(error)),
 );
 

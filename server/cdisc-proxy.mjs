@@ -318,18 +318,18 @@ async function proxyToUpstream(request, response, url, requestOrigin) {
     return;
   }
 
+  if (upstreamPath === HEALTH_CHECK_PATH) {
+    const health = getProxyHealthPayload();
+    sendJson(response, health.ok ? 200 : 503, health, requestOrigin);
+    return;
+  }
+
   if (!isOperationAllowed(request.method ?? 'GET', upstreamPath)) {
     sendJson(response, 404, {
       ok: false,
       code: 'PROXY_PATH_NOT_ALLOWED',
       message: 'Requested path is not part of the documented CDISC API surface.',
     }, requestOrigin);
-    return;
-  }
-
-  if (upstreamPath === HEALTH_CHECK_PATH) {
-    const health = getProxyHealthPayload();
-    sendJson(response, health.ok ? 200 : 503, health, requestOrigin);
     return;
   }
 

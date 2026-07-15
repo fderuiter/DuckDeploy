@@ -443,7 +443,7 @@ const buildGeneratedOperationMap = () => {
 
     while ((match = operationRegex.exec(source)) !== null) {
       const [, functionName, url, method] = match;
-      const normalizedUrl = url.replace(/\$\{([^}]+)\}/g, '{$1}');
+      const normalizedUrl = url.replace(/\$\{([^}]+)\}/g, (fullMatch, p1) => `{${p1.replace(/^_/, '')}}`);
       clients[`${method} ${normalizedUrl}`] = {
         functionName,
         modulePath,
@@ -636,6 +636,11 @@ const compile = async () => {
   }
 
   const parsed = await compileSpec(parsedRaw);
+
+  // EXPLICITLY remove the health check path from the UI manifest so React Admin doesn't try to build a UI for it.
+  if (parsed && parsed.paths && parsed.paths['/__duckdeploy/health']) {
+    delete parsed.paths['/__duckdeploy/health'];
+  }
 
   const { manifest, traceabilityEntries } = buildUiManifest(parsed);
   const manifestGenerationLog = {

@@ -41,7 +41,13 @@ async function run() {
   const resources = Object.keys(manifest.resources || {});
   console.log(`Found resources: ${resources.length}`);
 
-  const serverProcess = spawn('npm', ['run', 'preview', '--', '--port', '4173', '--strictPort'], {
+  const proxyProcess = spawn('npm', ['run', 'proxy'], {
+    stdio: 'ignore',
+    shell: true,
+    env: { ...process.env, CDISC_PRIMARY_KEY: 'dummy-key' }
+  });
+
+  const serverProcess = spawn('npm', ['run', 'dev', '--', '--port', '4173', '--strictPort'], {
     stdio: 'ignore',
     shell: true
   });
@@ -51,9 +57,20 @@ async function run() {
   if (!serverReady) {
     console.error('Preview server failed to start');
     serverProcess.kill();
+    proxyProcess.kill();
     process.exit(1);
   }
-  console.log('Preview server is ready.');
+  
+  console.log('Waiting for proxy server to start...');
+  const proxyReady = await waitForServer('http://localhost:8787/api/cdisc/health');
+  if (!proxyReady) {
+    console.error('Proxy server failed to start');
+    serverProcess.kill();
+    proxyProcess.kill();
+    process.exit(1);
+  }
+  
+  console.log('Preview and proxy servers are ready.');
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -62,8 +79,22 @@ async function run() {
   
   const page = await browser.newPage();
   
-  page.on('console', msg => {
-    console.log(`[BROWSER LOG] ${msg.type().toUpperCase()}: ${msg.text()}`);
+  page.on('console', async msg => {
+    const args = await Promise.all(msg.args().map(async a => {
+      if (a.remoteObject().subtype === 'error') {
+        return a.remoteObject().description;
+      }
+      return a.jsonValue().catch(() => a.toString());
+    }));
+    if (args.length === 0) {
+      console.log(`[BROWSER LOG] ${msg.type().toUpperCase()}: ${msg.text()}`);
+    } else {
+      console.log(`[BROWSER LOG] ${msg.type().toUpperCase()}:`, ...args);
+    }
+  });
+  
+  page.on('pageerror', error => {
+    console.error('[BROWSER ERROR]', error.message, error.stack);
   });
   
   let hasViolations = false;
@@ -81,6 +112,7 @@ async function run() {
       console.error(`Failed to render #main-content on route ${route} within timeout.`);
       await browser.close();
       serverProcess.kill();
+      proxyProcess.kill();
       process.exit(1);
     }
     
@@ -95,6 +127,7 @@ async function run() {
       console.log(`Violations found on ${route}:`);
       results.violations.forEach(v => {
         console.log(`- ${v.id} [${v.impact}]: ${v.description}`);
+        v.nodes.forEach(node => console.log(`  Node: ${node.html}`));
       });
     } else {
       console.log(`No violations found on ${route}`);
@@ -103,6 +136,7 @@ async function run() {
 
   await browser.close();
   serverProcess.kill();
+  proxyProcess.kill();
 
   // Save the report
   const reportPath = path.resolve(__dirname, '../a11y-report.json');

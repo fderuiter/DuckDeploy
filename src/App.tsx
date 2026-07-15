@@ -1,5 +1,57 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Admin } from 'react-admin';
+import { Admin, defaultTheme } from 'react-admin';
+import { createTheme } from '@mui/material/styles';
+import { GlobalStyles } from '@mui/material';
+
+const defaultAppTheme = createTheme({
+  ...defaultTheme,
+  palette: {
+    ...defaultTheme.palette,
+    primary: {
+      main: '#004282',
+      dark: '#002f5e',
+      light: '#33689b',
+      contrastText: '#ffffff',
+    },
+    text: {
+      primary: '#000000',
+      secondary: '#222222',
+    },
+    background: {
+      default: '#ffffff',
+      paper: '#ffffff',
+    }
+  },
+  components: {
+    ...defaultTheme.components,
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: '#000000 !important',
+          opacity: '1 !important',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          color: '#000000 !important',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          color: '#004282 !important',
+        },
+        contained: {
+          color: '#ffffff !important',
+          backgroundColor: '#004282 !important',
+        },
+      },
+    },
+  },
+});
 import { SpecProvider, useSpec } from './core/SpecContext';
 import { duckDeployAuthProvider, setAuthorizationResources } from './core/authProvider';
 import { openApiDataProvider, setResourceDefinitions } from './providers/openApiDataProvider';
@@ -21,7 +73,7 @@ import { getRuntimeApiConfig } from './core/runtimeConfig';
 import { customInstance } from './api/custom-instance';
 import type { ResourceDefinition } from './core/discovery';
 import { StandardLayout } from './layouts/StandardLayout';
-import { MANIFEST_FILENAME } from '@duckdeploy/openapi';
+import { MANIFEST_FILENAME, HEALTH_CHECK_PATH } from '@duckdeploy/openapi';
 
 registerWidget('x-ui-custom-map', CustomMapWidget);
 registerWidget('cdisc-terminology', TerminologyLookupInput);
@@ -112,7 +164,7 @@ const AdminApp = () => {
 
       try {
         await customInstance<ProxyHealthResponse>({
-          url: healthUrl,
+          url: HEALTH_CHECK_PATH,
           method: 'GET',
           headers: { Accept: 'application/json' }
         }, { signal: controller.signal });
@@ -184,7 +236,7 @@ const AdminApp = () => {
   }
 
   return (
-    <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider} layout={StandardLayout}>
+    <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider} layout={StandardLayout} theme={defaultAppTheme}>
       {() => ResourceFactory({ resources }).props.children}
     </Admin>
   );
@@ -196,6 +248,7 @@ const AdminApp = () => {
  */
 const App = () => (
   <AccessibilityProvider>
+    <GlobalStyles styles={{ 'div': { color: '#000000 !important', opacity: '1 !important' } }} />
     <LayoutRegistryProvider>
       <WidgetRegistryProvider>
         <SpecProvider>
