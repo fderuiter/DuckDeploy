@@ -14,12 +14,15 @@ components:
           type: string
           description: href
           format: uri
+          title: Href
         title:
           type: string
           description: title
+          title: Title
         type:
           type: string
           description: type
+          title: Type
       description: Resource Reference
     rootItemRef:
       type: object
@@ -37,9 +40,11 @@ components:
         name:
           type: string
           description: Name of the action to take
+          title: Name
         params:
           type: object
           description: Parameters needed by the action
+          title: Params
       description: Conformance Rule Action
     condition:
       type: object
@@ -47,24 +52,30 @@ components:
         name:
           type: string
           description: Name of the condition
+          title: Name
         params:
           type: object
           description: Parameters needed by the condition
+          title: Params
         operator:
           type: string
           description: The operator to perform on the condition method
+          title: Operator
         value:
           description: Any necessary comparison value
+          title: Value
         any:
           type: array
           items:
             $ref: '#/components/schemas/condition'
           description: A list of conditions that will return true if any of the conditions in the list are true
+          title: Any
         all:
           type: array
           items:
             $ref: '#/components/schemas/condition'
           description: A list of conditions that will return try if all of the conditions in the list are true
+          title: All
       description: Conformance Rule condition
     standard:
       type: object
@@ -72,10 +83,12 @@ components:
         Name:
           type: string
           description: Standard type
+          title: Name
         Version:
           type: string
           description: standard version
           example: 3-4
+          title: Version
       description: Name and version of a standard
     rule_reference:
       type: object
@@ -83,12 +96,15 @@ components:
         Id:
           type: string
           description: Published rule id
+          title: Id
         Origin:
           type: string
           description: Rule source
+          title: Origin
         Version:
           type: string
           description: Rule version
+          title: Version
       description: Reference to published rule definition
     authority:
       type: object
@@ -96,6 +112,7 @@ components:
         Organization:
           type: string
           description: Publisher organization
+          title: Organization
       description: Rule publisher
     rule_classes:
       type: object
@@ -105,11 +122,13 @@ components:
           items:
             type: string
           description: A list of classes that a rule explicitly applies to. Use 'All' when a rule applies to all classes
+          title: Include
         Exclude:
           type: array
           items:
             type: string
           description: A list of classes that a rule explicitly DOES NOT apply to.
+          title: Exclude
       description: Classes a rule applies to
     rule_domains:
       type: object
@@ -119,11 +138,13 @@ components:
           items:
             type: string
           description: A list of domains that a rule explicitly applies to. Use 'All' when a rule applies to all domains
+          title: Include
         Exclude:
           type: array
           items:
             type: string
           description: A list of domains that a rule explicitly DOES NOT apply to.
+          title: Exclude
       description: Domains/Datasets a rule applies to
     rule:
       type: object
@@ -141,33 +162,44 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Standards
+          title: Title for _links
+          description: Description for _links
         actions:
           type: array
           items:
             $ref: '#/components/schemas/action'
+          title: Actions
         core_id:
           type: string
           description: Identifier for core related activities
+          title: Core Id
         description:
           type: string
           description: Rule description
+          title: Description
         id:
           type: string
           description: Unique id for referencing a rule
+          title: Id
         rule_type:
           type: string
           description: Type of rule
+          title: Rule Type
         sensitivity:
           type: string
           description: Rule sensitivity
+          title: Sensitivity
         severity:
           type: string
           description: Describes how severe a rule violatio is
+          title: Severity
         standards:
           type: array
           items:
             $ref: '#/components/schemas/standard'
           description: All standards the rule applies to
+          title: Standards
         reference:
           $ref: '#/components/schemas/rule_reference'
         authority:
@@ -193,9 +225,13 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Standards
+          title: Title for _links
+          description: Description for _links
         rules:
           type: object
           description: Mapping of rule id to rule definition
+          title: Rules
       description: Rule release package
     diffResult:
       type: object
@@ -218,12 +254,16 @@ components:
                           type: object
                         text:
                           type: string
+                title: Body
               head:
                 type: array
                 items:
                   type: string
+                title: Head
               title:
                 type: string
+                title: Title
+          title: Diff
       description: Keyediffer Result
     searchResult:
       type: object
@@ -238,6 +278,9 @@ components:
               items:
                 $ref: '#/components/schemas/link'
               description: Search Results
+              title: Search Results
+          title: Title for _links
+          description: Description for _links
       description: Search Result
     searchScopeList:
       type: object
@@ -247,6 +290,7 @@ components:
           items:
             type: string
           description: Search Scopes
+          title: Title for scopes
       description: Search Scope List
     suggestResult:
       type: object
@@ -261,6 +305,9 @@ components:
               items:
                 $ref: '#/components/schemas/link'
               description: Suggestion Results
+              title: Search Results
+          title: Title for _links
+          description: Description for _links
       description: Suggestion Result
     rootItem:
       type: object
@@ -275,31 +322,41 @@ components:
               items:
                 $ref: '#/components/schemas/link'
               description: Item Versions
+              title: Versions
+          title: Title for _links
+          description: Description for _links
       description: Root Item
     productAttributes:
       properties:
         name:
           type: string
           description: Product Name
+          title: Name
         label:
           type: string
           description: Product Label
+          title: Label
         description:
           type: string
           description: Product Description
+          title: Description
         source:
           type: string
           description: Product Source
+          title: Source
         effectiveDate:
           type: string
           description: Effective Date
           format: date
+          title: Effective Date
         registrationStatus:
           type: string
           description: Registration Status
+          title: Registration Status
         version:
           type: string
           description: Version
+          title: Version
       description: CDISC Library Product Attributes
     productRef:
       type: object
@@ -316,25 +373,31 @@ components:
             allOf:
               - $ref: '#/components/schemas/link'
             description: Impacted Item
+            title: Impacted Item
           impactedProperty:
             type: string
             description: Impacted Property
+            title: Impacted Property
           publishedValue:
             type: string
             description: Published Value
+            title: Published Value
           correctedValue:
             type: string
             description: Corrected Value
+            title: Corrected Value
           publishedResource:
             type: object
             allOf:
               - $ref: '#/components/schemas/link'
             description: Published Resource Reference
+            title: Published Resource
           correctedResource:
             type: object
             allOf:
               - $ref: '#/components/schemas/link'
             description: Corrected Resource Reference
+            title: Corrected Resource
       description: List of Corrigenda
     parentPackage:
       type: object
@@ -368,20 +431,25 @@ components:
           pattern: C\d+$
           type: string
           description: NCI Thesaurus Concept Identifier
+          title: Concept Id
         submissionValue:
           type: string
           description: Term Submission Value
+          title: Submission Value
         definition:
           type: string
           description: Term Definition
+          title: Definition
         preferredTerm:
           type: string
           description: Preferred Term
+          title: Preferred Term
         synonyms:
           type: array
           items:
             type: string
           description: Term Synonyms
+          title: Synonyms
         _links:
           type: object
           properties:
@@ -395,6 +463,8 @@ components:
               $ref: '#/components/schemas/rootItemRef'
             priorVersion:
               $ref: '#/components/schemas/priorVersion'
+          title: Title for _links
+          description: Description for _links
       description: Codelist Term
     packageTerm:
       type: object
@@ -403,20 +473,25 @@ components:
           pattern: C\d+$
           type: string
           description: NCI Thesaurus Concept Identifier
+          title: Concept Id
         submissionValue:
           type: string
           description: Term Submission Value
+          title: Submission Value
         definition:
           type: string
           description: Term Definition
+          title: Definition
         preferredTerm:
           type: string
           description: Preferred Term
+          title: Preferred Term
         synonyms:
           type: array
           items:
             type: string
           description: Term Synonyms
+          title: Synonyms
       description: Codelist Term without links
     codelistAttributes:
       properties:
@@ -424,26 +499,33 @@ components:
           pattern: C\d+$
           type: string
           description: NCI Thesaurus Concept Identifier
+          title: Concept Id
         extensible:
           type: boolean
           description: Extensible
+          title: Extensible
         name:
           type: string
           description: Codelist Name
+          title: Name
         submissionValue:
           type: string
           description: Codelist Submission Value
+          title: Submission Value
         definition:
           type: string
           description: Codelist Definition
+          title: Definition
         preferredTerm:
           type: string
           description: Codelist Preferred Term
+          title: Preferred Term
         synonyms:
           type: array
           items:
             type: string
           description: Codelist Synonyms
+          title: Synonyms
       description: Codelist Attributes
     codelist:
       type: object
@@ -461,11 +543,14 @@ components:
                   $ref: '#/components/schemas/rootItemRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             terms:
               type: array
               items:
                 $ref: '#/components/schemas/packageTerm'
               description: Codelist Terms
+              title: Terms
       description: Codelist with Terms
     packageCodelist:
       type: object
@@ -477,6 +562,7 @@ components:
               items:
                 $ref: '#/components/schemas/packageTerm'
               description: Codelist Terms
+              title: Terms
       description: Codelist with Terms, but without links
     codelistDigest:
       type: object
@@ -499,6 +585,9 @@ components:
                   items:
                     $ref: '#/components/schemas/termRef'
                   description: Codelist Term References
+                  title: Terms
+              title: Title for _links
+              description: Description for _links
       description: Codelist with Term References
     package:
       type: object
@@ -512,11 +601,14 @@ components:
                   $ref: '#/components/schemas/link'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             codelists:
               type: array
               items:
                 $ref: '#/components/schemas/packageCodelist'
               description: Codelists
+              title: Codelists
       description: CT Package with Codelists
     packageDigest:
       type: object
@@ -535,6 +627,9 @@ components:
                   items:
                     $ref: '#/components/schemas/codelistRef'
                   description: Codelist References
+                  title: Codelists
+              title: Title for _links
+              description: Description for _links
       description: CT Package with Codelist References
     packageList:
       type: object
@@ -549,6 +644,9 @@ components:
               items:
                 $ref: '#/components/schemas/packageRef'
               description: Package References
+              title: Packages
+          title: Title for _links
+          description: Description for _links
       description: CT Package List
     valuelistRef:
       type: object
@@ -570,15 +668,19 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Class Name
+          title: Name
         label:
           type: string
           description: Class Label
+          title: Label
         description:
           type: string
           description: Class Description
+          title: Description
       description: Class Attributes
     fieldRef:
       type: object
@@ -601,33 +703,43 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Field Name
+          title: Name
         label:
           type: string
           description: Field Label
+          title: Label
         definition:
           type: string
           description: Field Definition
+          title: Definition
         questionText:
           type: string
           description: Field Question Text
+          title: Question Text
         prompt:
           type: string
           description: Field Prompt
+          title: Prompt
         completionInstructions:
           type: string
           description: Field Completion Instructions
+          title: Completion Instructions
         implementationNotes:
           type: string
           description: Field Implementation Notes
+          title: Implementation Notes
         simpleDatatype:
           type: string
           description: Field Simple Datatype
+          title: Simple Datatype
         mappingInstructions:
           type: string
           description: Field Mapping Instructions
+          title: Mapping Instructions
       description: CDASH Field Attributes
     cdashModelFieldAttributes:
       type: object
@@ -635,33 +747,43 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Field Name
+          title: Name
         label:
           type: string
           description: Field Label
+          title: Label
         definition:
           type: string
           description: Field Definition
+          title: Definition
         domainSpecific:
           type: boolean
           description: Domain-Specific
+          title: Domain Specific
         questionText:
           type: string
           description: Field Question Text
+          title: Question Text
         prompt:
           type: string
           description: Field Prompt
+          title: Prompt
         implementationNotes:
           type: string
           description: Field Implementation Notes
+          title: Implementation Notes
         simpleDatatype:
           type: string
           description: Field Simple Datatype
+          title: Simple Datatype
         mappingInstructions:
           type: string
           description: Field Mapping Instructions
+          title: Mapping Instructions
       description: CDASH Field Attributes
     cdashModelField:
       type: object
@@ -690,11 +812,15 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTM Mapping Target Variables
+                  title: Sdtm Class Mapping Targets
                 sdtmDatasetMappingTargets:
                   type: array
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTM Mapping Target Variables
+                  title: Sdtm Dataset Mapping Targets
+              title: Title for _links
+              description: Description for _links
       description: CDASH Model Field
     cdashClass:
       type: object
@@ -712,11 +838,14 @@ components:
                   $ref: '#/components/schemas/classRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             cdashModelFields:
               type: array
               items:
                 $ref: '#/components/schemas/cdashModelField'
               description: CDASH Model Fields
+              title: Cdash Model Fields
       description: CDASH Class
     cdashProduct:
       type: object
@@ -730,16 +859,20 @@ components:
                   $ref: '#/components/schemas/link'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             classes:
               type: array
               items:
                 $ref: '#/components/schemas/cdashClass'
               description: Classes
+              title: Classes
             domains:
               type: array
               items:
                 $ref: '#/components/schemas/cdashDomain'
               description: Domains
+              title: Domains
       description: CDASH Product
     cdashDomain:
       type: object
@@ -757,11 +890,14 @@ components:
                   $ref: '#/components/schemas/classRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             fields:
               type: array
               items:
                 $ref: '#/components/schemas/cdashField'
               description: Domain Fields
+              title: Fields
       description: CDASH Domain
     cdashField:
       type: object
@@ -771,6 +907,7 @@ components:
             core:
               type: string
               description: Core Classifier
+              title: Core
             _links:
               type: object
               properties:
@@ -791,11 +928,15 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTM Mapping Target Variables
+                  title: Sdtm Dataset Mapping Targets
                 sdtmigDatasetMappingTargets:
                   type: array
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTMIG Mapping Target Variables
+                  title: Sdtmig Dataset Mapping Targets
+              title: Title for _links
+              description: Description for _links
       description: CDASH Field
     cdashDomainAttributes:
       type: object
@@ -803,15 +944,19 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Domain Name
+          title: Name
         label:
           type: string
           description: Domain Label
+          title: Label
         status:
           type: string
           description: Domain Status
+          title: Status
       description: CDASHIG Domain Attributes
     classList:
       type: object
@@ -830,6 +975,9 @@ components:
                   items:
                     $ref: '#/components/schemas/classRef'
                   description: Class References
+                  title: Classes
+              title: Title for _links
+              description: Description for _links
       description: Class List
     cdashClassList:
       type: object
@@ -850,6 +998,9 @@ components:
                   items:
                     $ref: '#/components/schemas/classRef'
                   description: Class References
+                  title: Classes
+              title: Title for _links
+              description: Description for _links
       description: Class List
     cdashDomainList:
       type: object
@@ -865,11 +1016,14 @@ components:
                   $ref: '#/components/schemas/productRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             domains:
               type: array
               items:
                 $ref: '#/components/schemas/domainRef'
               description: Domain Reference List
+              title: Domains
       description: CDASH Domain List
     cdashClassDomainList:
       type: object
@@ -881,11 +1035,14 @@ components:
               properties:
                 self:
                   $ref: '#/components/schemas/link'
+              title: Title for _links
+              description: Description for _links
             domains:
               type: array
               items:
                 $ref: '#/components/schemas/domainRef'
               description: Domain Reference List
+              title: Domains
       description: Domain Class List
     cdashFieldList:
       type: object
@@ -903,11 +1060,14 @@ components:
                   $ref: '#/components/schemas/classRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             fields:
               type: array
               items:
                 $ref: '#/components/schemas/fieldRef'
               description: Field Reference List
+              title: Fields
       description: CDASH Field List
     cdashigField:
       type: object
@@ -917,6 +1077,7 @@ components:
             core:
               type: string
               description: Core Classifier
+              title: Core
             _links:
               type: object
               properties:
@@ -943,11 +1104,15 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTM Mapping Target Variables
+                  title: Sdtm Class Mapping Targets
                 sdtmigDatasetMappingTargets:
                   type: array
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTMIG Mapping Target Variables
+                  title: Sdtmig Dataset Mapping Targets
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Field
     cdashigScenarioField:
       type: object
@@ -957,6 +1122,7 @@ components:
             core:
               type: string
               description: Core Classifier
+              title: Core
             _links:
               type: object
               properties:
@@ -983,6 +1149,9 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: SDTMIG Mapping Target Variables
+                  title: Sdtmig Dataset Mapping Targets
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Field
     cdashigDomainAttributes:
       type: object
@@ -990,15 +1159,19 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Domain Name
+          title: Name
         label:
           type: string
           description: Domain Label
+          title: Label
         status:
           type: string
           description: Domain Status
+          title: Status
       description: CDASHIG Domain Attributes
     cdashigDomain:
       type: object
@@ -1021,11 +1194,15 @@ components:
                   items:
                     $ref: '#/components/schemas/scenarioRef'
                   description: Domain Scenarios
+                  title: Scenarios
+              title: Title for _links
+              description: Description for _links
             fields:
               type: array
               items:
                 $ref: '#/components/schemas/cdashigField'
               description: Domain Fields
+              title: Fields
       description: CDASHIG Domain
     cdashigDomainDigest:
       type: object
@@ -1048,6 +1225,9 @@ components:
                   items:
                     $ref: '#/components/schemas/fieldRef'
                   description: Domain Field References
+                  title: Fields
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Domain Digest
     cdashigScenarioAttributes:
       type: object
@@ -1055,15 +1235,19 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         domain:
           type: string
           description: Domain
+          title: Domain
         domainName:
           type: string
           description: Two character domain name
+          title: Domain Name
         scenario:
           type: string
           description: Scenario
+          title: Scenario
       description: CDASHIG Scenario Attributes
     cdashigScenario:
       type: object
@@ -1083,11 +1267,14 @@ components:
                   $ref: '#/components/schemas/domainRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             fields:
               type: array
               items:
                 $ref: '#/components/schemas/cdashigScenarioField'
               description: CDASHIG Fields
+              title: Fields
       description: CDASHIG Scenario
     cdashigScenarioDigest:
       type: object
@@ -1112,6 +1299,9 @@ components:
                   items:
                     $ref: '#/components/schemas/fieldRef'
                   description: CDASHIG Field References
+                  title: Fields
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Scenario Digest
     cdashigClass:
       type: object
@@ -1133,18 +1323,23 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/classRef'
+                  title: Subclasses
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             domains:
               type: array
               items:
                 $ref: '#/components/schemas/cdashigDomain'
               description: Domains
+              title: Domains
             scenarios:
               type: array
               items:
                 $ref: '#/components/schemas/cdashigScenario'
               description: Scenarios
+              title: Scenarios
       description: CDASHIG Class
     classDomainList:
       type: object
@@ -1161,6 +1356,9 @@ components:
                   items:
                     $ref: '#/components/schemas/domainRef'
                   description: Domain References
+                  title: Domains
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Class Domain List
     classScenarioList:
       type: object
@@ -1179,6 +1377,9 @@ components:
                   items:
                     $ref: '#/components/schemas/scenarioRef'
                   description: Scenario References
+                  title: Scenarios
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Class Scenario List
     cdashigProduct:
       type: object
@@ -1194,11 +1395,14 @@ components:
                   $ref: '#/components/schemas/modelRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             classes:
               type: array
               items:
                 $ref: '#/components/schemas/cdashigClass'
               description: Classes
+              title: Classes
       description: CDASHIG Product
     cdashigDomainList:
       type: object
@@ -1217,6 +1421,9 @@ components:
                   items:
                     $ref: '#/components/schemas/domainRef'
                   description: Domain References
+                  title: Domains
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Domain List
     cdashigScenarioList:
       type: object
@@ -1235,6 +1442,9 @@ components:
                   items:
                     $ref: '#/components/schemas/scenarioRef'
                   description: Scenario References
+                  title: Scenarios
+              title: Title for _links
+              description: Description for _links
       description: CDASHIG Scenario List
     variableRef:
       type: object
@@ -1256,33 +1466,43 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Variable Name
+          title: Name
         label:
           type: string
           description: Variable Label
+          title: Label
         description:
           type: string
           description: Variable Description
+          title: Description
         role:
           type: string
           description: Variable Role
+          title: Role
         roleDescription:
           type: string
           description: Variable Role Description
+          title: Role Description
         simpleDatatype:
           type: string
           description: Variable Simple Datatype
+          title: Simple Datatype
         usageRestrictions:
           type: string
           description: Variable Usage Restrictions
+          title: Usage Restrictions
         notes:
           type: string
           description: Variable Notes
+          title: Notes
         examples:
           type: string
           description: Variable examples
+          title: Examples
       description: SDTM Variable Attributes
     datasetVariable:
       type: object
@@ -1302,27 +1522,35 @@ components:
                   $ref: '#/components/schemas/rootItemRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
       description: SDTM Dataset Variable
     datasetAttributes:
       properties:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Dataset Name
+          title: Name
         label:
           type: string
           description: Dataset Label
+          title: Label
         description:
           type: string
           description: Dataset Description
+          title: Description
         datasetStructure:
           type: string
           description: Dataset Structure
+          title: Dataset Structure
         status:
           type: string
           description: Dataset Status
+          title: Status
       description: SDTM Dataset Attributes
     dataset:
       type: object
@@ -1340,11 +1568,14 @@ components:
                   $ref: '#/components/schemas/classRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             datasetVariables:
               type: array
               items:
                 $ref: '#/components/schemas/datasetVariable'
               description: Dataset Variables
+              title: Dataset Variables
       description: SDTM Dataset
     datasetDigest:
       type: object
@@ -1367,6 +1598,9 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: Dataset Variable References
+                  title: Dataset Variables
+              title: Title for _links
+              description: Description for _links
       description: SDTM Dataset Digest
     classVariable:
       type: object
@@ -1387,10 +1621,13 @@ components:
                   items:
                     $ref: '#/components/schemas/qualifiesVariableRef'
                   description: Variables qualified by this variable
+                  title: Qualifies Variables
                 rootItem:
                   $ref: '#/components/schemas/rootItemRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
       description: SDTM Class Variable
     sdtmClass:
       type: object
@@ -1410,18 +1647,23 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/classRef'
+                  title: Subclasses
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             classVariables:
               type: array
               items:
                 $ref: '#/components/schemas/classVariable'
               description: Class Variables
+              title: Class Variables
             datasets:
               type: array
               items:
                 $ref: '#/components/schemas/dataset'
               description: Datasets
+              title: Datasets
       description: SDTM Class
     classVariableList:
       type: object
@@ -1442,6 +1684,9 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: Class Variable References
+                  title: Class Variables
+              title: Title for _links
+              description: Description for _links
       description: SDTM Class Variable List
     classDatasetList:
       type: object
@@ -1462,6 +1707,9 @@ components:
                   items:
                     $ref: '#/components/schemas/datasetRef'
                   description: Dataset References
+                  title: Datasets
+              title: Title for _links
+              description: Description for _links
       description: SDTM Class Dataset List
     sdtmProduct:
       type: object
@@ -1476,11 +1724,14 @@ components:
                   $ref: '#/components/schemas/link'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             classes:
               type: array
               items:
                 $ref: '#/components/schemas/sdtmClass'
               description: Classes
+              title: Classes
       description: SDTM Product
     dataTabulationDatasetList:
       type: object
@@ -1501,6 +1752,9 @@ components:
                   items:
                     $ref: '#/components/schemas/datasetRef'
                   description: Dataset References
+                  title: Datasets
+              title: Title for _links
+              description: Description for _links
       description: Data Tabulation Dataset List
     igVariableAttributes:
       type: object
@@ -1508,32 +1762,41 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Variable Name
+          title: Name
         label:
           type: string
           description: Variable Label
+          title: Label
         description:
           type: string
           description: Variable Description
+          title: Description
         role:
           type: string
           description: Variable Role
+          title: Role
         simpleDatatype:
           type: string
           description: Variable Simple Datatype
+          title: Simple Datatype
         core:
           type: string
           description: Core Classifier
+          title: Core
         describedValueDomain:
           type: string
           description: Described Value Domain
+          title: Described Value Domain
         valueList:
           type: array
           items:
             type: string
           description: Value List
+          title: Value List
         _links:
           type: object
           properties:
@@ -1551,6 +1814,8 @@ components:
               $ref: '#/components/schemas/rootItemRef'
             priorVersion:
               $ref: '#/components/schemas/priorVersion'
+          title: Title for _links
+          description: Description for _links
       description: IG Variable Attributes
     sdtmigVariable:
       type: object
@@ -1575,11 +1840,14 @@ components:
                   $ref: '#/components/schemas/classRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             datasetVariables:
               type: array
               items:
                 $ref: '#/components/schemas/sdtmigVariable'
               description: Dataset Variables
+              title: Dataset Variables
       description: SDTMIG Dataset
     sdtmigDatasetDigest:
       type: object
@@ -1604,6 +1872,9 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: Dataset Variable References
+                  title: Dataset Variables
+              title: Title for _links
+              description: Description for _links
       description: SDTMIG Dataset Digest
     sdtmigClass:
       type: object
@@ -1625,13 +1896,17 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/classRef'
+                  title: Subclasses
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             datasets:
               type: array
               items:
                 $ref: '#/components/schemas/sdtmigDataset'
               description: Datasets
+              title: Datasets
       description: SDTMIG Class
     sdtmigProduct:
       type: object
@@ -1648,11 +1923,14 @@ components:
                   $ref: '#/components/schemas/modelRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             classes:
               type: array
               items:
                 $ref: '#/components/schemas/sdtmigClass'
               description: Classes
+              title: Classes
       description: SDTMIG Product
     sendigVariable:
       type: object
@@ -1677,11 +1955,14 @@ components:
                   $ref: '#/components/schemas/classRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             datasetVariables:
               type: array
               items:
                 $ref: '#/components/schemas/sendigVariable'
               description: Dataset Variables
+              title: Dataset Variables
       description: SENDIG Dataset
     sendigDatasetDigest:
       type: object
@@ -1706,6 +1987,9 @@ components:
                   items:
                     $ref: '#/components/schemas/variableRef'
                   description: Dataset Variable References
+                  title: Dataset Variables
+              title: Title for _links
+              description: Description for _links
       description: SENDIG Dataset Digest
     sendigClass:
       type: object
@@ -1727,13 +2011,17 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/classRef'
+                  title: Subclasses
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             datasets:
               type: array
               items:
                 $ref: '#/components/schemas/sendigDataset'
               description: Datasets
+              title: Datasets
       description: SENDIG Class
     sendigProduct:
       type: object
@@ -1750,11 +2038,14 @@ components:
                   $ref: '#/components/schemas/modelRef'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             classes:
               type: array
               items:
                 $ref: '#/components/schemas/sendigClass'
               description: Classes
+              title: Classes
       description: SENDIG Product
     analysisVariableRef:
       type: object
@@ -1777,15 +2068,19 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Analysis Variable Name
+          title: Name
         label:
           type: string
           description: Analysis Variable Label
+          title: Label
         description:
           type: string
           description: Analysis Variable Description
+          title: Description
         core:
           enum:
             - Perm
@@ -1793,14 +2088,17 @@ components:
             - Cond
           type: string
           description: Core Classifier
+          title: Core
         simpleDatatype:
           type: string
           description: Analysis Variable Simple Datatype
+          title: Simple Datatype
         valueList:
           type: array
           items:
             type: string
           description: Value List
+          title: Value List
         _links:
           type: object
           properties:
@@ -1820,6 +2118,8 @@ components:
               $ref: '#/components/schemas/link'
             priorVersion:
               $ref: '#/components/schemas/priorVersion'
+          title: Title for _links
+          description: Description for _links
       description: Analysis Variable
     analysisVariableSet:
       type: object
@@ -1827,12 +2127,15 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Analysis Variable Set Name
+          title: Name
         label:
           type: string
           description: Analysis Variable Set Label
+          title: Label
         _links:
           type: object
           properties:
@@ -1846,11 +2149,14 @@ components:
               $ref: '#/components/schemas/priorVersion'
             parentClassVariableSet:
               $ref: '#/components/schemas/analysisVariableSetRef'
+          title: Title for _links
+          description: Description for _links
         analysisVariables:
           type: array
           items:
             $ref: '#/components/schemas/analysisVariable'
           description: Analysis Variables
+          title: Analysis Variables
       description: Analysis Variable Set
     analysisDatastructureAttributes:
       type: object
@@ -1858,24 +2164,31 @@ components:
         ordinal:
           type: integer
           description: Ordinal
+          title: Ordinal
         name:
           type: string
           description: Datastructure Name
+          title: Name
         label:
           type: string
           description: Datastructure Label
+          title: Label
         description:
           type: string
           description: Datastructure Description
+          title: Description
         class:
           type: string
           description: Datastructure Class
+          title: Class
         subClass:
           type: string
           description: Datastructure Sub class
+          title: Sub Class
         status:
           type: string
           description: Datastructure Status
+          title: Status
       description: Analysis Datastructure Attributes
     analysisDatastructure:
       type: object
@@ -1893,11 +2206,14 @@ components:
                   $ref: '#/components/schemas/priorVersion'
                 parentClassDatastructure:
                   $ref: '#/components/schemas/analysisDatastructureRef'
+              title: Title for _links
+              description: Description for _links
             analysisVariableSets:
               type: array
               items:
                 $ref: '#/components/schemas/analysisVariableSet'
               description: Analysis Variable Sets
+              title: Analysis Variable Sets
       description: Analysis Datastructure
     analysisVariableSetList:
       type: object
@@ -1918,6 +2234,9 @@ components:
                   items:
                     $ref: '#/components/schemas/analysisVariableSet'
                   description: Analysis Variable Set References
+                  title: Analysis Variable Sets
+              title: Title for _links
+              description: Description for _links
       description: Analysis Variable Set List
     analysisVariableList:
       type: object
@@ -1938,6 +2257,9 @@ components:
                   items:
                     $ref: '#/components/schemas/analysisVariableRef'
                   description: Analysis Variable References
+                  title: Analysis Variables
+              title: Title for _links
+              description: Description for _links
       description: Analysis Variable List
     analysisDatastructureList:
       type: object
@@ -1956,6 +2278,9 @@ components:
                   items:
                     $ref: '#/components/schemas/analysisDatastructureRef'
                   description: Datastructure References
+                  title: Datastructures
+              title: Title for _links
+              description: Description for _links
       description: Analysis Datastructure List
     adamProduct:
       type: object
@@ -1969,11 +2294,14 @@ components:
                   $ref: '#/components/schemas/link'
                 priorVersion:
                   $ref: '#/components/schemas/priorVersion'
+              title: Title for _links
+              description: Description for _links
             dataStructures:
               type: array
               items:
                 $ref: '#/components/schemas/analysisDatastructure'
               description: Analysis Variable Sets
+              title: Data Structures
       description: ADaM Product
     integratedStandard:
       type: object
@@ -1998,10 +2326,14 @@ components:
                       $ref: '#/components/schemas/link'
                     adamig:
                       $ref: '#/components/schemas/link'
+                  title: Standards
                 models:
                   type: array
                   items:
                     $ref: '#/components/schemas/link'
+                  title: Models
+              title: Title for _links
+              description: Description for _links
       description: Integrated Standard
     productgroupQrsInstrumentLinks:
       type: object
@@ -2012,18 +2344,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/qrsInstrumentRefElement'
+          title: Instruments
     productgroupRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/products/QrsInstrument
+          title: Href
         title:
           type: string
           example: Product Group QRS Instrument
+          title: Title
         type:
           type: string
           example: CDISC Library Product Group
+          title: Type
     xmlProducts:
       type: object
       properties:
@@ -2037,12 +2373,15 @@ components:
         href:
           type: string
           example: /mdr/qrs/instruments/AIMS01/versions/1-0
+          title: Href
         title:
           type: string
           example: Abnormal Involuntary Movement Scale Version 1.0
+          title: Title
         type:
           type: string
           example: QRS Instrument
+          title: Type
       xml:
         name: instrument
     qrsInstrument:
@@ -2050,33 +2389,44 @@ components:
       properties:
         _links:
           $ref: '#/components/schemas/qrsInstrumentProductLinks'
+          title: Title for _links
+          description: Description for _links
         name:
           type: string
           example: AIMS01 v1.0
+          title: Name
         label:
           type: string
           example: Abnormal Involuntary Movement Scale Version 1.0
+          title: Label
         description:
           type: string
           example: 'Abnormal Involuntary Movement Scale (AIMS) (Guy W. Ed. ECDEU Assessment Manual for Psychopharmacology. Rockville MD: US Dept of Health, Education and Welfare. 1976, Publication No. (ADM) 76-338).'
+          title: Description
         effectiveDate:
           type: string
           example: '2013-05-22'
+          title: Effective Date
         untilDate:
           type: string
           example: '2022-12-31'
+          title: Until Date
         registrationStatus:
           type: string
           example: Final
+          title: Registration Status
         version:
           type: string
           example: '1.0'
+          title: Version
         instrumentType:
           type: string
           example: Questionnaire
+          title: Instrument Type
         copyrightStatus:
           type: string
           example: Public Domain
+          title: Copyright Status
         responseGroups:
           $ref: '#/components/schemas/qrsInstrumentResponseGroups'
         items:
@@ -2100,12 +2450,15 @@ components:
         href:
           type: string
           example: /mdr/qrs/instruments/AIMS01/versions/1-0
+          title: Href
         title:
           type: string
           example: Abnormal Involuntary Movement Scale Version 1.0
+          title: Title
         type:
           type: string
           example: QRS Instrument
+          title: Type
     qrsInstrumentResponseGroups:
       type: array
       items:
@@ -2119,18 +2472,24 @@ components:
       properties:
         _links:
           $ref: '#/components/schemas/qrsInstrumentItemLink'
+          title: Title for _links
+          description: Description for _links
         ordinal:
           type: integer
           example: 1
+          title: Ordinal
         label:
           type: string
           example: Abnormal Involuntary Movement Scale - Facial and Oral Movements, Muscles of facial expression, e.g., movements of forehead, eyebrows, periorbital area, cheeks. Include frowning, blinking, grimacing of upper face.
+          title: Label
         questionText:
           type: string
           example: AIMS01-Muscles of Facial Expression
+          title: Question Text
         itemCode:
           type: string
           example: AIMS0101
+          title: Item Code
         responseGroup:
           $ref: '#/components/schemas/qrsInstrumentResponseGroup'
     qrsInstrumentResponseGroup:
@@ -2143,15 +2502,20 @@ components:
               $ref: '#/components/schemas/qrsInstrumentResponseGroupRef'
             parentInstrument:
               $ref: '#/components/schemas/qrsInstrumentProductRef'
+          title: Title for _links
+          description: Description for _links
         name:
           type: string
           example: AIMS01-01 to 07
+          title: Name
         label:
           type: string
           example: AIMS:VD.AIMS01-01 to 07
+          title: Label
         responseType:
           type: string
           example: Verbal Rating Scale
+          title: Response Type
         responses:
           $ref: '#/components/schemas/qrsInstrumentResponseGroupResponses'
     qrsInstrumentResponseGroupResponses:
@@ -2163,12 +2527,16 @@ components:
       properties:
         _links:
           $ref: '#/components/schemas/qrsInstrumentResponseGroupResponseLinks'
+          title: Title for _links
+          description: Description for _links
         ordinal:
           type: integer
           example: 1
+          title: Ordinal
         isStandardResultNumeric:
           type: boolean
           example: true
+          title: Is Standard Result Numeric
     qrsInstrumentResponseGroupResponseLinks:
       type: object
       properties:
@@ -2192,30 +2560,39 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/qrsInstrumentResponseGroupRef'
+              title: Response Groups
+          title: Title for _links
+          description: Description for _links
     qrsInstrumentResponseGroupsRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/qrs/instruments/AMS01/versions/1-0/responseGroups
+          title: Href
         title:
           type: string
           example: QRS Instrument Response Groups for AMS01 v1.0
+          title: Title
         type:
           type: string
           example: QRS Instrument Response Groups
+          title: Type
     qrsInstrumentResponseGroupRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/qrs/instruments/AMS01/versions/1-0/responseGroups/AIMS01-01_to_07
+          title: Href
         title:
           type: string
           example: QRS Instrument Response Group AIMS01-01 to 07 for AMS01 v1.0
+          title: Title
         type:
           type: string
           example: QRS Instrument Response Group
+          title: Type
     qrsInstrumentItemsLinks:
       type: object
       properties:
@@ -2230,30 +2607,39 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/qrsInstrumentItemRef'
+              title: Items
+          title: Title for _links
+          description: Description for _links
     qrsInstrumentItemsRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/qrs/instruments/AMS01/versions/1-0/items
+          title: Href
         title:
           type: string
           example: QRS Instrument Items for AMS01 v1.0
+          title: Title
         type:
           type: string
           example: QRS Instrument Response Items
+          title: Type
     qrsInstrumentItemRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/qrs/instruments/AMS01/versions/1-0/items/1
+          title: Href
         title:
           type: string
           example: QRS Instrument Item 1 for AMS01 v1.0
+          title: Title
         type:
           type: string
           example: QRS Instrument Item
+          title: Type
     qrsInstrumentItemLink:
       type: object
       properties:
@@ -2277,120 +2663,154 @@ components:
                 href:
                   type: string
                   example: /mdr/root/qrs/instruments/AIMS01
+                  title: Href
                 title:
                   type: string
                   example: Version-agnostic anchor element for QRS Intrument AIMS01
+                  title: Title
                 type:
                   type: string
                   example: Root QRS Instrument
+                  title: Type
+              title: Self
             versions:
               type: array
               items:
                 $ref: '#/components/schemas/qrsInstrumentProductRef'
+              title: Versions
+          title: Title for _links
+          description: Description for _links
     rootTermInstrumentCATRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C118971/terms/C102111
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C118971.C102111
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     rootTermInstrumentSCATRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C222222/terms/C333333
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C222222.C333333
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     rootTermInstrumentItemTESTCDRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C101805/terms/C102034
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C101805.C102034
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     rootTermInstrumentItemTESTRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C101806/terms/C102034
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C101806.C102034
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     rootTermResponseORRESRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C135012/terms/C28077
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C135012.C28077
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     rootTermResponseSTRESCRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C160923/terms/C161425
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C160923.C161425
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     rootTermResponseSTRESNRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/root/ct/sdtmct/codelists/C160923/terms/C161425
+          title: Href
         title:
           type: string
           example: Version-agnostic anchor resource for codelist term C160923.C161425
+          title: Title
         type:
           type: string
           example: Root Value
+          title: Type
     lastupdatedAttributes:
       properties:
         overall:
           type: string
           description: Last Updated Date for Overall CDISC Library
+          title: Overall
         data-analysis:
           type: string
           description: Last Updated Date for Data Analysis Products
+          title: Data Analysis
         data-collection:
           type: string
           description: Last Updated Date for Data Collection Products
+          title: Data Collection
         data-tabulation:
           type: string
           description: Last Updated Date for Data Tabulation Products
+          title: Data Tabulation
         qrs:
           type: string
           description: Last Updated Date for QRS instrument Products
+          title: Qrs
         terminology:
           type: string
           description: Last Updated Date for Terminology Products
+          title: Terminology
       description: CDISC Library Product Last Updated Date Attributes
     lastupdated:
       type: object
@@ -2402,15 +2822,19 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
       description: CDISC Library Product Last Updated Date
     maintenanceAttributes:
       properties:
         maintenanceMode:
           type: string
           description: Maintenance mode
+          title: Maintenance Mode
         maintenanceMessage:
           type: string
           description: Maintenance message
+          title: Maintenance Message
       description: CDISC Library maintenance status
     maintenance:
       type: object
@@ -2423,10 +2847,12 @@ components:
           type: string
           description: URL to CDISC Library Release Notes
           format: url
+          title: Release Notes
         api-documentation:
           type: string
           description: URL to CDISC Library API Documentation
           format: url
+          title: Api Documentation
       description: Information About CDISC Library Product Attributes
     about:
       type: object
@@ -2438,6 +2864,8 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
       description: Information About CDISC Library
     products:
       type: object
@@ -2461,6 +2889,8 @@ components:
               $ref: '#/components/schemas/productIntegrated'
             terminology:
               $ref: '#/components/schemas/productTerminology'
+          title: Title for _links
+          description: Description for _links
       description: CDISC Library Product List
     productTerminology:
       type: object
@@ -2474,6 +2904,9 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Packages
+          title: Title for _links
+          description: Description for _links
       description: Terminology Product
     productDataAnalysis:
       type: object
@@ -2487,6 +2920,9 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Adam
+          title: Title for _links
+          description: Description for _links
       description: Data Analysis Product
     productDataTabulation:
       type: object
@@ -2500,14 +2936,19 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Sdtm
             sdtmig:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Sdtmig
             sendig:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Sendig
+          title: Title for _links
+          description: Description for _links
       description: Data Tabulation Product
     productDataCollection:
       type: object
@@ -2521,10 +2962,14 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Cdash
             cdashig:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Cdashig
+          title: Title for _links
+          description: Description for _links
       description: Data Collection Product
     productQrsInstrument:
       type: object
@@ -2538,6 +2983,9 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Instrument
+          title: Title for _links
+          description: Description for _links
       description: QRS Instrument Product
     productDraftContent:
       type: object
@@ -2551,30 +2999,39 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Cdash
             cdashig:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Cdashig
             sdtm:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Sdtm
             sdtmig:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Sdtmig
             sendig:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Sendig
             adam:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Adam
             qrs:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Qrs
+          title: Title for _links
+          description: Description for _links
       description: Draft Content Product
     productIntegrated:
       type: object
@@ -2584,6 +3041,8 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
       description: Integrated Standards product
     productGroupIntegrated:
       type: object
@@ -2628,6 +3087,9 @@ components:
               $ref: '#/components/schemas/link'
             catalogs:
               type: object
+              title: Catalogs
+          title: Title for _links
+          description: Description for _links
       description: CDISC Library Rule Package List
     ig_document:
       type: object
@@ -2641,42 +3103,58 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Children
             section:
               $ref: '#/components/schemas/link'
             parentProduct:
               $ref: '#/components/schemas/link'
             parentDocument:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         children:
           type: array
           items:
             type: string
+          title: Children
         createdAt:
           type: string
+          title: Created At
         html:
           type: string
+          title: Html
         id:
           type: string
+          title: Id
         pageId:
           type: string
+          title: Page Id
         parent:
           type: string
+          title: Parent
         section:
           type: string
+          title: Section
         standard:
           type: string
+          title: Standard
         structures:
           type: array
           items:
             type: string
+          title: Structures
         text:
           type: string
+          title: Text
         title:
           type: string
+          title: Title
         updatedAt:
           type: string
+          title: Updated At
         version:
           type: string
+          title: Version
       description: Implementation guide document
     document_sections:
       type: object
@@ -2690,10 +3168,16 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/link'
+              title: Title for sections
+              description: Description for sections
+          title: Title for _links
+          description: Description for _links
         sections:
           type: array
           items:
             type: string
+          title: Title for sections
+          description: Description for sections
       description: Implementation guide document
     use_case_section_documents:
       type: object
@@ -2703,10 +3187,13 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         documents:
           type: array
           items:
             $ref: '#/components/schemas/ig_document'
+          title: Documents
       description: Documents for a given use case and section
     use_case_list:
       type: object
@@ -2716,10 +3203,14 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         useCases:
           type: array
           items:
             $ref: '#/components/schemas/use_case'
+          title: Title for useCases
+          description: Description for useCases
       description: List of use cases for a given standard
     use_case:
       type: object
@@ -2729,8 +3220,11 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         name:
           type: string
+          title: Name
       description: IG use case
     use_case_sections_list:
       type: object
@@ -2740,10 +3234,13 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         useCaseSections:
           type: array
           items:
             $ref: '#/components/schemas/sections_list_for_usecase_and_standard'
+          title: Use Case Sections
       description: List of sections for a given use case
     sections_list_for_usecase_and_standard:
       type: object
@@ -2753,9 +3250,12 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         name:
           type: string
           example: Diagrams
+          title: Name
     documents_list:
       type: object
       properties:
@@ -2764,30 +3264,39 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/link'
+          title: Title for _links
+          description: Description for _links
         documents:
           type: array
           items:
             $ref: '#/components/schemas/ig_document'
+          title: Documents
       description: List of IG documents
     error:
       properties:
         statusCode:
           type: string
           description: HTTP Status Code
+          title: Status Code
         reasonPhrase:
           type: string
           description: HTTP Reason Phrase
+          title: Reason Phrase
         userMessage:
           type: string
           description: User Error Message
+          title: User Message
         adminMessage:
           type: string
           description: Admin Error Message
+          title: Admin Message
     bcPackages:
       type: object
       properties:
         _links:
           $ref: '#/components/schemas/bcPackagesLinks'
+          title: Title for _links
+          description: Description for _links
     bcPackagesLinks:
       type: object
       properties:
@@ -2797,47 +3306,60 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/bcPackageRef'
+          title: Packages
     bcPackagesRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/bc/packages
+          title: Href
         title:
           type: string
           example: Product Group Biomedical Concepts
+          title: Title
         type:
           type: string
           example: Biomedical Concept Package List
+          title: Type
     bcPackageRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+          title: Href
         title:
           type: string
           example: Biomedical Concept Package Effective 2022-10-26
+          title: Title
         type:
           type: string
           example: Biomedical Concept Package
+          title: Type
     bcBiomedicalConcepts:
       type: object
       properties:
         name:
           type: string
           example: Biomedical Concepts 2022-10-26
+          title: Name
         label:
           type: string
           example: Biomedical Concept Package Effective 2022-10-26
+          title: Label
         effectiveDate:
           type: string
           example: '2022-10-26'
+          title: Effective Date
         version:
           type: string
           example: '2022-10-26'
+          title: Version
         _links:
           $ref: '#/components/schemas/bcBiomedicalConceptsLinks'
+          title: Title for _links
+          description: Description for _links
     bcBiomedicalConceptsLinks:
       type: object
       properties:
@@ -2847,18 +3369,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/bcBiomedicalConceptRef'
+          title: Biomedical Concepts
     bcBiomedicalConceptsRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts
+          title: Href
         title:
           type: string
           example: Biomedical Concepts
+          title: Title
         type:
           type: string
           example: Biomedical Concept List
+          title: Type
       description: Biomedical Concepts Reference
     bcBiomedicalConceptRef:
       type: object
@@ -2866,12 +3392,15 @@ components:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676
+          title: Href
         title:
           type: string
           example: Pulse Rate
+          title: Title
         type:
           type: string
           example: Biomedical Concept
+          title: Type
       description: Biomedical Concept Reference
     bcBiomedicalConcept:
       required:
@@ -2884,25 +3413,30 @@ components:
         conceptId:
           type: string
           example: C49676
+          title: Concept Id
         href:
           type: string
           format: uri
           example: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C49676
+          title: Href
         category:
           type: array
           items:
             type: string
           example:
             - Vital Signs
+          title: Category
         shortName:
           type: string
           example: Pulse Rate
+          title: Short Name
         synonym:
           type: array
           items:
             type: string
           example:
             - Pulse
+          title: Synonym
         resultScale:
           enum:
             - Quantitative
@@ -2911,19 +3445,25 @@ components:
             - Narrative
           type: string
           example: Quantitative
+          title: Result Scale
         definition:
           type: string
           example: The rate of the pulse as observed in an artery, expressed as beats per minute. It can be measured at several anatomic sites, including the wrist, neck, temple, groin, behind the knees, or on top of the foot.
+          title: Definition
         coding:
           type: array
           items:
             $ref: '#/components/schemas/bcBiomedicalConceptCoding'
+          title: Coding
         _links:
           $ref: '#/components/schemas/bcBiomedicalConceptLinks'
+          title: Title for _links
+          description: Description for _links
         dataElementConcepts:
           type: array
           items:
             $ref: '#/components/schemas/bcDataElementConceptElement'
+          title: Data Element Concepts
     bcBiomedicalConceptLinks:
       type: object
       properties:
@@ -2939,12 +3479,15 @@ components:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49672
+          title: Href
         title:
           type: string
           example: Vital Signs Measurement
+          title: Title
         type:
           type: string
           example: Biomedical Concept
+          title: Type
       description: Biomedical Concept Parent Reference
     bcBiomedicalConceptCoding:
       required:
@@ -2955,12 +3498,15 @@ components:
         code:
           type: string
           example: 39156-5
+          title: Code
         system:
           type: string
           example: http://loinc.org/
+          title: System
         systemName:
           type: string
           example: LOINC
+          title: System Name
     bcDataElementConceptElement:
       required:
         - conceptId
@@ -2970,16 +3516,20 @@ components:
         conceptId:
           type: string
           example: C123975
+          title: Concept Id
         href:
           type: string
           format: uri
           example: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C123975
+          title: Href
         shortName:
           type: string
           example: Vital Signs Laterality
+          title: Short Name
         dataType:
           type: string
           example: string
+          title: Data Type
         exampleSet:
           type: array
           items:
@@ -2987,6 +3537,7 @@ components:
           example:
             - Left
             - Right
+          title: Example Set
     bcDataElementConcepts:
       required:
         - conceptId
@@ -2998,25 +3549,30 @@ components:
         conceptId:
           type: string
           example: C49676
+          title: Concept Id
         href:
           type: string
           format: uri
           example: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C49676
+          title: Href
         category:
           type: array
           items:
             type: string
           example:
             - Vital Signs
+          title: Category
         shortName:
           type: string
           example: Pulse Rate
+          title: Short Name
         synonym:
           type: array
           items:
             type: string
           example:
             - Pulse
+          title: Synonym
         resultScale:
           enum:
             - Quantitative
@@ -3025,15 +3581,20 @@ components:
             - Narrative
           type: string
           example: Quantitative
+          title: Result Scale
         definition:
           type: string
           example: The rate of the pulse as observed in an artery, expressed as beats per minute. It can be measured at several anatomic sites, including the wrist, neck, temple, groin, behind the knees, or on top of the foot.
+          title: Definition
         coding:
           type: array
           items:
             $ref: '#/components/schemas/bcBiomedicalConceptCoding'
+          title: Coding
         _links:
           $ref: '#/components/schemas/bcDataElementConceptsLinks'
+          title: Title for _links
+          description: Description for _links
     bcDataElementConceptsLinks:
       type: object
       properties:
@@ -3047,18 +3608,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/bcDataElementConceptRef'
+          title: Data Element Concepts
     bcDataElementConceptsRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676/dataelementconcepts
+          title: Href
         title:
           type: string
           example: Pulse Rate Data Element Concept List
+          title: Title
         type:
           type: string
           example: Data Element Concept List
+          title: Type
       description: Data Element Concept Reference
     bcDataElementConceptRef:
       type: object
@@ -3066,12 +3631,15 @@ components:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C49676/dataelementconcepts/C123975
+          title: Href
         title:
           type: string
           example: Vital Signs Laterality (Pulse Rate)
+          title: Title
         type:
           type: string
           example: Data Element Concept
+          title: Type
       description: Data Element Concept Reference
     bcDataElementConcept:
       required:
@@ -3082,16 +3650,20 @@ components:
         conceptId:
           type: string
           example: C123975
+          title: Concept Id
         href:
           type: string
           format: uri
           example: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C123975
+          title: Href
         label:
           type: string
           example: Vital Signs Laterality
+          title: Label
         dataType:
           type: string
           example: string
+          title: Data Type
         exampleSet:
           type: array
           items:
@@ -3099,8 +3671,11 @@ components:
           example:
             - Left
             - Right
+          title: Example Set
         _links:
           $ref: '#/components/schemas/bcDataElementConceptLinks'
+          title: Title for _links
+          description: Description for _links
     bcDataElementConceptLinks:
       type: object
       properties:
@@ -3115,6 +3690,8 @@ components:
       properties:
         _links:
           $ref: '#/components/schemas/sdtmPackagesLinks'
+          title: Title for _links
+          description: Description for _links
     sdtmPackagesLinks:
       type: object
       properties:
@@ -3124,47 +3701,60 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/sdtmPackageRef'
+          title: Packages
     sdtmPackagesRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/specializations/sdtm/packages
+          title: Href
         title:
           type: string
           example: Product Group SDTM Dataset Specializations
+          title: Title
         type:
           type: string
           example: SDTM Dataset Specialization Package List
+          title: Type
     sdtmPackageRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+          title: Href
         title:
           type: string
           example: SDTM Dataset Specialization Package Effective 2022-10-26
+          title: Title
         type:
           type: string
           example: SDTM Dataset Specialization Package
+          title: Type
     sdtmDatasetSpecializations:
       type: object
       properties:
         name:
           type: string
           example: SDTM Dataset Specializations 2022-10-26
+          title: Name
         label:
           type: string
           example: SDTM Dataset Specialization Package Effective 2022-10-26
+          title: Label
         effectiveDate:
           type: string
           example: '2022-10-26'
+          title: Effective Date
         version:
           type: string
           example: '2022-10-26'
+          title: Version
         _links:
           $ref: '#/components/schemas/sdtmDatasetSpecializationsLinks'
+          title: Title for _links
+          description: Description for _links
     sdtmDatasetSpecializationsLinks:
       type: object
       properties:
@@ -3174,18 +3764,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/sdtmDatasetSpecializationRef'
+          title: Dataset Specializations
     sdtmDatasetSpecializationsRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations
+          title: Href
         title:
           type: string
           example: SDTM Dataset Specializations
+          title: Title
         type:
           type: string
           example: SDTM Dataset Specialization List
+          title: Type
       description: SDTM Dataset Specializations Reference
     sdtmDatasetSpecializationRef:
       type: object
@@ -3193,12 +3787,15 @@ components:
         href:
           type: string
           example: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP
+          title: Href
         title:
           type: string
           example: Systolic Blood Pressure
+          title: Title
         type:
           type: string
           example: SDTM Dataset Specialization
+          title: Type
       description: SDTM Dataset Specialization Reference
     sdtmDatasetSpecialization:
       required:
@@ -3212,27 +3809,36 @@ components:
         datasetSpecializationId:
           type: string
           example: SYSBP
+          title: Dataset Specialization Id
         domain:
           type: string
           example: VS
+          title: Domain
         shortName:
           type: string
           example: Systolic Blood Pressure
+          title: Short Name
         source:
           type: string
           example: VS.VSTESTCD
+          title: Source
         sdtmigStartVersion:
           type: string
           example: 3-2
+          title: Sdtmig Start Version
         sdtmigEndVersion:
           type: string
           example: 3-4
+          title: Sdtmig End Version
         _links:
           $ref: '#/components/schemas/sdtmDatasetSpecializationLinks'
+          title: Title for _links
+          description: Description for _links
         variables:
           type: array
           items:
             $ref: '#/components/schemas/sdtmDatasetSpecializationVariableElement'
+          title: Variables
     sdtmDatasetSpecializationLinks:
       type: object
       properties:
@@ -3248,12 +3854,15 @@ components:
         href:
           type: string
           example: /mdr/bc/packages/2022-10-26/biomedicalconcepts/C25298
+          title: Href
         title:
           type: string
           example: Systolic Blood Pressure
+          title: Title
         type:
           type: string
           example: Biomedical Concept
+          title: Type
       description: Biomedical Concept Parent Reference
     sdtmDatasetSpecializationVariableElement:
       required:
@@ -3263,17 +3872,21 @@ components:
         name:
           type: string
           example: VSSTRESU
+          title: Name
         dataElementConceptId:
           type: string
           example: C49669
+          title: Data Element Concept Id
         isNonStandard:
           type: boolean
           default: false
+          title: Is Non Standard
         codelist:
           $ref: '#/components/schemas/sdtmDatasetSpecializationCodeList'
         subsetCodelist:
           type: string
           example: XYZ
+          title: Subset Codelist
         valueList:
           type: array
           items:
@@ -3281,41 +3894,53 @@ components:
           example:
             - ABC
             - DEF
+          title: Value List
         assignedTerm:
           $ref: '#/components/schemas/sdtmDatasetpecializationAssignedTerm'
         role:
           type: string
           example: Qualifier
+          title: Role
         dataType:
           type: string
           example: string
+          title: Data Type
         length:
           type: integer
           example: 20
+          title: Length
         format:
           type: string
+          title: Format
         significantDigits:
           type: integer
+          title: Significant Digits
         relationship:
           $ref: '#/components/schemas/sdtmDatasetpecializationRelationship'
         mandatoryVariable:
           type: boolean
           default: false
+          title: Mandatory Variable
         mandatoryValue:
           type: boolean
           default: false
+          title: Mandatory Value
         originType:
           type: string
           example: Assigned
+          title: Origin Type
         originSource:
           type: string
           example: Sponsor
+          title: Origin Source
         comparator:
           type: string
+          title: Comparator
         vlmTarget:
           type: boolean
           default: false
           example: true
+          title: Vlm Target
     sdtmDatasetpecializationRelationship:
       required:
         - subject
@@ -3327,15 +3952,19 @@ components:
         subject:
           type: string
           example: VSSTRESU
+          title: Subject
         linkingPhrase:
           type: string
           example: is the unit for the value in
+          title: Linking Phrase
         predicateTerm:
           type: string
           example: IS_UNIT_FOR
+          title: Predicate Term
         object:
           type: string
           example: VSSTRESN
+          title: Object
     sdtmDatasetpecializationAssignedTerm:
       required:
         - value
@@ -3344,9 +3973,11 @@ components:
         conceptId:
           type: string
           example: C49670
+          title: Concept Id
         value:
           type: string
           example: mmHG
+          title: Value
     sdtmDatasetSpecializationCodeList:
       required:
         - conceptId
@@ -3356,13 +3987,16 @@ components:
         conceptId:
           type: string
           example: C66770
+          title: Concept Id
         href:
           type: string
           format: uri
           example: https://ncithesaurus.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=C66770
+          title: Href
         submissionValue:
           type: string
           example: VSRESU
+          title: Submission Value
     sdtmDatasetSpecializationVariables:
       required:
         - datasetSpecializationId
@@ -3375,23 +4009,31 @@ components:
         datasetSpecializationId:
           type: string
           example: SYSBP
+          title: Dataset Specialization Id
         domain:
           type: string
           example: VS
+          title: Domain
         shortName:
           type: string
           example: Systolic Blood Pressure
+          title: Short Name
         source:
           type: string
           example: VS.VSTESTCD
+          title: Source
         sdtmigStartVersion:
           type: string
           example: 3-2
+          title: Sdtmig Start Version
         sdtmigEndVersion:
           type: string
           example: 3-4
+          title: Sdtmig End Version
         _links:
           $ref: '#/components/schemas/sdtmDatasetSpecializationVariablesLinks'
+          title: Title for _links
+          description: Description for _links
     sdtmDatasetSpecializationVariablesLinks:
       type: object
       properties:
@@ -3407,18 +4049,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/sdtmDatasetSpecializationVariableRef'
+          title: Variables
     sdtmDatasetSpecializationVariablesRef:
       type: object
       properties:
         href:
           type: string
           example: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP/variables
+          title: Href
         title:
           type: string
           example: Systolic Blood Pressure Variables
+          title: Title
         type:
           type: string
           example: SDTM Dataset Specialization Variables
+          title: Type
       description: SDTM Dataset Specialization Variables Reference
     sdtmDatasetSpecializationVariableRef:
       type: object
@@ -3426,12 +4072,15 @@ components:
         href:
           type: string
           example: /mdr/specializations/sdtm/packages/2022-10-26/datasetspecializations/SYSBP/variables/VSSTRESU
+          title: Href
         title:
           type: string
           example: VSSTRESU (SYSPB)
+          title: Title
         type:
           type: string
           example: SDTM Dataset Specialization Variable
+          title: Type
       description: Data Element Concept Reference
     sdtmDatasetSpecializationVariable:
       required:
@@ -3441,18 +4090,22 @@ components:
         name:
           type: string
           example: VSSTRESU
+          title: Name
         dataElementConceptId:
           type: string
           example: C49669
+          title: Data Element Concept Id
         isNonStandard:
           type: boolean
           default: false
+          title: Is Non Standard
         codelist:
           $ref: '#/components/schemas/sdtmDatasetSpecializationCodeList'
         subsetCodelist:
           type: string
           example:
             - XYZ
+          title: Subset Codelist
         valueList:
           type: array
           items:
@@ -3460,43 +4113,57 @@ components:
           example:
             - ABC
             - DEF
+          title: Value List
         assignedTerm:
           $ref: '#/components/schemas/sdtmDatasetpecializationAssignedTerm'
         role:
           type: string
           example: Qualifier
+          title: Role
         dataType:
           type: string
           example: string
+          title: Data Type
         length:
           type: integer
           example: 20
+          title: Length
         format:
           type: string
+          title: Format
         significantDigits:
           type: integer
+          title: Significant Digits
         relationship:
           $ref: '#/components/schemas/sdtmDatasetpecializationRelationship'
         mandatoryVariable:
           type: boolean
           default: false
+          title: Mandatory Variable
         mandatoryValue:
           type: boolean
           default: false
+          title: Mandatory Value
         originType:
           type: string
           example: Assigned
+          title: Origin Type
         originSource:
           type: string
           example: Sponsor
+          title: Origin Source
         comparator:
           type: string
+          title: Comparator
         vlmTarget:
           type: boolean
           default: false
           example: true
+          title: Vlm Target
         _links:
           $ref: '#/components/schemas/sdtmDatasetSpecializationVariableLinks'
+          title: Title for _links
+          description: Description for _links
     sdtmDatasetSpecializationVariableLinks:
       type: object
       properties:
