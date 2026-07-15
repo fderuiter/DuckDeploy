@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Admin } from 'react-admin';
+import { Admin, defaultTheme } from 'react-admin';
 import { SpecProvider, useSpec } from './core/SpecContext';
 import { duckDeployAuthProvider, setAuthorizationResources } from './core/authProvider';
 import { openApiDataProvider, setResourceDefinitions } from './providers/openApiDataProvider';
@@ -69,6 +69,39 @@ const createNoResourcesIssue = (): BootstrapIssue => ({
     'If the OpenAPI contract changed, regenerate the manifest with `npm run generate` and rebuild the app.',
   ],
 });
+
+const customTheme = {
+  ...defaultTheme,
+  palette: {
+    ...defaultTheme.palette,
+    primary: {
+      main: '#1565c0', // Darker blue to pass 4.5:1 contrast on #fafafb
+    },
+    secondary: {
+      main: '#1565c0',
+    },
+    text: {
+      ...defaultTheme.palette?.text,
+      secondary: '#424242', // Ensures contrast for empty state text
+      disabled: '#555555',
+      hint: '#555555',
+    },
+    action: {
+      ...defaultTheme.palette?.action,
+      disabled: '#555555',
+    }
+  },
+  components: {
+    ...defaultTheme.components,
+    RaNotFound: {
+      styleOverrides: {
+        message: {
+          color: '#555555',
+        },
+      },
+    },
+  },
+};
 
 const AdminApp = () => {
   const { spec, uiManifest, isLoading, error } = useSpec();
@@ -184,7 +217,7 @@ const AdminApp = () => {
   }
 
   return (
-    <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider} layout={StandardLayout}>
+    <Admin authProvider={duckDeployAuthProvider} dataProvider={openApiDataProvider} layout={StandardLayout} theme={customTheme}>
       {() => ResourceFactory({ resources }).props.children}
     </Admin>
   );

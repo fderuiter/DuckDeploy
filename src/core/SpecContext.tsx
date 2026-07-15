@@ -89,7 +89,8 @@ export const SpecProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const parsedJson = await customInstance<any>({
           url: schemaUrl,
           method: 'GET',
-          headers: { Accept: 'application/json' }
+          headers: { Accept: 'application/json' },
+          baseURL: ''
         });
         if (!parsedJson || typeof parsedJson !== 'object') {
           console.error('Failed to parse compiled OpenAPI schema');

@@ -38,7 +38,8 @@ async function run() {
     process.exit(1);
   }
 
-  const resources = Object.keys(manifest.resources || {});
+  const manifestResources = Object.values(manifest.resources || {});
+  const resources = manifestResources.filter(r => r.hasList).map(r => r.name);
   console.log(`Found resources: ${resources.length}`);
 
   const serverProcess = spawn('npm', ['run', 'preview', '--', '--port', '4173', '--strictPort'], {
@@ -62,8 +63,52 @@ async function run() {
   
   const page = await browser.newPage();
   
+  await page.setRequestInterception(true);
+  page.on('request', request => {
+    const url = request.url();
+    if (url.includes('__duckdeploy/health')) {
+      console.log(`[PUPPETEER] Intercepting health check: ${url}`);
+      request.respond({
+        status: 200,
+        contentType: 'application/json',
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ ok: true, message: 'Mocked health check' })
+      });
+    } else if (url.includes('/api/cdisc/')) {
+      request.respond({
+        status: 200,
+        contentType: 'application/json',
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify([])
+      });
+    } else {
+      request.continue();
+    }
+  });
+
+  page.on('response', response => {
+    if (response.status() >= 400) {
+      console.log(`[PUPPETEER] Response Error: ${response.status()} ${response.url()}`);
+    }
+  });
+  
   page.on('console', msg => {
     console.log(`[BROWSER LOG] ${msg.type().toUpperCase()}: ${msg.text()}`);
+    if (msg.type() === 'error') {
+      msg.args().forEach(arg => {
+        if (arg.remoteObject().description) {
+          console.log('[BROWSER LOG ERROR STACK]', arg.remoteObject().description);
+        }
+      });
+    }
+  });
+  
+  page.on('pageerror', err => {
+    console.log(`[BROWSER PAGE ERROR]`, err);
   });
   
   let hasViolations = false;

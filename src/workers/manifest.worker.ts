@@ -15,7 +15,8 @@ self.onmessage = async (event: MessageEvent<ManifestWorkerRequest>) => {
   try {
     const response = await AXIOS_INSTANCE.get<ArrayBuffer>(url, {
       responseType: 'arraybuffer',
-      headers: { Accept: 'application/json' }
+      headers: { Accept: 'application/json' },
+      baseURL: ''
     });
 
     const buffer = response.data;
