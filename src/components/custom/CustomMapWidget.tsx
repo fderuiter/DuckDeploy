@@ -9,7 +9,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import { useAccessibility } from '../../core/AccessibilityContext';
 import { BaseWidget } from './BaseWidget';
 
 /**
@@ -21,15 +20,10 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
 
   const [listView, setListView] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { announce } = useAccessibility();
 
   const handleSelect = (marker: typeof markers[0]) => {
     setSelectedId(marker.id);
     setValue(`${marker.lat},${marker.lng}`);
-  };
-
-  const handleFocus = (marker: typeof markers[0]) => {
-    announce(`Map marker for ${marker.label}. Status: ${marker.status || 'Unknown'}`);
   };
 
   return (
@@ -48,7 +42,6 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
               aria-label={`Map marker for ${marker.label}`}
               aria-pressed={selectedId === marker.id ? 'true' : 'false'}
               onClick={() => handleSelect(marker)}
-              onFocus={() => handleFocus(marker)}
               color={selectedId === marker.id ? 'primary' : 'default'}
             >
               <PlaceIcon aria-hidden="true" />
