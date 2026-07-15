@@ -23,6 +23,8 @@ export const BootstrapScreen = ({
   console.log('Rendering BootstrapScreen:', title);
   return (
   <Box
+    id="main-content"
+    component="main"
     sx={{
       minHeight: '100vh',
       display: 'flex',
