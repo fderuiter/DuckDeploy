@@ -4,12 +4,7 @@ DuckDeploy is a zero-boilerplate, API-first React template built with Vite and T
 
 ## Documentation
 
-For a detailed understanding of how DuckDeploy works under the hood, please refer to our modular documentation suite:
-- [Tech Stack](./docs/tech-stack.md): Overview of React-Admin, TypeScript, and OpenAPI.
-- [Architecture](./docs/architecture.md): API data flow and custom providers.
-- [Extensibility](./docs/extensibility.md): Customizing UI resources and Auto components.
-- [Audit Guide](./docs/audit-guide.md): ISO 29148 Traceability & Compliance and integrity hashes.
-- [Accessibility Guide](./docs/accessibility.md): Guidelines for semantic HTML, logical tab order, and resolving a11y linting errors.
+For a detailed understanding of how DuckDeploy works under the hood, please refer to our [live GitHub Pages documentation site](https://fderuiter.github.io/DuckDeploy/).
 
 ## How it works
 
@@ -78,20 +73,20 @@ Vite proxies `/api/cdisc` to the local backend automatically, so local builds wo
 
 DuckDeploy employs a multi-layer verification strategy to ensure the generated dashboard remains synchronized with the API specification:
 
-1.  **Backend Contract Compliance (OAS-to-Backend)**:
+1. **Backend Contract Compliance (OAS-to-Backend)**:
     Using Schemathesis (`npm run test:fuzz`), we perform property-based fuzz testing against the backend API. This verifies that the backend properly handles a wide range of inputs and adheres to the structural constraints defined in `openapi.yaml`. *Note: This tests the backend's robustness, not the frontend's UI components.*
 
-2.  **Frontend Generation Fidelity (OAS-to-UI)**:
+2. **Frontend Generation Fidelity (OAS-to-UI)**:
     The `npm run validate:contract` script performs a static "Manifest Fidelity Mapping." It analyzes the generated UI manifest and cross-references it with the OpenAPI AST to prove that:
     - No fields defined in the spec are silently "discarded" or unmapped in the UI.
     - Constraint-bearing fields (e.g., those with `enum`, `minLength`, or `pattern`) are assigned to UI widgets capable of enforcing those specific constraints.
 
-3.  **Shadow Build Integrity**:
+3. **Shadow Build Integrity**:
     The `npm run verify:shadow` check runs during the build to ensure no intermediate artifacts (like raw OpenAPI YAML) leak into the production `dist` bundle.
 
 ## Deployment
 
-The GitHub Actions workflow in `.github/workflows/deploy-pages.yml` runs on pushes to `main` and on manual dispatch. It automatically:
+The GitHub Actions workflow in `.github/workflows/pipeline.yml` runs on pushes to `main` and on manual dispatch. It automatically:
 
 - Installs dependencies
 - Generates TypeScript models and Axios fetchers from `openapi.yaml`
