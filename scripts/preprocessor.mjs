@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
+import { loadSpecSync, repoRoot } from './openapi-utility.mjs';
 import {
   resolveResourceName,
   getSchemaFromContent,
@@ -25,17 +24,7 @@ import {
 } from '@duckdeploy/openapi';
 import { HTTP_METHODS } from '../src/core/discovery.ts';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, '..');
-
 const GENERATED_CLIENT_PATH = path.join(repoRoot, 'src', 'api', 'generated');
-
-const INPUT_CANDIDATES = [
-  path.join(repoRoot, 'openapi.yaml'),
-  path.join(repoRoot, 'openapi.yml'),
-  path.join(repoRoot, 'openapi.json'),
-];
 
 const OUTPUT_PATH = path.join(repoRoot, 'public', MANIFEST_FILENAME);
 const MANIFEST_GENERATION_LOG_PATH = path.join(repoRoot, 'manifest-generation-log.json');
@@ -178,15 +167,6 @@ const validateDocsAndInjectMetadata = () => {
       throw new Error("Build failed: Mandatory architectural components are missing descriptive documentation.");
     }
   }
-};
-
-const resolveInputPath = () => INPUT_CANDIDATES.find((candidate) => fs.existsSync(candidate));
-
-const parseSpecRaw = (sourcePath, raw) => {
-  if (sourcePath.endsWith('.json')) {
-    return JSON.parse(raw);
-  }
-  return yaml.load(raw);
 };
 
 
@@ -621,13 +601,7 @@ const buildUiManifest = (spec) => {
 };
 
 const compile = async () => {
-  const inputPath = resolveInputPath();
-  if (!inputPath) {
-    throw new Error('No OpenAPI input file found. Expected openapi.yaml, openapi.yml, or openapi.json.');
-  }
-
-  const raw = fs.readFileSync(inputPath, 'utf8');
-  const parsedRaw = parseSpecRaw(inputPath, raw);
+  const parsedRaw = loadSpecSync();
 
   if (!parsedRaw || typeof parsedRaw !== 'object') {
     throw new Error('Invalid OpenAPI document: expected an object root.');

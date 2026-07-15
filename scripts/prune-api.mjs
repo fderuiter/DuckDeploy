@@ -3,10 +3,10 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 import yaml from 'js-yaml';
 import { discoverResources } from '@duckdeploy/openapi';
+import { loadSpecAsync, repoRoot } from './openapi-utility.mjs';
 
-const SRC_DIR = path.resolve('src');
-const OPENAPI_FILE = path.resolve('openapi.yaml');
-const PRUNED_FILE = path.resolve('openapi.pruned.yaml');
+const SRC_DIR = path.join(repoRoot, 'src');
+const PRUNED_FILE = path.join(repoRoot, 'openapi.pruned.yaml');
 
 // Helper to escape regex
 function escapeRegExp(string) {
@@ -34,8 +34,7 @@ async function getFiles(dir) {
 
 async function main() {
   console.log('Loading OpenAPI specification...');
-  const specContent = await fsPromises.readFile(OPENAPI_FILE, 'utf8');
-  const spec = yaml.load(specContent);
+  const spec = await loadSpecAsync();
   
   if (!spec || !spec.paths) {
     console.log('No valid paths found in OpenAPI spec.');
