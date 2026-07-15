@@ -2,7 +2,7 @@
 // @ts-nocheck
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { injectOriginRefs } from './normalization.ts';
-import { FULL_HTTP_METHODS } from '../../../src/core/discovery.ts';
+import { FULL_HTTP_METHODS } from '@duckdeploy/types';
 
 /**
  * Generated description.

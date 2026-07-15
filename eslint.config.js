@@ -72,7 +72,19 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
       'no-duplicate-imports': 'error',
       'no-useless-assignment': 'error',
-      'react-refresh/only-export-components': 'off' 
+      'react-refresh/only-export-components': 'off',
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['../../../src/*', '../../src/*', '../src/*'],
+            message: 'Direct relative imports across workspace boundaries are prohibited.'
+          },
+          {
+            group: ['../../../packages/*', '../../packages/*', '../packages/*'],
+            message: 'Direct relative imports across workspace boundaries are prohibited.'
+          }
+        ]
+      }]
     }
   },
   {

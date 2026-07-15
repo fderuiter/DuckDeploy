@@ -1,4 +1,4 @@
-import { HTTP_METHODS } from '../../../src/core/discovery.ts';
+import { HTTP_METHODS } from '@duckdeploy/types';
 import { escapeJsonPointer, unescapeJsonPointer } from './traversal.ts';
 
 /**
