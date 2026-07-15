@@ -4,6 +4,7 @@ import { useFormContext } from 'react-hook-form';
 import { useSaveContext } from 'react-admin';
 import { useManifestInterpreter } from '../core/useManifestInterpreter';
 import { useAccessibility } from '../core/AccessibilityContext';
+import { useFormLayout } from '../layouts/FormLayoutContext';
 import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 
 interface SchemaErrorSummaryProps {
@@ -21,6 +22,7 @@ export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resource
   const { precomputedResource } = useManifestInterpreter({ resource: resourceName, mode: isCreate ? 'create' : 'edit' });
   const alertRef = useRef<HTMLDivElement>(null);
   const { shiftFocus } = useAccessibility();
+  const { revealField } = useFormLayout();
   const [hasFailed, setHasFailed] = useState(false);
 
   const precomputedNodes = useMemo(() => {
@@ -118,13 +120,19 @@ export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resource
                 <Link
                   component="button"
                   variant="body2"
-                  onClick={(e: React.MouseEvent) => {
+                  onClick={async (e: React.MouseEvent) => {
                     e.preventDefault();
-                    const input = document.querySelector(`[name="${field}"], [id="${field}"]`) as HTMLElement;
-                    if (input) {
-                      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      shiftFocus(input);
-                    }
+                    // Reveal the section containing the field first
+                    await revealField(field);
+
+                    // Allow the DOM to update after state changes
+                    setTimeout(() => {
+                      const input = document.querySelector(`[name="${field}"], [id="${field}"]`) as HTMLElement;
+                      if (input) {
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        shiftFocus(input);
+                      }
+                    }, 100);
                   }}
                   sx={{ textAlign: 'left' }}
                 >
