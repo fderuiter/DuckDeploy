@@ -75,7 +75,14 @@ async function run() {
     console.log(`Testing route: ${route}`);
     await page.goto(`http://localhost:4173/DuckDeploy${route}`, { waitUntil: 'networkidle0' });
     
-    await new Promise(r => setTimeout(r, 2000));
+    try {
+      await page.waitForSelector('#main-content', { timeout: 30000 });
+    } catch (error) {
+      console.error(`Failed to render #main-content on route ${route} within timeout.`);
+      await browser.close();
+      serverProcess.kill();
+      process.exit(1);
+    }
     
     const results = await new AxePuppeteer(page)
       .withTags(['wcag2aa', 'wcag21aa'])
