@@ -118,7 +118,7 @@ const validate = async () => {
     }
   }
 
-  // ── Rule 3: Documentation audit (Non-blocking) ────────────────────────────
+  // ── Rule 3: Strict Zero-Tolerance Documentation (Blocking) ────────────────
   for (const entry of entries) {
     if (entry.status !== 'mapped') continue;
     
@@ -126,10 +126,10 @@ const validate = async () => {
     if (!node || typeof node !== 'object') continue;
     
     if (!node.title) {
-      warnings.push(`MISSING METADATA (title): pointer="${entry.pointer}" source="${entry.source}"`);
+      violations.push(`MISSING METADATA (title): pointer="${entry.pointer}" source="${entry.source}"`);
     }
     if (!node.description) {
-      warnings.push(`MISSING METADATA (description): pointer="${entry.pointer}" source="${entry.source}"`);
+      violations.push(`MISSING METADATA (description): pointer="${entry.pointer}" source="${entry.source}"`);
     }
   }
 
