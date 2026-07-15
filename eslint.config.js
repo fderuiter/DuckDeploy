@@ -70,8 +70,15 @@ export default defineConfig([
       'react-hooks/static-components': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-duplicate-imports': 'error',
       'no-useless-assignment': 'error',
       'react-refresh/only-export-components': 'off' 
+    }
+  },
+  {
+    files: ['packages/openapi/src/discovery.ts'],
+    rules: {
+      'no-duplicate-imports': 'off'
     }
   }
 ])

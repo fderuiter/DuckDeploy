@@ -1,7 +1,10 @@
 import React from 'react';
 import { Button, CircularProgress } from '@mui/material';
-import { useWidgetMutation } from '../../core/WidgetRegistry';
-import type { WidgetValueProps, WidgetMetaProps } from '../../core/WidgetRegistry';
+import {
+  useWidgetMutation,
+  type WidgetValueProps,
+  type WidgetMetaProps
+} from '../../core/WidgetRegistry';
 import { BaseWidget } from './BaseWidget';
 
 /**

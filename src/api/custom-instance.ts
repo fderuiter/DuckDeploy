@@ -1,5 +1,4 @@
-import axios, { AxiosError, AxiosHeaders } from 'axios';
-import type { AxiosRequestConfig, RawAxiosRequestHeaders, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosHeaders, type AxiosRequestConfig, type RawAxiosRequestHeaders, type AxiosResponse } from 'axios';
 import { getRuntimeApiConfig } from '../core/runtimeConfig';
 import { SCHEMA_FILENAME, MANIFEST_FILENAME } from '@duckdeploy/openapi';
 

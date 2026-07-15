@@ -1,7 +1,7 @@
 import { SelectInput, required } from 'react-admin';
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { renderInput } from './SchemaToFieldMapper';
+import { renderInput, type PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import {
   areShallowObjectsEqual,
   cleanupPolymorphicObjectValue,
@@ -9,7 +9,6 @@ import {
   setPolymorphicDiscriminatorValue,
 } from './polymorphicState';
 import { SCHEMA_SELECTION_KEY } from '@duckdeploy/openapi';
-import type { PrecomputedInputDescriptor } from './SchemaToFieldMapper';
 import type { OpenAPIV3 } from 'openapi-types';
 import { DeclarativeA11yContainer } from './DeclarativeA11yContainer';
 
