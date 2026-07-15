@@ -1,4 +1,5 @@
 import { HTTP_METHODS } from '../../../src/core/discovery.ts';
+import { escapeJsonPointer, unescapeJsonPointer } from './traversal.ts';
 
 /**
  * Resolve a JSON Reference ($ref) to the schema node it points to within the
@@ -6,13 +7,37 @@ import { HTTP_METHODS } from '../../../src/core/discovery.ts';
  */
 export const resolveRef = (spec: any, ref: string): any => {
   if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
-  const parts = ref.slice(2).split('/').map((s) => s.replace(/~1/g, '/').replace(/~0/g, '~'));
-  let current = spec;
-  for (const part of parts) {
-    if (!current || typeof current !== 'object' || !(part in current)) return null;
-    current = current[part];
-  }
-  return current;
+  const parts = ref.slice(2).split('/').map(unescapeJsonPointer);
+
+  const search = (current: any, partIndex: number): any => {
+    if (partIndex >= parts.length) return current;
+    if (!current || typeof current !== 'object') return null;
+
+    const part = parts[partIndex];
+    
+    if (part in current) {
+      const res = search(current[part], partIndex + 1);
+      if (res !== null) return res;
+    }
+    
+    // Fallback for allOf
+    if (Array.isArray(current.allOf)) {
+      for (const sub of current.allOf) {
+        if (sub && typeof sub === 'object') {
+           // We try to search inside the sub-schema for this part
+           if (part in sub) {
+             const res = search(sub[part], partIndex + 1);
+             if (res !== null) return res;
+           } else if (Array.isArray(sub.allOf)) {
+             // Deep allOf (not strictly necessary but safe)
+           }
+        }
+      }
+    }
+    return null;
+  };
+
+  return search(spec, 0);
 };
 
 export interface ConstraintField {
@@ -29,7 +54,6 @@ export interface ConstraintField {
  */
 export const collectConstraintBearingFields = (spec: any): ConstraintField[] => {
   const results: ConstraintField[] = [];
-  const escapeSegment = (s: string) => String(s).replace(/~/g, '~0').replace(/\//g, '~1');
 
   const walk = (schema: any, pointer: string, visitedRefs = new Set<string>()) => {
     if (!schema || typeof schema !== 'object') return;
@@ -62,7 +86,7 @@ export const collectConstraintBearingFields = (spec: any): ConstraintField[] => 
 
     if (schema.properties && typeof schema.properties === 'object') {
       for (const [propName, propSchema] of Object.entries(schema.properties)) {
-        walk(propSchema, `${pointer}/properties/${escapeSegment(propName)}`, visitedRefs);
+        walk(propSchema, `${pointer}/properties/${escapeJsonPointer(propName)}`, visitedRefs);
       }
     }
     if (schema.items && typeof schema.items === 'object') {
@@ -80,7 +104,7 @@ export const collectConstraintBearingFields = (spec: any): ConstraintField[] => 
 
   for (const [apiPath, pathItem] of Object.entries(spec.paths)) {
     if (!pathItem || typeof pathItem !== 'object') continue;
-    const escapedPath = escapeSegment(apiPath);
+    const escapedPath = escapeJsonPointer(apiPath);
 
     for (const [method, operation] of Object.entries(pathItem)) {
       if (!HTTP_METHODS.has(method.toLowerCase())) continue;
@@ -92,7 +116,7 @@ export const collectConstraintBearingFields = (spec: any): ConstraintField[] => 
           if ((mediaObj as any)?.schema) {
             walk(
               (mediaObj as any).schema,
-              `#/paths/${escapedPath}/${method}/requestBody/content/${escapeSegment(mediaType)}/schema`,
+              `#/paths/${escapedPath}/${method}/requestBody/content/${escapeJsonPointer(mediaType)}/schema`,
             );
           }
         }
@@ -105,7 +129,7 @@ export const collectConstraintBearingFields = (spec: any): ConstraintField[] => 
             if ((mediaObj as any)?.schema) {
               walk(
                 (mediaObj as any).schema,
-                `#/paths/${escapedPath}/${method}/responses/${status}/content/${escapeSegment(mediaType)}/schema`,
+                `#/paths/${escapedPath}/${method}/responses/${status}/content/${escapeJsonPointer(mediaType)}/schema`,
               );
             }
           }
