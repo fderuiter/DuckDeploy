@@ -56,6 +56,15 @@ export default defineConfig([
       reactRefresh.configs.vite,
       jsxA11y.flatConfigs.recommended,
     ],
+    settings: {
+      'jsx-a11y': {
+        components: {
+          BaseWidget: 'fieldset',
+          TerminologyLookupInput: 'input',
+          CustomMapWidget: 'button',
+        },
+      },
+    },
     rules: { 
       'react-hooks/set-state-in-effect': 'off',  
       'react-hooks/static-components': 'off',
