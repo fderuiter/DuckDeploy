@@ -1,5 +1,5 @@
 
-import { Create, Edit, SimpleForm, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
+import { Create, Edit, type CreateProps, type EditProps, type RaRecord } from 'react-admin';
 import { useAutoFormSetup } from '../hooks/useAutoFormSetup';
 
 /**
@@ -20,25 +20,11 @@ export interface AutoCreateProps<RecordType extends RaRecord = RaRecord> extends
  * @param props - Component props
  */
 export const AutoCreate = <RecordType extends RaRecord = RaRecord>(props: AutoCreateProps<RecordType>) => {
-  const { resourceName, layoutConfig, CustomLayout, contentNodes, errorSummary } = useAutoFormSetup(props.resource, 'create');
-
-  if (CustomLayout) {
-    return (
-      <Create {...props}>
-        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={true}>
-          {errorSummary}
-          {contentNodes}
-        </CustomLayout>
-      </Create>
-    );
-  }
+  const { formContent } = useAutoFormSetup(props.resource, 'create');
 
   return (
     <Create {...props}>
-      <SimpleForm>
-        {errorSummary}
-        {contentNodes}
-      </SimpleForm>
+      {formContent}
     </Create>
   );
 };
@@ -61,27 +47,11 @@ export interface AutoEditProps<RecordType extends RaRecord = RaRecord> extends O
  * @param props - Component props
  */
 export const AutoEdit = <RecordType extends RaRecord = RaRecord>(props: AutoEditProps<RecordType>) => {
-  const { resourceName, layoutConfig, CustomLayout, contentNodes, errorSummary, idInput } = useAutoFormSetup(props.resource, 'edit');
-
-  if (CustomLayout) {
-    return (
-      <Edit {...props}>
-        <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={false}>
-          {errorSummary}
-          {idInput}
-          {contentNodes}
-        </CustomLayout>
-      </Edit>
-    );
-  }
+  const { formContent } = useAutoFormSetup(props.resource, 'edit');
 
   return (
     <Edit {...props}>
-      <SimpleForm>
-        {errorSummary}
-        {idInput}
-        {contentNodes}
-      </SimpleForm>
+      {formContent}
     </Edit>
   );
 };

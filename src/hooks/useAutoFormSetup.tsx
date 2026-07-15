@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput } from 'react-admin';
+import { TextInput, SimpleForm } from 'react-admin';
 import { useManifestInterpreter } from '../core/useManifestInterpreter';
 import { renderInput, type PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 import { SchemaErrorSummary } from '../components/SchemaErrorSummary';
@@ -31,12 +31,19 @@ export function useAutoFormSetup(resource: string | undefined, mode: 'create' | 
   const errorSummary = <SchemaErrorSummary key="error-summary" resourceName={resourceName} isCreate={isCreate} />;
   const idInput = !isCreate ? <TextInput key="id-disabled" source="id" disabled /> : null;
 
-  return {
-    resourceName,
-    layoutConfig,
-    CustomLayout,
-    contentNodes,
-    errorSummary,
-    idInput
-  };
+  const formContent = CustomLayout ? (
+    <CustomLayout resourceName={resourceName} layoutConfig={layoutConfig} isCreate={isCreate}>
+      {errorSummary}
+      {idInput}
+      {contentNodes}
+    </CustomLayout>
+  ) : (
+    <SimpleForm>
+      {errorSummary}
+      {idInput}
+      {contentNodes}
+    </SimpleForm>
+  );
+
+  return { formContent };
 }
