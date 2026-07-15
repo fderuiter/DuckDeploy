@@ -111,7 +111,7 @@ export const UnifiedPolymorphicInput = ({
       announcement={`Form structure updated for ${choices[selectedIndex ?? 0]?.name || 'new selection'}.`}
       focusTarget="[data-polymorphic-content] input:not([type='hidden']):not([disabled]), [data-polymorphic-content] select:not([disabled]), [data-polymorphic-content] textarea:not([disabled]), [data-polymorphic-content] button:not([disabled])"
     >
-      <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #ccc' }}>
+      <div key={keyPrefix} style={{ padding: '1rem', border: '1px dashed #767676' }}>
         <SelectInput
           source={typeSource}
           choices={choices}
