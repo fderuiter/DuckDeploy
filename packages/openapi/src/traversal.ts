@@ -256,3 +256,11 @@ export class UnifiedSchemaWalker {
     }
   }
 }
+
+/**
+ * Unescapes RFC 6901 JSON pointer segments.
+ *
+ * @param {string} segment - The JSON pointer segment to unescape.
+ * @returns {string} The unescaped JSON pointer segment.
+ */
+export const unescapeJsonPointer = (segment: string) => String(segment).replace(/~1/g, '/').replace(/~0/g, '~');

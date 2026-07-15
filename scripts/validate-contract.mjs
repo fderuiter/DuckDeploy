@@ -123,7 +123,10 @@ const validate = async () => {
     if (entry.status !== 'mapped') continue;
     
     const node = resolveRef(dereferencedSpec, entry.pointer);
-    if (!node || typeof node !== 'object') continue;
+    if (!node || typeof node !== 'object') {
+      violations.push(`POINTER MISMATCH: Unresolvable schema reference at pointer="${entry.pointer}"`);
+      continue;
+    }
     
     if (!node.title) {
       warnings.push(`MISSING METADATA (title): pointer="${entry.pointer}" source="${entry.source}"`);
