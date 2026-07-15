@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FetchUserWidget } from '../FetchUserWidget';
 import { WidgetMutationContext, type WidgetValueProps } from '../../../core/WidgetRegistry';
 import { describe, it, expect, vi } from 'vitest';
@@ -9,8 +10,14 @@ import '@testing-library/jest-dom';
 describe('FetchUserWidget', () => {
   it('successfully fetches data and sets value', async () => {
     const mockSetValue = vi.fn();
-    const mockMutate = vi.fn().mockResolvedValue({
-      data: { username: 'test_user_from_api' }
+    const mockMutate = vi.fn().mockImplementation(() => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            data: { username: 'test_user_from_api' }
+          });
+        }, 100);
+      });
     });
 
     const mockProps: WidgetValueProps = {
@@ -19,10 +26,14 @@ describe('FetchUserWidget', () => {
       setValue: mockSetValue,
     };
 
+    const queryClient = new QueryClient();
+
     render(
-      <WidgetMutationContext.Provider value={{ mutate: mockMutate }}>
-        <FetchUserWidget {...mockProps} />
-      </WidgetMutationContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <WidgetMutationContext.Provider value={{ mutate: mockMutate }}>
+          <FetchUserWidget {...mockProps} />
+        </WidgetMutationContext.Provider>
+      </QueryClientProvider>
     );
 
     // Check initial value
@@ -33,7 +44,9 @@ describe('FetchUserWidget', () => {
     fireEvent.click(button);
 
     // Verify loading state
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    });
 
     // Verify mutate was called
     expect(mockMutate).toHaveBeenCalledWith('getOne', { resource: 'users', id: 123 });

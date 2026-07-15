@@ -1,4 +1,5 @@
-import React, { createContext, useState, useCallback, useContext } from 'react';
+import React, { createContext, useCallback, useContext } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 import { createRegistry } from './RegistryFactory';
 
@@ -61,32 +62,29 @@ export function useWidgetMutation(
   const mutationContext = useContext(WidgetMutationContext);
   const finalMutate = mutateFn || mutationContext?.mutate;
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const execute = useCallback(
-    async (operation: string, payload?: unknown) => {
+  const { mutateAsync, isPending, error: mutationError } = useMutation({
+    mutationFn: async ({ operation, payload }: { operation: string; payload?: unknown }) => {
       if (!finalMutate) {
         throw new Error('useWidgetMutation must be provided a mutate function or used within a WidgetMutationProvider');
       }
-      setIsLoading(true);
-      setError(null);
-      try {
-        const result = await finalMutate(operation, payload);
-        if (opts?.onSuccess) opts.onSuccess(result);
-        return result;
-      } catch (err: any) {
-        setError(err);
-        if (opts?.onError) opts.onError(err);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
+      return finalMutate(operation, payload);
     },
-    [finalMutate, opts]
+    onSuccess: (data) => {
+      if (opts?.onSuccess) opts.onSuccess(data);
+    },
+    onError: (err: Error) => {
+      if (opts?.onError) opts.onError(err);
+    }
+  });
+
+  const execute = useCallback(
+    async (operation: string, payload?: unknown) => {
+      return mutateAsync({ operation, payload });
+    },
+    [mutateAsync]
   );
 
-  return { execute, isLoading, error };
+  return { execute, isLoading: isPending, error: mutationError };
 }
 
 export type WidgetComponent = React.FC<any>;
