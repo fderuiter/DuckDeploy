@@ -14,7 +14,7 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <AccessibilityProvider>
-        <AdminContext theme={theme}>
+        <AdminContext theme={theme as any}>
           <FormProvider {...methods}>
             <h1>Form Container</h1>
             <h2>Section Details</h2>

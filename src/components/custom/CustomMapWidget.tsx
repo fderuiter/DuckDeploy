@@ -63,7 +63,7 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
                   checked={selectedId === marker.id}
                   tabIndex={-1}
                   disableRipple
-                  inputProps={{ 'aria-labelledby': `marker-label-${marker.id}` }}
+                  slotProps={{ input: { 'aria-labelledby': `marker-label-${marker.id}` } as any }}
                 />
                 <ListItemText id={`marker-label-${marker.id}`} primary={marker.label} secondary={`Status: ${marker.status || 'Unknown'}`} />
               </ListItemButton>
