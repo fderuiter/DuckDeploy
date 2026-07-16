@@ -9,6 +9,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import Radio from '@mui/material/Radio';
 import { BaseWidget } from './BaseWidget';
 
 /**
@@ -51,14 +52,20 @@ export const CustomMapWidget: React.FC<WidgetValueProps & Pick<WidgetMetaProps, 
       ) : (
         <List role="listbox">
           {markers.map(marker => (
-            <ListItem key={marker.id} disablePadding>
+            <ListItem key={marker.id} disablePadding role="presentation">
               <ListItemButton 
                 role="option"
                 aria-selected={selectedId === marker.id ? 'true' : 'false'}
                 selected={selectedId === marker.id}
                 onClick={() => handleSelect(marker)}
               >
-                <ListItemText primary={marker.label} secondary={`Status: ${marker.status || 'Unknown'}`} />
+                <Radio
+                  checked={selectedId === marker.id}
+                  tabIndex={-1}
+                  disableRipple
+                  inputProps={{ 'aria-labelledby': `marker-label-${marker.id}` }}
+                />
+                <ListItemText id={`marker-label-${marker.id}`} primary={marker.label} secondary={`Status: ${marker.status || 'Unknown'}`} />
               </ListItemButton>
             </ListItem>
           ))}

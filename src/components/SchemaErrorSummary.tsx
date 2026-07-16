@@ -108,7 +108,7 @@ export const SchemaErrorSummary: React.FC<SchemaErrorSummaryProps> = ({ resource
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Alert severity="error" role="alert" ref={alertRef} tabIndex={-1}>
+      <Alert severity="error" role="alert" ref={alertRef} tabIndex={-1} id="schema-error-summary">
         <AlertTitle tabIndex={-1}>Please correct the following errors:</AlertTitle>
         <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
           {errorList.map(([field, message]) => {

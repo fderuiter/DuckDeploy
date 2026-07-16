@@ -1,4 +1,4 @@
-import { render, screen,   } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { TerminologyLookupInput } from '../TerminologyLookupInput';
@@ -10,7 +10,7 @@ describe('TerminologyLookupInput', () => {
     value: '',
     setValue: vi.fn(),
     widgetProps: { domain: 'AE' },
-    schemaNode: { description: 'Test description' },
+    schemaNode: { title: 'Dynamic Search Label', description: 'Dynamic Helper Text' },
   };
 
   test('should not have basic accessibility violations', async () => {
@@ -21,9 +21,10 @@ describe('TerminologyLookupInput', () => {
 
   test('verifies search results and keyboard selection logic', async () => {
     const setValueMock = vi.fn();
-    render(<TerminologyLookupInput {...defaultProps} setValue={setValueMock} />);
+    const { container } = render(<TerminologyLookupInput {...defaultProps} setValue={setValueMock} />);
     
-    const input = screen.getByRole('combobox', { name: /Terminology Lookup/i });
+    const input = screen.getByRole('combobox', { name: /Dynamic Search Label/i });
+    expect(screen.getAllByText('Dynamic Helper Text').length).toBeGreaterThan(0);
     
     // Type to search
     await userEvent.type(input, 'Adverse');
@@ -32,6 +33,10 @@ describe('TerminologyLookupInput', () => {
     const listbox = await screen.findByRole('listbox');
     expect(listbox).toBeInTheDocument();
     
+    // Check accessibility in dynamic state
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+
     // Use keyboard navigation to select the second option
     await userEvent.keyboard('{ArrowDown}'); // Select 'Adverse Event 1'
     await userEvent.keyboard('{ArrowDown}'); // Select 'Adverse Event 2'
