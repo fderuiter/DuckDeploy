@@ -7,7 +7,7 @@ import { SCHEMA_SELECTION_KEY } from './constants.ts';
  * Type guard to check if an object is an OpenAPIV3 SchemaObject rather than a ReferenceObject.
  * This ensures safe access to properties like `type` and `properties` that do not exist on references.
  */
-export const isSchemaObject = (
+const isSchemaObject = (
   obj: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject | undefined
 ): obj is OpenAPIV3.SchemaObject =>
   typeof obj === 'object' && obj !== null && !('$ref' in obj);
@@ -19,7 +19,7 @@ const BOOLEAN_FALSE_STRINGS = new Set(['false', '0', 'n', 'no']);
  * Coerces various input types into a boolean value.
  * Handles strings like "true", "1", "yes" and their false equivalents.
  */
-export const coerceBoolean = (value: unknown): boolean | null => {
+const coerceBoolean = (value: unknown): boolean | null => {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
@@ -35,7 +35,7 @@ export const coerceBoolean = (value: unknown): boolean | null => {
  * Coerces various input types into a number value.
  * Returns null if the value is not a valid number.
  */
-export const coerceNumber = (value: unknown): number | null => {
+const coerceNumber = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
@@ -45,7 +45,7 @@ export const coerceNumber = (value: unknown): number | null => {
   return null;
 };
 
-export interface TraversalContext {
+interface TraversalContext {
   schema?: OpenAPIV3.SchemaObject;
   pointer: string;
   source: string;
@@ -55,7 +55,7 @@ export interface TraversalContext {
   key?: string;
 }
 
-export interface Visitor {
+interface Visitor {
   visitNode: (context: TraversalContext, defaultVisit: () => any) => any;
 }
 

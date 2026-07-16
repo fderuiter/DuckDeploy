@@ -1,6 +1,6 @@
 import { FULL_HTTP_METHODS } from '@duckdeploy/types';
 
-export interface AllowedOperation {
+interface AllowedOperation {
   pattern: RegExp;
   methods: Set<string>;
 }

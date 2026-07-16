@@ -40,7 +40,7 @@ export const resolveRef = (spec: any, ref: string): any => {
   return search(spec, 0);
 };
 
-export interface ConstraintField {
+interface ConstraintField {
   pointer: string;
   constraintType: 'enum' | 'minLength' | 'pattern';
 }

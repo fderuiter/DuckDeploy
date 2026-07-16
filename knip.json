@@ -1,10 +1,11 @@
 {
-  "ignoreExportsUsedInFile": true,
+  "ignoreExportsUsedInFile": false,
   "workspaces": {
     ".": {
-      "entry": ["index.html"],
-      "project": ["src/**/*.{ts,tsx}"],
-      "ignore": ["src/api/generated/**"]
-    }
+      "entry": ["index.html", "scripts/**/*.mjs", "server/**/*.mjs"],
+      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "server/**/*.mjs"]
+    },
+    "packages/openapi": {},
+    "packages/types": {}
   }
 }

@@ -8,7 +8,7 @@ import { FULL_HTTP_METHODS } from '@duckdeploy/types';
  * Generated description.
  *
  */
-export const toOperationId = (method: string, route: string): string => {
+const toOperationId = (method: string, route: string): string => {
   const routePart = route
     .replace(/^\/+/, '')
     .replace(/\{([^}]+)\}/g, 'By-$1')
@@ -23,7 +23,7 @@ export const toOperationId = (method: string, route: string): string => {
  * Generated description.
  *
  */
-export const pickPreferredMediaType = (content: any): any => {
+const pickPreferredMediaType = (content: any): any => {
   if (!content || typeof content !== 'object') return content;
 
   if (content['application/json']) {
@@ -38,7 +38,7 @@ export const pickPreferredMediaType = (content: any): any => {
  * Generated description.
  *
  */
-export const optimizeOperation = (route: string, method: string, operation: any): void => {
+const optimizeOperation = (route: string, method: string, operation: any): void => {
   if (!operation || typeof operation !== 'object') return;
 
   if (!operation.operationId || typeof operation.operationId !== 'string') {
@@ -67,7 +67,7 @@ export const optimizeOperation = (route: string, method: string, operation: any)
  * Generated description.
  *
  */
-export const stripNoise = (node: any): void => {
+const stripNoise = (node: any): void => {
   if (Array.isArray(node)) {
     for (const item of node) {
       stripNoise(item);
