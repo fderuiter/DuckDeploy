@@ -8,7 +8,7 @@ const mergeUnique = (arr1: any[], arr2: any[]): any[] => Array.from(new Set([...
  * Generated description.
  *
  */
-export const mergeSchemas = (baseSchema: any, overrideSchema: any): any => {
+const mergeSchemas = (baseSchema: any, overrideSchema: any): any => {
   if (!isObject(baseSchema) || !isObject(overrideSchema)) {
     if (overrideSchema !== undefined) return overrideSchema;
     if (baseSchema !== undefined) return baseSchema;
