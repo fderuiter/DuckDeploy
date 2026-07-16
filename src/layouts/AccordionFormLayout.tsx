@@ -86,6 +86,9 @@ export const AccordionFormLayout: React.FC<LayoutProps> = ({ children, layoutCon
         
         // Wait for DOM to render the expanded section, then focus the field
         setTimeout(() => {
+          if (document.getElementById('schema-error-summary')) {
+            return;
+          }
           const input = document.querySelector(`[name="${firstErrorField}"], [id="${firstErrorField}"]`) as HTMLElement;
           if (input) {
             input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -113,21 +116,30 @@ export const AccordionFormLayout: React.FC<LayoutProps> = ({ children, layoutCon
   return (
     <FormLayoutContext.Provider value={{ revealField }}>
       <SimpleForm {...rest}>
-        {orchestratedSections.map((section, index) => (
+        {orchestratedSections.map((section, index) => {
+          const sectionId = `section-${index}`;
+          return (
           <Accordion 
             key={section.label === 'Other' ? 'other' : index}
             expanded={expanded === section.label} 
             onChange={handleExpand(section.label)}
             sx={{ width: '100%', mb: 1 }}
           >
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h6">{section.label}</Typography>
+            <AccordionSummary 
+              id={`${sectionId}-header`}
+              aria-controls={`${sectionId}-content`}
+              expandIcon={<ExpandMoreIcon />}
+            >
+              <Typography variant="h6" component="span">{section.label}</Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
+            <AccordionDetails 
+              id={`${sectionId}-content`}
+              sx={{ display: 'flex', flexDirection: 'column' }}
+            >
               {section.elements}
             </AccordionDetails>
           </Accordion>
-        ))}
+        )})}
       </SimpleForm>
     </FormLayoutContext.Provider>
   );

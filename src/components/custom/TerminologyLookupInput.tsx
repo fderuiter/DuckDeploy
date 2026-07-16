@@ -42,8 +42,8 @@ export const TerminologyLookupInput: React.FC<WidgetValueProps & WidgetMetaProps
           <TextField {...(params as any)}
             
             name={source}
-            label="Terminology Lookup"
-            helperText={domain ? `Lookup in domain: ${domain}` : undefined}
+            label={schemaNode?.title || 'Terminology Lookup'}
+            helperText={schemaNode?.description || (domain ? `Lookup in domain: ${domain}` : undefined)}
             InputProps={{
               ...(params as any).InputProps,
               endAdornment: (
