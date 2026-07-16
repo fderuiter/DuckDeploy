@@ -27,6 +27,22 @@ export const validateHeading = (value: unknown, fallback: string = 'h4'): string
 };
 
 /**
+ * Generates a human-readable label from a property key.
+ */
+export const generateHeuristicLabel = (key: string): string => {
+  if (!key) return '';
+  const leaf = key.split('.').pop() || key;
+  const words = leaf
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[-_]/g, ' ')
+    .trim()
+    .split(/\s+/);
+  return words
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+};
+
+/**
  * Standardizes metadata extraction to ensure both title and description are preserved.
  */
 export const extractMetadata = (node: any, sourceName: string) => {
