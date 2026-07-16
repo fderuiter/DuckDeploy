@@ -1,5 +1,5 @@
 {
-  "ignoreExportsUsedInFile": false,
+  "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
       "entry": ["index.html", "scripts/**/*.mjs", "server/**/*.mjs"],
