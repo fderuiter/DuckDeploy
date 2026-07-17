@@ -2,23 +2,36 @@ import fs from 'fs';
 import fsPromises from 'fs/promises';
 import path from 'path';
 import yaml from 'js-yaml';
+import ts from 'typescript';
 import { discoverResources } from '@duckdeploy/openapi';
 import { loadSpecAsync, repoRoot } from './openapi-utility.mjs';
 
 const SRC_DIR = path.join(repoRoot, 'src');
 const PRUNED_FILE = path.join(repoRoot, 'openapi.pruned.yaml');
 
-// Helper to escape regex
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function normalize(str) {
+  if (!str) return '';
+  return str
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Split camelCase/PascalCase transitions
+    .replace(/[-_]+/g, '_')                  // Convert hyphens and multiple underscores to single underscore
+    .toLowerCase()
+    .trim();
 }
 
-// Check usage of a term with word boundary if applicable
-function checkUsage(content, term) {
-  if (/^\w/.test(term) && /\w$/.test(term)) {
-    return new RegExp('\\b' + escapeRegExp(term) + '\\b').test(content);
+function extractTokens(sourceFile, tokens) {
+  function visit(node) {
+    if (ts.isIdentifier(node)) {
+      tokens.add(node.text);
+    } else if (ts.isStringLiteral(node)) {
+      tokens.add(node.text);
+    } else if (ts.isNoSubstitutionTemplateLiteral(node)) {
+      tokens.add(node.text);
+    } else if (ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) {
+      tokens.add(node.text);
+    }
+    ts.forEachChild(node, visit);
   }
-  return content.includes(term);
+  visit(sourceFile);
 }
 
 async function getFiles(dir) {
@@ -47,18 +60,47 @@ async function main() {
   const files = await getFiles(SRC_DIR);
   const srcFiles = files.filter(f => /\.(ts|tsx|js|jsx)$/.test(f));
   
-  let allContent = '';
+  const rawTokens = new Set();
   for (const file of srcFiles) {
     const content = await fsPromises.readFile(file, 'utf8');
-    allContent += '\n' + content;
+    const sourceFile = ts.createSourceFile(
+      file,
+      content,
+      ts.ScriptTarget.Latest,
+      true
+    );
+    extractTokens(sourceFile, rawTokens);
   }
+
+  const normalizedTokens = new Set([...rawTokens].map(normalize));
 
   const activeOperations = new Set();
   const HTTP_METHODS = ['get', 'post', 'put', 'delete', 'patch', 'options', 'head', 'trace'];
 
   // Check which resources are active
   for (const resource of resources) {
-    if (checkUsage(allContent, resource.name)) {
+    const normalizedResourceName = normalize(resource.name);
+    let isUsed = false;
+    
+    // Check normalized tokens
+    for (const nTok of normalizedTokens) {
+      if (nTok.includes(normalizedResourceName) || nTok === normalizedResourceName) {
+        isUsed = true;
+        break;
+      }
+    }
+    
+    // Check raw tokens
+    if (!isUsed) {
+      for (const tok of rawTokens) {
+        if (tok.includes(resource.name) || tok === resource.name) {
+          isUsed = true;
+          break;
+        }
+      }
+    }
+
+    if (isUsed) {
       console.log(`Resource used: ${resource.name}`);
       const ops = [
         resource.listOperationId,
@@ -86,7 +128,32 @@ async function main() {
           ? operationId
           : `${method.toUpperCase()} ${pathKey}`;
 
-      if (checkUsage(allContent, operationKey)) {
+      let isUsed = false;
+
+      if (typeof operationId === 'string' && operationId.trim().length > 0) {
+        const normalizedOperationId = normalize(operationId);
+        
+        if (normalizedTokens.has(normalizedOperationId)) {
+          isUsed = true;
+        } else {
+          for (const tok of rawTokens) {
+            if (tok.includes(operationId) || tok === operationId) {
+              isUsed = true;
+              break;
+            }
+          }
+        }
+      } else {
+        // Fallback for no operationId
+        for (const tok of rawTokens) {
+          if (tok.includes(operationKey) || tok === operationKey) {
+            isUsed = true;
+            break;
+          }
+        }
+      }
+
+      if (isUsed) {
         console.log(`Operation directly used: ${operationKey}`);
         activeOperations.add(operationKey);
       }
