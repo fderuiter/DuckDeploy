@@ -1,0 +1,83 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>architecture | DuckDeploy Documentation</title><meta name="description" content="Documentation for DuckDeploy Documentation"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="../index.html" class="title">DuckDeploy Documentation</a><div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"><li><a href="" aria-current="page">architecture</a></li></ul></div><div class="tsd-panel tsd-typography"><h1 id="architecture" class="tsd-anchor-link">Architecture<a href="#architecture" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p>This document describes the architectural data flow in DuckDeploy, focusing on how the React-Admin frontend integrates with the backend API.</p>
+<h2 id="data-flow" class="tsd-anchor-link">Data Flow<a href="#data-flow" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>DuckDeploy operates strictly on an API-first paradigm. All application logic is derived from the <code>openapi.yaml</code> contract.</p>
+<ol>
+<li><strong>Compilation Phase</strong>: <code>openapi.yaml</code> is processed to generate the UI manifest (<code>public/ui-manifest.json</code>) at build time via internal preprocessor scripts (e.g., <code>@duckdeploy/openapi</code> and <code>scripts/preprocessor.mjs</code>). The OpenAPI schema (<code>public/schema.json</code>) is also generated here, but it is distinct from the UI manifest. Orval solely generates TypeScript models / Axios clients in <code>src/api/</code>.</li>
+<li><strong>Bootstrapping Phase</strong>: The frontend loads the static <code>ui-manifest.json</code> to configure available resources, fields, and forms (<code>src/App.tsx</code>).</li>
+<li><strong>Runtime UI Construction</strong>: The <code>ResourceFactory</code> provisions standard React-Admin <code>&lt;Resource&gt;</code> definitions based on the build-time discovered endpoints in the manifest.</li>
+</ol>
+<!-- ARCHITECTURE_START -->
+<h3 id="generated-architecture-metadata" class="tsd-anchor-link">Generated Architecture Metadata<a href="#generated-architecture-metadata" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<blockquote>
+<p>Automatically updated during build</p>
+</blockquote>
+<ul>
+<li><strong>UI Manifest Generation</strong>: Handled by internal preprocessor (<code>scripts/preprocessor.mjs</code> and <code>@duckdeploy/openapi</code>).</li>
+<li><strong>Resource Discovery Process</strong>: Build-time analysis of OpenAPI paths.</li>
+<li><strong>API Client Generation</strong>: Handled by Orval.</li>
+<li><strong>Artifacts Generated</strong>:
+<ul>
+<li><code>public/ui-manifest.json</code>: The UI manifest containing discovered resources and forms.</li>
+<li><code>public/schema.json</code>: The optimized OpenAPI schema.</li>
+</ul>
+</li>
+</ul>
+<!-- ARCHITECTURE_END -->
+<h2 id="the-custom-data-provider" class="tsd-anchor-link">The Custom Data Provider<a href="#the-custom-data-provider" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>React-Admin relies on a standard <a href="https://marmelab.com/react-admin/DataProviders.html">Data Provider interface</a> to map generic CRUD operations (<code>getList</code>, <code>getOne</code>, <code>create</code>, <code>update</code>, <code>delete</code>) to API requests.</p>
+<p>In DuckDeploy, <code>src/providers/openApiDataProvider.ts</code> implements this custom data provider:</p>
+<ul>
+<li>It maps React-Admin queries into generated Orval Axios calls.</li>
+<li>It translates generic parameters (e.g., React-Admin's <code>filter</code>, <code>pagination</code>, <code>sort</code>) into standard query parameters according to the specific definitions in <code>openapi.yaml</code>.</li>
+<li>It processes API responses into React-Admin's expected <code>{ data, total }</code> structure.</li>
+</ul>
+<h2 id="authentication-and-permission-probing" class="tsd-anchor-link">Authentication and Permission Probing<a href="#authentication-and-permission-probing" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>The <code>AuthProvider</code> in <code>src/core/authProvider.ts</code> implements the React-Admin <a href="https://marmelab.com/react-admin/Authentication.html">Auth Provider</a> to manage security. Instead of hardcoding role-based access logic on the frontend, DuckDeploy employs a <strong>dynamic permission probing</strong> approach.</p>
+<ul>
+<li>For each action (<code>list</code>, <code>show</code>, <code>create</code>, <code>edit</code>, <code>delete</code>), the AuthProvider sends a lightweight probe request to the respective endpoint.</li>
+<li>Mutating actions (<code>create</code>, <code>edit</code>, <code>delete</code>) are probed using <code>OPTIONS</code> requests to avoid side effects.</li>
+<li>If the endpoint returns an allowed status (like <code>200</code>, <code>204</code>, or a <code>405 Method Not Allowed</code> on an <code>OPTIONS</code> probe), React-Admin is informed the user has access.</li>
+<li><code>401 Unauthorized</code> or <code>403 Forbidden</code> responses deny access to the corresponding view or button in the UI.</li>
+</ul>
+<p>This enables backend-enforced security to instantly reflect on the frontend without duplicating permission roles.</p>
+<!-- COMPONENT_PROXY_START -->
+<h3 id="enterprise-proxy" class="tsd-anchor-link">Enterprise Proxy<a href="#enterprise-proxy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<!-- COMPONENT_PROXY_METADATA_START -->
+<p><strong>Role</strong>: Routing and Policy Enforcement
+<strong>Version</strong>: 1.0.0</p>
+<!-- COMPONENT_PROXY_METADATA_END -->
+<!-- COMPONENT_PROXY_DESCRIPTION_START -->
+<p>The Enterprise Proxy ensures all traffic correctly conforms to corporate security policies. It parses API routes before passing requests into the local processing core.</p>
+<!-- COMPONENT_PROXY_DESCRIPTION_END -->
+<!-- COMPONENT_PROXY_END -->
+<!-- COMPONENT_COMPILER_START -->
+<h3 id="schema-compiler" class="tsd-anchor-link">Schema Compiler<a href="#schema-compiler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<!-- COMPONENT_COMPILER_METADATA_START -->
+<p><strong>Role</strong>: Manifest Generation
+<strong>Version</strong>: 2.1.0</p>
+<!-- COMPONENT_COMPILER_METADATA_END -->
+<!-- COMPONENT_COMPILER_DESCRIPTION_START -->
+<p>The Schema Compiler translates OpenAPI definitions into standard duck-typed user interface schemas. It handles polymorphic forms and cross-references.</p>
+<!-- COMPONENT_COMPILER_DESCRIPTION_END -->
+<!-- COMPONENT_COMPILER_END -->
+<!-- COMPONENT_UI_ENGINE_START -->
+<h3 id="ui-engine" class="tsd-anchor-link">UI Engine<a href="#ui-engine" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<!-- COMPONENT_UI_ENGINE_METADATA_START -->
+<p><strong>Role</strong>: Dynamic UI Rendering
+<strong>Version</strong>: 1.0.0</p>
+<!-- COMPONENT_UI_ENGINE_METADATA_END -->
+<!-- COMPONENT_UI_ENGINE_DESCRIPTION_START -->
+<p>The UI Engine dynamically renders standard React-Admin <code>&lt;Resource&gt;</code> definitions and handles form layout mapping based on the OpenAPI definitions.</p>
+<!-- COMPONENT_UI_ENGINE_DESCRIPTION_END -->
+<!-- COMPONENT_UI_ENGINE_END -->
+<!-- COMPONENT_API_CLIENT_START -->
+<h3 id="api-client-generation" class="tsd-anchor-link">API Client Generation<a href="#api-client-generation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<!-- COMPONENT_API_CLIENT_METADATA_START -->
+<p><strong>Role</strong>: Code Generation
+<strong>Version</strong>: 1.0.0</p>
+<!-- COMPONENT_API_CLIENT_METADATA_END -->
+<!-- COMPONENT_API_CLIENT_DESCRIPTION_START -->
+<p>API Client Generation leverages Orval to generate strictly typed Axios fetchers and data models from the OpenAPI specification at build time.</p>
+<!-- COMPONENT_API_CLIENT_DESCRIPTION_END -->
+<!-- COMPONENT_API_CLIENT_END --></div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#architecture"><span>Architecture</span></a><ul><li><a href="#data-flow"><span>Data <wbr/>Flow</span></a></li><li><ul><li><a href="#generated-architecture-metadata"><span>Generated <wbr/>Architecture <wbr/>Metadata</span></a></li></ul></li><li><a href="#the-custom-data-provider"><span>The <wbr/>Custom <wbr/>Data <wbr/>Provider</span></a></li><li><a href="#authentication-and-permission-probing"><span>Authentication and <wbr/>Permission <wbr/>Probing</span></a></li><li><ul><li><a href="#enterprise-proxy"><span>Enterprise <wbr/>Proxy</span></a></li><li><a href="#schema-compiler"><span>Schema <wbr/>Compiler</span></a></li><li><a href="#ui-engine"><span>UI <wbr/>Engine</span></a></li><li><a href="#api-client-generation"><span>API <wbr/>Client <wbr/>Generation</span></a></li></ul></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="../index.html">DuckDeploy Documentation</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>

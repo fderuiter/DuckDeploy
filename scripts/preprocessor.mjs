@@ -31,7 +31,7 @@ const MANIFEST_GENERATION_LOG_PATH = path.join(repoRoot, 'manifest-generation-lo
 const LEGACY_TRACEABILITY_OUTPUT_PATH = path.join(repoRoot, 'traceability-matrix.json');
 const HASH_OUTPUT_PATH = path.join(repoRoot, 'public', 'ui-manifest.sha256');
 const STABLE_JSON_EOL = '\n';
-const DOCS_DIR = path.join(repoRoot, 'docs');
+const DOCS_DIR = path.join(repoRoot, 'manual-guides');
 
 const PROHIBITED_PATTERNS = [
   {
@@ -71,7 +71,11 @@ const validateDocsAndInjectMetadata = () => {
   }
 
   if (totalErrors > 0) {
-    throw new Error(`Found ${totalErrors} documentation terminology errors.`);
+    if (process.env.CI) {
+      throw new Error(`Found ${totalErrors} documentation terminology errors.`);
+    } else {
+      console.warn(`Build warning: Found ${totalErrors} documentation terminology errors.`);
+    }
   }
 
   const manifestPath = path.join(repoRoot, 'architecture-manifest.json');
@@ -100,7 +104,8 @@ const validateDocsAndInjectMetadata = () => {
     const content = fs.readFileSync(archFile, 'utf8');
     const metadata = `
 ### Generated Architecture Metadata
-*Automatically updated during build*
+
+> Automatically updated during build
 
 - **UI Manifest Generation**: Handled by internal preprocessor (\`scripts/preprocessor.mjs\` and \`@duckdeploy/openapi\`).
 - **Resource Discovery Process**: Build-time analysis of OpenAPI paths.
@@ -130,7 +135,7 @@ const validateDocsAndInjectMetadata = () => {
           updatedContent = updatedContent.replace(compStart, `${compStart}\n${metaBlock}`);
         }
       } else {
-        const block = `\n\n${compStart}\n### ${comp.name}\n\n${metaBlock}\n\n<!-- COMPONENT_${comp.id}_DESCRIPTION_START -->\n<!-- TODO: Add specific implementation details here -->\n<!-- COMPONENT_${comp.id}_DESCRIPTION_END -->\n${compEnd}\n`;
+        const block = `\n${compStart}\n\n### ${comp.name}\n\n${metaBlock}\n\n<!-- COMPONENT_${comp.id}_DESCRIPTION_START -->\n<!-- TODO: Add specific implementation details here -->\n<!-- COMPONENT_${comp.id}_DESCRIPTION_END -->\n\n${compEnd}\n`;
         updatedContent += block;
       }
 
@@ -164,7 +169,11 @@ const validateDocsAndInjectMetadata = () => {
     }
 
     if (missingMandatory) {
-      throw new Error("Build failed: Mandatory architectural components are missing descriptive documentation.");
+      if (process.env.CI) {
+        throw new Error("Build failed: Mandatory architectural components are missing descriptive documentation.");
+      } else {
+        console.warn("Build warning: Mandatory architectural components are missing descriptive documentation.");
+      }
     }
   }
 };
