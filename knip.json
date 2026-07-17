@@ -3,7 +3,8 @@
   "workspaces": {
     ".": {
       "entry": ["index.html", "scripts/**/*.mjs", "server/**/*.mjs"],
-      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "server/**/*.mjs"]
+      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "server/**/*.mjs"],
+      "ignore": ["src/api/generated/**"]
     },
     "packages/openapi": {},
     "packages/types": {}
