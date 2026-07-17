@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useContext } from 'react';
+import React, { createContext, useState, useCallback, useContext, lazy } from 'react';
 import type { PrecomputedInputDescriptor } from '../components/SchemaToFieldMapper';
 import { createRegistry } from './RegistryFactory';
 
@@ -106,11 +106,50 @@ export const registerWidget = widgetRegistry.register;
  */
 export const WidgetRegistryProvider = widgetRegistry.Provider;
 
+const widgetModules = import.meta.glob([
+  '../components/custom/*.tsx',
+  '!../components/custom/BaseWidget.tsx'
+]);
+
+const customWidgetMap: Record<string, string> = {
+  'CustomMapWidget': 'x-ui-custom-map',
+  'TerminologyLookupInput': 'cdisc-terminology',
+  'FetchUserWidget': 'fetch-user-widget',
+};
+
+const toKebabCase = (str: string) =>
+  str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+for (const path in widgetModules) {
+  const match = path.match(/\/([^/]+)\.tsx$/);
+  if (match) {
+    const filename = match[1];
+    if (filename === 'BaseWidget') {
+      continue;
+    }
+
+    const widgetId = customWidgetMap[filename] || toKebabCase(filename);
+    const loader = widgetModules[path] as () => Promise<any>;
+    const LazyComponent = lazy(() =>
+      loader().then(module => ({ default: module[filename] || module.default }))
+    );
+    registerWidget(widgetId, LazyComponent);
+  }
+}
+
 /**
  * Generated description.
  *
  */
 export const useWidgetRegistry = () => {
   const { get } = widgetRegistry.useRegistry();
-  return { getWidget: get };
+  return {
+    getWidget: (id: string) => {
+      const widget = get(id);
+      if (!widget) {
+        console.warn(`[WidgetRegistry] Missing widget: The requested widget ID "${id}" was not found in the registry.`);
+      }
+      return widget;
+    }
+  };
 };
