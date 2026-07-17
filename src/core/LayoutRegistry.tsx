@@ -1,4 +1,4 @@
-import type { ReactNode, FC } from 'react';
+import { lazy, type ReactNode, type FC } from 'react';
 import { createRegistry } from './RegistryFactory';
 
 export interface LayoutProps {
@@ -22,10 +22,40 @@ export const registerLayout = layoutRegistry.register;
  */
 export const LayoutRegistryProvider = layoutRegistry.Provider;
 
+const layoutModules = import.meta.glob([
+  '../layouts/*.tsx',
+  '!../layouts/FormLayoutContext.tsx',
+  '!../layouts/StandardLayout.tsx'
+]);
+
+for (const path in layoutModules) {
+  const match = path.match(/\/([^/]+)\.tsx$/);
+  if (match) {
+    const filename = match[1];
+    if (filename === 'FormLayoutContext' || filename === 'StandardLayout') {
+      continue;
+    }
+
+    const loader = layoutModules[path] as () => Promise<any>;
+    const LazyComponent = lazy(() =>
+      loader().then(module => ({ default: module[filename] || module.default }))
+    );
+    registerLayout(filename, LazyComponent);
+  }
+}
+
 /**
  * Hook to access the layout registry.
  */
 export const useLayoutRegistry = () => {
   const { get } = layoutRegistry.useRegistry();
-  return { getLayout: get };
+  return {
+    getLayout: (id: string) => {
+      const layout = get(id);
+      if (!layout) {
+        console.warn(`[LayoutRegistry] Missing layout: The requested layout ID "${id}" was not found in the registry.`);
+      }
+      return layout;
+    }
+  };
 };
