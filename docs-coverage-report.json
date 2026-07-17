@@ -8,5 +8,15 @@
     "name": "Schema Compiler",
     "documented": true,
     "mandatory": true
+  },
+  "UI_ENGINE": {
+    "name": "UI Engine",
+    "documented": true,
+    "mandatory": true
+  },
+  "API_CLIENT": {
+    "name": "API Client Generation",
+    "documented": true,
+    "mandatory": true
   }
 }

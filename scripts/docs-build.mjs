@@ -68,6 +68,7 @@ async function main() {
     exclude: ["**/*+(.test|.spec).*", "**/__tests__/**", "**/generated/**"],
     name: "DuckDeploy Documentation",
     readme: "none",
+    projectDocuments: ["manual-guides/**/*.md"],
     validation: {
         notDocumented: true
     }
