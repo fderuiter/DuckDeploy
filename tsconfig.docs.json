@@ -6,7 +6,8 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "packages/openapi/src/**/*.ts",
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx",
     "server/**/*.mjs",
     "scripts/compiler/**/*.mjs"
   ]

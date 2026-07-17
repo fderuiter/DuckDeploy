@@ -1,12 +1,22 @@
 import React, { useMemo } from 'react';
 
+/**
+ * Configuration for a section in an orchestrated layout.
+ */
 export type SectionConfig = {
+  /** The display label for the section. */
   label: string;
+  /** The list of field sources that belong to this section. */
   fields: string[];
 };
 
+/**
+ * A resolved section containing the actual React elements.
+ */
 export type OrchestratedSection = {
+  /** The display label for the section. */
   label: string;
+  /** The rendered React node elements assigned to this section. */
   elements: React.ReactNode[];
 };
 

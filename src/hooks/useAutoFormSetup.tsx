@@ -13,7 +13,10 @@ import { SchemaErrorSummary } from '../components/SchemaErrorSummary';
  * @param mode - The type of form being rendered ('create' or 'edit').
  * @returns An object containing form setup details like layout configuration and rendered components.
  */
-export function useAutoFormSetup(resource: string | undefined, mode: 'create' | 'edit') {
+export function useAutoFormSetup(resource: string | undefined, mode: 'create' | 'edit'): {
+  /** The rendered form content nodes wrapped in a layout. */
+  formContent: React.ReactNode;
+} {
   const { resourceName, precomputedResource, layoutConfig, CustomLayout } = useManifestInterpreter({ resource, mode });
 
   const isCreate = mode === 'create';

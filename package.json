@@ -29,7 +29,7 @@
     "test:watch": "vitest",
     "scan:a11y": "node ./scripts/accessibility-scan.mjs",
     "analyze:structure": "knip --include files,exports,duplicates,dependencies,types",
-    "docs:build": "typedoc",
+    "docs:build": "node ./scripts/docs-build.mjs",
     "prepare": "husky"
   },
   "dependencies": {
