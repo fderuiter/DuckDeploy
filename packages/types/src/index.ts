@@ -1,3 +1,6 @@
+/**
+ * Defines a resource with its supported operations, paths, and schemas.
+ */
 export interface ResourceDefinition {
   name: string;
   hasList: boolean;
@@ -27,6 +30,9 @@ export interface ResourceDefinition {
   xDataCollection?: string;
 }
 
+/**
+ * Standard HTTP methods for typical CRUD operations.
+ */
 export const HTTP_METHODS = new Set([
   'get',
   'post',
@@ -35,6 +41,9 @@ export const HTTP_METHODS = new Set([
   'delete',
 ]);
 
+/**
+ * Extended set of HTTP methods including options and trace.
+ */
 export const FULL_HTTP_METHODS = new Set([
   ...HTTP_METHODS,
   'options',

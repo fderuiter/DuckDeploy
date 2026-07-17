@@ -2,24 +2,35 @@ import axios, { AxiosError, AxiosHeaders, type AxiosRequestConfig, type RawAxios
 import { getRuntimeApiConfig } from '../core/runtimeConfig';
 import { SCHEMA_FILENAME, MANIFEST_FILENAME } from '@duckdeploy/openapi';
 
+/**
+ * Represents a promise that can be cancelled via an abort controller.
+ */
 type CancelablePromise<T> = Promise<T> & { cancel?: () => void };
 
 const runtimeConfig = getRuntimeApiConfig();
 
 /**
- *
+ * An error class representing an HTTP error normalized for React Admin and custom components.
  */
 export class NormalizedHttpError extends Error {
+  /** Optional human-readable title for the error. */
   public title?: string;
+  /** Optional array of detailed error messages or hints. */
   public details?: string[];
 
+  /** The primary error message. */
   public readonly message: string;
+  /** The HTTP status code associated with the error. */
   public readonly status: number;
+  /** The full response body payload returned by the server. */
   public readonly body: any;
 
   /**
-   * Generated description.
+   * Constructs a new normalized HTTP error.
    *
+   * @param message - The error message.
+   * @param status - The HTTP status code.
+   * @param body - The response payload.
    */
   constructor(
     message: string,
@@ -215,6 +226,9 @@ export const normalizeProviderError = (error: unknown): unknown => {
   return httpError;
 };
 
+/**
+ * The globally configured Axios instance used by API clients.
+ */
 export const AXIOS_INSTANCE = axios.create({
   baseURL: runtimeConfig.apiBaseUrl ?? '',
   headers: {
@@ -227,6 +241,9 @@ AXIOS_INSTANCE.interceptors.response.use(
   (error) => Promise.reject(normalizeProviderError(error)),
 );
 
+/**
+ * Valid input type for the custom axios instance wrapper.
+ */
 type RequestInput = string | AxiosRequestConfig;
 
 const normalizeConfig = (
@@ -249,8 +266,11 @@ const normalizeConfig = (
 };
 
 /**
- * Generated description.
+ * Executes an HTTP request with cancelation support and normalized error handling.
  *
+ * @param config - The request URL or Axios configuration.
+ * @param options - Additional Axios configuration options.
+ * @returns A promise that resolves with the Axios response.
  */
 export const customInstance = <T>(
   config: RequestInput,

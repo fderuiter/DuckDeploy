@@ -239,6 +239,9 @@ const ensureRecordId = (record: unknown, resourceDefinition: ResourceDefinition,
   };
 };
 
+/**
+ * Defines the main data provider interface implementation using React Admin conventions.
+ */
 export const openApiDataProvider: DataProvider = {
   getList: async (resource, params) => {
     const resourceDefinition = resourceMap[resource];
