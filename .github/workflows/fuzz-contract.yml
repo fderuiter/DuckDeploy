@@ -15,6 +15,7 @@ jobs:
     env:
       SCHEMATHESIS_BASE_URL: https://api.library.cdisc.org
       SCHEMATHESIS_MAX_EXAMPLES: "1000"
+      CDISC_PRIMARY_KEY: "dummy"
     steps:
       - uses: actions/checkout@v4
 
@@ -30,3 +31,10 @@ jobs:
       - run: python3 -m pip install --upgrade pip schemathesis==4.18.0
       - run: npm ci
       - run: npm run test:fuzz
+      
+      - name: Archive Diagnostic Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schemathesis-report
+          path: schemathesis-junit.xml

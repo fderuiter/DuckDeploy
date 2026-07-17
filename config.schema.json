@@ -99,7 +99,7 @@
     },
     "SCHEMATHESIS_STRICT": {
       "type": "boolean",
-      "default": false,
+      "default": true,
       "description": "Fail fuzz testing if Schemathesis returns non-zero.",
       "public": false
     }
