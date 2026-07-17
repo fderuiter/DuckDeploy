@@ -7,6 +7,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
+    "postinstall": "npm run generate",
     "dev": "npm run generate && npm run compile:schema && vite",
     "typecheck": "tsc -b",
     "build": "npm run lint && npm run typecheck && npm run generate && npm run compile:schema && npm run validate:contract && npm run generate:traceability && npm run docs:build && npm run test && vite build && npm run verify:shadow && npm run scan:a11y && node ./scripts/publish-compliance.mjs",

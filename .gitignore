@@ -35,3 +35,4 @@ contract-validation-report.json
 traceability-matrix.json
 junit.xml
 src/generated/
+/openapi.pruned.yaml
