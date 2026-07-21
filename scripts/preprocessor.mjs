@@ -11,7 +11,6 @@ import {
   normalizeSchema,
   resolveDiscriminator,
   UnifiedSchemaWalker,
-  isReferenceField,
   getReferenceTarget,
   extractUiExtensions,
   getPrimaryField,
@@ -182,7 +181,6 @@ const validateDocsAndInjectMetadata = () => {
 
 class OpenApiVisitor {
   constructor(spec) {
-    this.spec = spec;
     this.traceabilityEntries = [];
   }
 
@@ -449,7 +447,13 @@ const buildGeneratedOperationMap = () => {
 const buildUiManifest = (spec) => {
   if (!spec || typeof spec !== 'object' || !spec.paths || typeof spec.paths !== 'object') {
     return {
-      manifest: { version: 1, depthLimit: 0, resources: {} },
+      manifest: {
+        version: 1,
+        depthLimit: 0,
+        resources: {},
+        allowedOperations: [],
+        operationFunctionMap: {},
+      },
       traceabilityEntries: [],
     };
   }
