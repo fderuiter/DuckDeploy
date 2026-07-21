@@ -50,7 +50,7 @@ The environment variables required for frontend, proxy, and testing are describe
 | `VITE_API_BASE_URL` | `string` | No |  | Deployed CDISC proxy base URL for frontend. |
 | `SCHEMATHESIS_BASE_URL` | `string` | No |  | Base URL for fuzz testing. |
 | `SCHEMATHESIS_MAX_EXAMPLES` | `number` | No | `1000` | Max examples per endpoint for fuzz testing. |
-| `SCHEMATHESIS_STRICT` | `boolean` | No | `false` | Fail fuzz testing if Schemathesis returns non-zero. |
+| `SCHEMATHESIS_STRICT` | `boolean` | No | `true` | Fail fuzz testing if Schemathesis returns non-zero. |
 
 <!-- CONFIG_END -->
 
